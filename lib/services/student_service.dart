@@ -4,6 +4,29 @@ import 'auth_service.dart';
 import '../config/api_config.dart';
 
 class StudentService {
+  static Future<Map<String, dynamic>?> getStudent() async {
+    String? token = await AuthService.getAccessToken();
+    String? clientId = await AuthService.getClientId();
+    String? studentId = await AuthService.getStudentId();
+
+    if (token == null || clientId == null || studentId == null) {
+      return null;
+    }
+
+    final url = "${ApiConfig.baseUrl}/students/$clientId/students/$studentId";
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {"Authorization": "Bearer $token"},
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      return data["student"];
+    } else {
+      return null;
+    }
+  }
 
   static Future<int> getStudentCount(String standard) async {
     String? token = await AuthService.getAccessToken();
@@ -14,9 +37,7 @@ class StudentService {
 
     final response = await http.get(
       Uri.parse(url),
-      headers: {
-        "Authorization": "Bearer $token",
-      },
+      headers: {"Authorization": "Bearer $token"},
     );
 
     if (response.statusCode == 200) {
@@ -36,9 +57,7 @@ class StudentService {
 
     final response = await http.get(
       Uri.parse(url),
-      headers: {
-        "Authorization": "Bearer $token",
-      },
+      headers: {"Authorization": "Bearer $token"},
     );
 
     if (response.statusCode == 200) {
@@ -50,46 +69,42 @@ class StudentService {
   }
 
   static Future<Map<String, dynamic>?> getStudentById(String studentId) async {
-  String? token = await AuthService.getAccessToken();
-  String? clientId = await AuthService.getClientId();
+    String? token = await AuthService.getAccessToken();
+    String? clientId = await AuthService.getClientId();
 
-  final url =
-      "${ApiConfig.baseUrl}/students/$clientId/students/$studentId";
+    final url = "${ApiConfig.baseUrl}/students/$clientId/students/$studentId";
 
-  final response = await http.get(
-    Uri.parse(url),
-    headers: {
-      "Authorization": "Bearer $token",
-    },
-  );
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {"Authorization": "Bearer $token"},
+    );
 
-  if (response.statusCode == 200) {
-    var data = jsonDecode(response.body);
-    return data["student"];
-  } else {
-    return null;
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      return data["student"];
+    } else {
+      return null;
+    }
   }
-}
 
-static Future<bool> updateStudent(
-    String studentId, Map<String, dynamic> body) async {
+  static Future<bool> updateStudent(
+    String studentId,
+    Map<String, dynamic> body,
+  ) async {
+    String? token = await AuthService.getAccessToken();
+    String? clientId = await AuthService.getClientId();
 
-  String? token = await AuthService.getAccessToken();
-  String? clientId = await AuthService.getClientId();
+    final url = "${ApiConfig.baseUrl}/students/$clientId/students/$studentId";
 
-  final url =
-      "${ApiConfig.baseUrl}/students/$clientId/students/$studentId";
+    final response = await http.put(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode(body),
+    );
 
-  final response = await http.put(
-    Uri.parse(url),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $token",
-    },
-    body: jsonEncode(body),
-  );
-
-  return response.statusCode == 200;
-}
-
+    return response.statusCode == 200;
+  }
 }

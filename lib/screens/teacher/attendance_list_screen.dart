@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/attendance_service.dart';
 import '../../services/auth_service.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart'; // Added
 
 class AttendanceListScreen extends StatefulWidget {
   final String standard;
@@ -50,9 +51,12 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
     });
   }
 
-  Future<void> updateAttendanceStatus(String attendanceId, String currentStatus) async {
+  Future<void> updateAttendanceStatus(
+    String attendanceId,
+    String currentStatus,
+  ) async {
     String newStatus = currentStatus == "Present" ? "Absent" : "Present";
-    
+
     bool? confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -84,53 +88,86 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
         );
         loadAttendance();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to Update Attendance")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed to Update Attendance")));
       }
+    }
+  }
+
+  // NEW FUNCTION (Added)
+  Future<void> makePhoneCall(String phoneNumber) async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Cannot make call")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("${widget.filterStatus} Students"),
-      ),
+      appBar: AppBar(title: Text("${widget.filterStatus} Students")),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : attendanceList.isEmpty
-              ? Center(child: Text("No ${widget.filterStatus} Students"))
-              : ListView.builder(
-                  itemCount: attendanceList.length,
-                  itemBuilder: (_, index) {
-                    final attendance = attendanceList[index];
-                    final student = attendance.student;
-                    
-                    return Card(
-                      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: widget.filterStatus == "Present"
-                              ? Colors.green.shade100
-                              : Colors.red.shade100,
-                          child: Icon(
-                            widget.filterStatus == "Present"
-                                ? Icons.check
-                                : Icons.close,
-                            color: widget.filterStatus == "Present"
-                                ? Colors.green
-                                : Colors.red,
-                          ),
+          ? Center(child: Text("No ${widget.filterStatus} Students"))
+          : ListView.builder(
+              itemCount: attendanceList.length,
+              itemBuilder: (_, index) {
+                final attendance = attendanceList[index];
+                final student = attendance.student;
+
+                return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: widget.filterStatus == "Present"
+                          ? Colors.green.shade100
+                          : Colors.red.shade100,
+                      child: Icon(
+                        widget.filterStatus == "Present"
+                            ? Icons.check
+                            : Icons.close,
+                        color: widget.filterStatus == "Present"
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                    ),
+                    title: Text(
+                      "${student.firstName} ${student.middleName ?? ''} ${student.lastName}",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      "Roll: ${student.rollNumber ?? '-'} | Division: ${student.division}",
+                    ),
+
+                    // UPDATED TRAILING (Call + Edit)
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.call, color: Colors.green),
+                          tooltip: "Call Student",
+                          onPressed: () {
+                            final String phone = student.mobileNumber;
+
+                            if (phone.trim().isNotEmpty) {
+                              makePhoneCall(phone);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Mobile number not available"),
+                                ),
+                              );
+                            }
+                          },
                         ),
-                        title: Text(
-                          "${student.firstName} ${student.middleName ?? ''} ${student.lastName}",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          "Roll: ${student.rollNumber ?? '-'} | Division: ${student.division}",
-                        ),
-                        trailing: IconButton(
+                        IconButton(
                           icon: Icon(Icons.edit, color: Colors.blue),
                           onPressed: () => updateAttendanceStatus(
                             attendance.id,
@@ -138,10 +175,12 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                           ),
                           tooltip: "Change Status",
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }

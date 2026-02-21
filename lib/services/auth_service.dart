@@ -5,16 +5,12 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import '../config/api_config.dart';
 
 class AuthService {
-
   // Login API
   static Future<String?> login(String id, String password) async {
     final response = await http.post(
       Uri.parse(ApiConfig.loginUrl),
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "uniqueIdOrPhone": id,
-        "password": password
-      }),
+      body: jsonEncode({"uniqueIdOrPhone": id, "password": password}),
     );
 
     if (response.statusCode == 200) {
@@ -26,11 +22,11 @@ class AuthService {
       // From response (new fields)
       String userId = data["user_id"];
       String roleId = data["role_id"];
-      String teacherId = data["teacher_id"];
+      String? teacherId = data["teacher_id"];
+      String? studentId = data["student_id"];
 
       // Decode token for extra info
-      Map<String, dynamic> decodedToken =
-          JwtDecoder.decode(accessToken);
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
 
       String role = decodedToken["role_name"];
       String clientId = decodedToken["client_id"];
@@ -44,7 +40,14 @@ class AuthService {
       await prefs.setString("user_id", userId);
       await prefs.setString("client_id", clientId);
       await prefs.setString("role_id", roleId);
-      await prefs.setString("teacher_id", teacherId);
+
+      // Save teacher or student ID based on role
+      if (teacherId != null) {
+        await prefs.setString("teacher_id", teacherId);
+      }
+      if (studentId != null) {
+        await prefs.setString("student_id", studentId);
+      }
 
       return role;
     } else {
@@ -70,6 +73,12 @@ class AuthService {
     return prefs.getString("teacher_id");
   }
 
+  // Get Student ID
+  static Future<String?> getStudentId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("student_id");
+  }
+
   // Get Role
   static Future<String?> getRole() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -80,6 +89,12 @@ class AuthService {
   static Future<String?> getTeacherName() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString("teacher_name");
+  }
+
+  // Get Student Name
+  static Future<String?> getStudentName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("student_name");
   }
 
   // Get Class Name

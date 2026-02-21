@@ -3,7 +3,7 @@ import '../services/auth_service.dart';
 import 'admin/admin_screen.dart';
 import 'superadmin/superadmin_screen.dart';
 import 'teacher/class_selection_screen.dart';
-import 'student/student_screen.dart';
+import 'student/student_dashboard_screen.dart';
 import '../localization/language_service.dart';
 
 
@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
         screen = ClassSelectionScreen();
         break;
       case "student":
-        screen = StudentScreen();
+        screen = StudentDashboardScreen();
         break;
       default:
         screen = LoginScreen();

@@ -38,6 +38,7 @@ class AttendanceStudent {
   final String standard;
   final String division;
   final String? rollNumber;
+  final String mobileNumber; // ✅ ADDED
 
   AttendanceStudent({
     required this.id,
@@ -47,6 +48,7 @@ class AttendanceStudent {
     required this.standard,
     required this.division,
     this.rollNumber,
+    required this.mobileNumber,
   });
 
   factory AttendanceStudent.fromJson(Map<String, dynamic> json) {
@@ -58,7 +60,15 @@ class AttendanceStudent {
       standard: json['standard'] ?? '',
       division: json['division'] ?? '',
       rollNumber: json['roll_number'],
+      mobileNumber: json['mobile_number'] ?? '', // ✅ IMPORTANT
     );
+  }
+
+  String get fullName {
+    if (middleName != null && middleName!.isNotEmpty) {
+      return "$firstName $middleName $lastName";
+    }
+    return "$firstName $lastName";
   }
 }
 
