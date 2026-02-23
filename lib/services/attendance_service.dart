@@ -100,4 +100,41 @@ class AttendanceService {
 
     return response.statusCode == 200 || response.statusCode == 201;
   }
+
+  static Future<List<dynamic>> getStudentMonthlyAttendance({
+  required String studentId,
+  required String month,
+  required String year,
+}) async {
+  final response = await http.get(
+    Uri.parse(
+      "${ApiConfig.baseUrl}/attendance/student/$studentId/month?month=$month&year=$year",
+    ),
+  );
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body)['data'];
+  } else {
+    throw Exception('Failed to load attendance');
+  }
+}
+
+
+static Future<Map<String, dynamic>> getStudentMonthlyAttendanceFull({
+  required String studentId,
+  required String month,
+  required String year,
+}) async {
+  final response = await http.get(
+    Uri.parse(
+      "${ApiConfig.baseUrl}/attendance/student/$studentId/month?month=$month&year=$year",
+    ),
+  );
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  } else {
+    throw Exception('Failed to load attendance');
+  }
+}
 }

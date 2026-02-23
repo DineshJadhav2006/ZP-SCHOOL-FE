@@ -4,12 +4,13 @@ import '../config/api_config.dart';
 import 'auth_service.dart';
 
 class HomeworkService {
-  
   static Future<List<dynamic>> getHomeworkByClass(String className) async {
     String? token = await AuthService.getAccessToken();
     String? clientId = await AuthService.getClientId();
 
-    final url = "${ApiConfig.baseUrl}/homework/$clientId/homework/class/$className";
+    // Updated URL (Query Parameter)
+    final url =
+        "${ApiConfig.baseUrl}/homework/$clientId/homework?className=$className";
 
     final response = await http.get(
       Uri.parse(url),
@@ -21,8 +22,15 @@ class HomeworkService {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
+
+      // API response structure check
+      // If response is: { "homework": [...] }
       return data["homework"] ?? [];
+
+      // If response is direct list, use:
+      // return data;
     } else {
+      print("Get Homework Failed: ${response.body}");
       return [];
     }
   }
@@ -106,9 +114,7 @@ class HomeworkService {
 
     final response = await http.delete(
       Uri.parse(url),
-      headers: {
-        "Authorization": "Bearer $token",
-      },
+      headers: {"Authorization": "Bearer $token"},
     );
 
     return response.statusCode == 200;
