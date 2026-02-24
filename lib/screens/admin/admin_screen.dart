@@ -90,6 +90,13 @@ class _AdminScreenState extends State<AdminScreen>
       appBar: AppBar(
         elevation: 0,
         backgroundColor: theme.primaryColor,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(Icons.menu, color: Colors.white),
+          onPressed: () {
+            // Placeholder: No action as requested
+          },
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

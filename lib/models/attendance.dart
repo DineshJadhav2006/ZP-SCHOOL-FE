@@ -59,7 +59,7 @@ class AttendanceStudent {
       lastName: json['last_name'] ?? '',
       standard: json['standard'] ?? '',
       division: json['division'] ?? '',
-      rollNumber: json['roll_number'],
+      rollNumber: (json['roll_number'] ?? json['roll_no'])?.toString(),
       mobileNumber: json['mobile_number'] ?? '', // ✅ IMPORTANT
     );
   }

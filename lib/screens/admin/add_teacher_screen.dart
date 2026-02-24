@@ -74,41 +74,48 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 32),
+            Icon(Icons.check_circle, color: Colors.green, size: 28),
             SizedBox(width: 12),
-            Text("Success!"),
+            Text("Success!", style: TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Teacher registered successfully!"),
-            SizedBox(height: 16),
+            Text("Teacher registered successfully!", style: TextStyle(fontSize: 15)),
+            SizedBox(height: 20),
             Container(
-              padding: EdgeInsets.all(12),
+              padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.withOpacity(0.3)),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Unique ID: ",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    "UNIQUE ID",
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue, letterSpacing: 1),
                   ),
-                  Expanded(
-                    child: Text(
-                      uniqueId,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
+                  SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.badge_outlined, size: 20, color: Colors.blue),
+                      SizedBox(width: 10),
+                      Text(
+                        uniqueId,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.blue.shade900,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -116,12 +123,15 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.close),
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context, true);
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 8, bottom: 8),
+            child: IconButton(
+              icon: Icon(Icons.close, color: Colors.grey.shade600),
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(context, true); // Return to list
+              },
+            ),
           ),
         ],
       ),

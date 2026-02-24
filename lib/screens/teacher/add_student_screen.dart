@@ -111,15 +111,89 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     setState(() => isLoading = false);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      Navigator.pop(context, true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Student Added Successfully")),
-      );
+      final resData = jsonDecode(response.body);
+      if (resData['unique_id'] != null) {
+        _showSuccessDialog(resData['unique_id']);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Student Added Successfully")),
+        );
+        Navigator.pop(context, true);
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Failed to Add Student")),
       );
     }
+  }
+
+  void _showSuccessDialog(String uniqueId) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green, size: 28),
+            SizedBox(width: 12),
+            Text("Success!", style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Student registered successfully!", style: TextStyle(fontSize: 15)),
+            SizedBox(height: 20),
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.indigo.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.indigo.withOpacity(0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "UNIQUE ID",
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.indigo, letterSpacing: 1),
+                  ),
+                  SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.badge_outlined, size: 20, color: Colors.indigo),
+                      SizedBox(width: 10),
+                      Text(
+                        uniqueId,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.indigo.shade900,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8, bottom: 8),
+            child: IconButton(
+              icon: Icon(Icons.close, color: Colors.grey.shade600),
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(context, true); // Return to list
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

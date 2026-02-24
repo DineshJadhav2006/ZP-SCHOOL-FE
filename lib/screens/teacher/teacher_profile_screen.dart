@@ -207,12 +207,32 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         height: 54,
         child: ElevatedButton.icon(
           onPressed: () async {
-            await AuthService.logout();
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => LoginScreen()),
-              (route) => false,
+            bool? confirm = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text("Logout"),
+                content: Text("Are you sure you want to logout?"),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: Text("Cancel"),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: Text("Logout", style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+              ),
             );
+
+            if (confirm == true) {
+              await AuthService.logout();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => LoginScreen()),
+                (route) => false,
+              );
+            }
           },
           icon: Icon(Icons.power_settings_new),
           label: Text("Logout Securely", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),

@@ -359,67 +359,40 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       drawer: _buildDrawer(theme),
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverAppBar(
-            expandedHeight: 140.0,
-            floating: false,
-            pinned: true,
-            elevation: 0,
-            backgroundColor: theme.primaryColor,
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: EdgeInsets.only(left: 72, bottom: 20),
-              title: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "ZP SCHOOL MANDAVE KH",
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  Text(
-                    "Class Teacher: ${widget.className}",
-                    style: TextStyle(fontSize: 10, color: Colors.white70),
-                  ),
-                ],
-              ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.8)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Opacity(
-                  opacity: 0.1,
-                  child: Icon(Icons.school, size: 200, color: Colors.white),
-                ),
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.notifications_none_outlined),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => NoticesScreen()),
-                  );
-                },
-              ),
-              SizedBox(width: 8),
-            ],
-          ),
-        ],
-        body: IndexedStack(
-          index: selectedIndex,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: theme.primaryColor,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            homePage(),
-            attendancePage(),
-            homeworkPage(),
-            profilePage(),
+            Text("ZP SCHOOL MANDAVE KH", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text(
+              "Class Teacher: ${widget.className}",
+              style: TextStyle(fontSize: 10, color: Colors.white70),
+            ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications_none_outlined, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => NoticesScreen()),
+              );
+            },
+          ),
+          SizedBox(width: 8),
+        ],
+      ),
+      body: IndexedStack(
+        index: selectedIndex,
+        children: [
+          homePage(),
+          attendancePage(),
+          homeworkPage(),
+          profilePage(),
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -502,12 +475,32 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
             leading: Icon(Icons.logout_rounded, color: Colors.red),
             title: Text("Logout", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
             onTap: () async {
-              await AuthService.logout();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => LoginScreen()),
-                (route) => false,
+              bool? confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text("Logout"),
+                  content: Text("Are you sure you want to logout?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: Text("Cancel"),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: Text("Logout", style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ),
               );
+
+              if (confirm == true) {
+                await AuthService.logout();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => LoginScreen()),
+                  (route) => false,
+                );
+              }
             },
           ),
           SizedBox(height: 20),
