@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/teacher/class_dashboard_screen.dart';
 import 'screens/student/student_dashboard_screen.dart';
+import 'screens/admin/admin_screen.dart';
 import 'services/auth_service.dart';
 import 'config/theme.dart';
 
@@ -70,6 +71,11 @@ class _AuthCheckState extends State<AuthCheck> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => StudentDashboardScreen()),
+        );
+      } else if (role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => AdminScreen()),
         );
       } else {
         Navigator.pushReplacement(

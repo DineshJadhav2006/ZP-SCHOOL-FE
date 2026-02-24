@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/teacher_service.dart';
 import 'admin/admin_screen.dart';
 import 'superadmin/superadmin_screen.dart';
 import 'teacher/class_selection_screen.dart';
 import 'student/student_dashboard_screen.dart';
 import '../localization/language_service.dart';
-
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -13,7 +13,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
   final TextEditingController idController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -22,7 +21,9 @@ class _LoginScreenState extends State<LoginScreen> {
   void loginUser() async {
     if (idController.text.isEmpty || passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(LanguageService.text("please_enter_id_password"))),
+        SnackBar(
+          content: Text(LanguageService.text("please_enter_id_password")),
+        ),
       );
       return;
     }
@@ -42,6 +43,29 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (role != null) {
+      // For admin, try to fetch and save their full name
+      if (role.toLowerCase() == "admin") {
+        try {
+          var admin = await TeacherService.getAdmin();
+          if (admin != null && admin['first_name'] != null) {
+            String firstName = admin['first_name'] ?? '';
+            String lastName = admin['last_name'] ?? '';
+            String fullName = '$firstName $lastName'.trim();
+            if (fullName.isNotEmpty) {
+              await AuthService.setAdminName(fullName);
+            }
+          }
+        } catch (e) {
+          print("Error fetching admin details: $e");
+          // Fallback: save the login ID as admin name
+          String adminIdentifier = idController.text.trim();
+          if (adminIdentifier.contains("@")) {
+            adminIdentifier = adminIdentifier.split("@")[0];
+          }
+          await AuthService.setAdminName(adminIdentifier);
+        }
+      }
+
       // Success message (Top Light Blue)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -66,7 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
       Future.delayed(Duration(seconds: 2), () {
         navigateByRole(role);
       });
-
     } else {
       // Error popup with icon
       ScaffoldMessenger.of(context).showSnackBar(
@@ -121,41 +144,34 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-  appBar: AppBar(
-    title: Text(LanguageService.text("school_login")),
-    actions: [
-
-      PopupMenuButton<String>(
-        onSelected: (value) {
-          setState(() {
-            LanguageService.changeLanguage(value);
-          });
-        },
-        itemBuilder: (context) => [
-          PopupMenuItem(value: "en", child: Text("English")),
-          PopupMenuItem(value: "mr", child: Text("मराठी")),
+      appBar: AppBar(
+        title: Text(LanguageService.text("school_login")),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              setState(() {
+                LanguageService.changeLanguage(value);
+              });
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(value: "en", child: Text("English")),
+              PopupMenuItem(value: "mr", child: Text("मराठी")),
+            ],
+            icon: Icon(Icons.language),
+          ),
         ],
-        icon: Icon(Icons.language),
       ),
 
-    ],
-  ),
-
-  body: Center(
-
+      body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-
                 Text(
                   LanguageService.text("school_login"),
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
 
                 SizedBox(height: 30),

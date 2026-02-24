@@ -15,9 +15,7 @@ class AttendanceService {
 
     final token = await AuthService.getAccessToken();
 
-    final url =
-        "${ApiConfig.baseUrl}/attendance/client/$clientId/class"
-        "?date=$date&standard=$standard&division=$division";
+    final url = ApiConfig.attendanceByClassUrl(clientId, date, standard, division);
 
     final response = await http.get(
       Uri.parse(url),
@@ -56,7 +54,7 @@ class AttendanceService {
 
     final token = await AuthService.getAccessToken();
 
-    final url = "${ApiConfig.baseUrl}/attendance/$attendanceId";
+    final url = ApiConfig.attendanceUpdateUrl(attendanceId);
 
     Map<String, dynamic> body = {
       "status": status,
@@ -85,7 +83,7 @@ class AttendanceService {
 
     final token = await AuthService.getAccessToken();
 
-    final url = "${ApiConfig.baseUrl}/attendance/bulk";
+    final url = ApiConfig.attendanceBulkUrl;
 
     final response = await http.post(
       Uri.parse(url),
@@ -107,9 +105,7 @@ class AttendanceService {
   required String year,
 }) async {
   final response = await http.get(
-    Uri.parse(
-      "${ApiConfig.baseUrl}/attendance/student/$studentId/month?month=$month&year=$year",
-    ),
+    Uri.parse(ApiConfig.studentMonthlyAttendanceUrl(studentId, month, year)),
   );
 
   if (response.statusCode == 200) {
@@ -126,9 +122,7 @@ static Future<Map<String, dynamic>> getStudentMonthlyAttendanceFull({
   required String year,
 }) async {
   final response = await http.get(
-    Uri.parse(
-      "${ApiConfig.baseUrl}/attendance/student/$studentId/month?month=$month&year=$year",
-    ),
+    Uri.parse(ApiConfig.studentMonthlyAttendanceUrl(studentId, month, year)),
   );
 
   if (response.statusCode == 200) {
@@ -137,4 +131,28 @@ static Future<Map<String, dynamic>> getStudentMonthlyAttendanceFull({
     throw Exception('Failed to load attendance');
   }
 }
+
+  static Future<Map<String, dynamic>?> getAttendanceStatistics(String date) async {
+    String? token = await AuthService.getAccessToken();
+
+    if (token == null) return null;
+
+    final url = ApiConfig.attendanceStatisticsUrl(date);
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {"Authorization": "Bearer $token"},
+      );
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        return data["data"];
+      }
+    } catch (e) {
+      print("Error fetching attendance statistics: $e");
+    }
+
+    return null;
+  }
 }

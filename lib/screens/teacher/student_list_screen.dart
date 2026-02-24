@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/student_service.dart';
 import 'student_profile_screen.dart';
+import 'edit_student_screen.dart';
 
 class StudentListScreen extends StatefulWidget {
   final String standard;
@@ -57,7 +58,44 @@ class _StudentListScreenState extends State<StudentListScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text("Roll: ${s["roll_number"] ?? '-'} | ID: ${s["unique_id"] ?? '-'}"),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: PopupMenuButton<String>(
+          icon: Icon(Icons.more_vert),
+          onSelected: (value) async {
+            if (value == 'edit') {
+              var result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditStudentScreen(student: s),
+                ),
+              );
+              if (result == true) loadStudents();
+            } else if (value == 'delete') {
+              _confirmDelete(s);
+            }
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: 'edit',
+              child: Row(
+                children: [
+                  Icon(Icons.edit, color: Colors.blue, size: 20),
+                  SizedBox(width: 12),
+                  Text('Edit'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'delete',
+              child: Row(
+                children: [
+                  Icon(Icons.delete, color: Colors.red, size: 20),
+                  SizedBox(width: 12),
+                  Text('Delete'),
+                ],
+              ),
+            ),
+          ],
+        ),
         onTap: () {
           Navigator.push(
             context,
@@ -122,6 +160,40 @@ class _StudentListScreenState extends State<StudentListScreen> {
                 ],
               ),
             ),
+    );
+  }
+
+  void _confirmDelete(Map<String, dynamic> student) {
+    String name = "${student['first_name']} ${student['last_name']}";
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Delete Student"),
+        content: Text("Are you sure you want to delete $name?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              bool success = await StudentService.deleteStudent(student['id']);
+              if (success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Student deleted successfully")),
+                );
+                loadStudents();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Failed to delete student"), backgroundColor: Colors.red),
+                );
+              }
+            },
+            child: Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -13,7 +13,7 @@ class StudentService {
       return null;
     }
 
-    final url = "${ApiConfig.baseUrl}/students/$clientId/students/$studentId";
+    final url = ApiConfig.studentUrl(clientId, studentId);
 
     final response = await http.get(
       Uri.parse(url),
@@ -32,8 +32,7 @@ class StudentService {
     String? token = await AuthService.getAccessToken();
     String? clientId = await AuthService.getClientId();
 
-    final url =
-        "${ApiConfig.baseUrl}/students/$clientId/students?class=$standard";
+    final url = ApiConfig.studentsListUrl(clientId!, standard);
 
     final response = await http.get(
       Uri.parse(url),
@@ -52,8 +51,7 @@ class StudentService {
     String? token = await AuthService.getAccessToken();
     String? clientId = await AuthService.getClientId();
 
-    final url =
-        "${ApiConfig.baseUrl}/students/$clientId/students?class=$standard";
+    final url = ApiConfig.studentsListUrl(clientId!, standard);
 
     final response = await http.get(
       Uri.parse(url),
@@ -72,7 +70,7 @@ class StudentService {
     String? token = await AuthService.getAccessToken();
     String? clientId = await AuthService.getClientId();
 
-    final url = "${ApiConfig.baseUrl}/students/$clientId/students/$studentId";
+    final url = ApiConfig.studentUrl(clientId!, studentId);
 
     final response = await http.get(
       Uri.parse(url),
@@ -94,7 +92,7 @@ class StudentService {
     String? token = await AuthService.getAccessToken();
     String? clientId = await AuthService.getClientId();
 
-    final url = "${ApiConfig.baseUrl}/students/$clientId/students/$studentId";
+    final url = ApiConfig.studentUrl(clientId!, studentId);
 
     final response = await http.put(
       Uri.parse(url),
@@ -106,5 +104,28 @@ class StudentService {
     );
 
     return response.statusCode == 200;
+  }
+
+  static Future<bool> deleteStudent(String studentId) async {
+    String? token = await AuthService.getAccessToken();
+    String? clientId = await AuthService.getClientId();
+
+    if (token == null || clientId == null) {
+      return false;
+    }
+
+    final url = ApiConfig.studentUrl(clientId, studentId);
+
+    try {
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: {"Authorization": "Bearer $token"},
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Error deleting student: $e");
+      return false;
+    }
   }
 }

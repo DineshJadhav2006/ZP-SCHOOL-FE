@@ -8,9 +8,7 @@ class HomeworkService {
     String? token = await AuthService.getAccessToken();
     String? clientId = await AuthService.getClientId();
 
-    // Updated URL (Query Parameter)
-    final url =
-        "${ApiConfig.baseUrl}/homework/$clientId/homework?className=$className";
+    final url = ApiConfig.homeworkByClassUrl(clientId!, className);
 
     final response = await http.get(
       Uri.parse(url),
@@ -45,7 +43,7 @@ class HomeworkService {
     String? token = await AuthService.getAccessToken();
     String? clientId = await AuthService.getClientId();
 
-    final url = "${ApiConfig.baseUrl}/homework/$clientId/homework";
+    final url = ApiConfig.homeworkUrl(clientId!);
 
     Map<String, dynamic> body = {
       "class_name": className,
@@ -81,7 +79,7 @@ class HomeworkService {
     String? token = await AuthService.getAccessToken();
     String? clientId = await AuthService.getClientId();
 
-    final url = "${ApiConfig.baseUrl}/homework/$clientId/homework/$homeworkId";
+    final url = ApiConfig.homeworkByIdUrl(clientId!, homeworkId);
 
     Map<String, dynamic> body = {
       "class_name": className,
@@ -110,7 +108,7 @@ class HomeworkService {
     String? token = await AuthService.getAccessToken();
     String? clientId = await AuthService.getClientId();
 
-    final url = "${ApiConfig.baseUrl}/homework/$clientId/homework/$homeworkId";
+    final url = ApiConfig.homeworkByIdUrl(clientId!, homeworkId);
 
     final response = await http.delete(
       Uri.parse(url),
