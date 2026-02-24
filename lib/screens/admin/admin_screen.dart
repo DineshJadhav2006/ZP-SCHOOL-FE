@@ -6,6 +6,7 @@ import 'admin_dashboard_screen.dart';
 import 'admin_students_screen.dart';
 import 'admin_teachers_screen.dart';
 import 'admin_profile_screen.dart';
+import 'notices_screen.dart';
 
 class AdminScreen extends StatefulWidget {
   @override
@@ -86,6 +87,10 @@ class _AdminScreenState extends State<AdminScreen>
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {},
+        ),
         titleSpacing: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,15 +104,14 @@ class _AdminScreenState extends State<AdminScreen>
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () async {
-              await AuthService.logout();
-              Navigator.pushAndRemoveUntil(
+            icon: Icon(Icons.notifications),
+            onPressed: () {
+              Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => LoginScreen()),
-                (route) => false,
+                MaterialPageRoute(builder: (_) => NoticesScreen()),
               );
             },
+            tooltip: "Notices",
           ),
         ],
       ),

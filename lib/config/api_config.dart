@@ -53,4 +53,7 @@ class ApiConfig {
   
   static String attendanceStatisticsUrl(String date) =>
       '$baseUrl/attendance/statistics?date=$date';
+
+  // ============== NOTICE ENDPOINTS ==============
+  static String get noticesUrl => '$baseUrl/notice/notices';
 }

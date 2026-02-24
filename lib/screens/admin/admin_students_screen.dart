@@ -347,8 +347,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                           color: status == "Present" ? Colors.green : Colors.red,
                         ),
                       ),
-                      title: Text(att.studentName ?? '-'),
-                      subtitle: Text("Roll: ${att.rollNumber ?? '-'}"),
+                      title: Text(att.student.fullName),
+                      subtitle: Text("Roll: ${att.student.rollNumber ?? '-'}"),
                     );
                   },
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/teacher/class_dashboard_screen.dart';
 import 'screens/student/student_dashboard_screen.dart';
@@ -19,7 +20,7 @@ class SchoolManagementApp extends StatelessWidget {
       title: 'School Management',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: AuthCheck(),
+      home: SplashScreen(nextScreen: AuthCheck()),
     );
   }
 }
@@ -94,8 +95,8 @@ class _AuthCheckState extends State<AuthCheck> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue,
-      body: Center(child: CircularProgressIndicator(color: Colors.white)),
+      backgroundColor: Colors.white,
+      body: Center(child: CircularProgressIndicator()),
     );
   }
 }

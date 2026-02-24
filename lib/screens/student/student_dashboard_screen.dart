@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../services/student_service.dart';
 import '../../services/homework_service.dart';
+import '../../services/notice_service.dart';
+import '../../services/auth_service.dart';
 import 'home_screen.dart';
 import 'homework_screen.dart';
 import 'results_screen.dart';
 import 'profile_screen.dart';
 import 'notification_screen.dart';
+import 'student_notices_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   @override
@@ -24,6 +28,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
 
   String? studentName = "Student";
   String? studentClass = "Class";
+  int unreadCount = 0;
 
   @override
   bool get wantKeepAlive => true;
@@ -32,6 +37,20 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
   void initState() {
     super.initState();
     loadStudentData();
+    _loadUnreadCount();
+    _checkNewNotices();
+  }
+
+  Future<void> _loadUnreadCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      unreadCount = prefs.getInt('unread_notices') ?? 0;
+    });
+  }
+
+  Future<void> _checkNewNotices() async {
+    await NoticeService.updateUnreadCount();
+    _loadUnreadCount();
   }
 
   // ================= LOAD STUDENT =================
@@ -107,14 +126,44 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
 
         // Right side notification icon
         actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => NotificationScreen()),
-              );
-            },
+          Stack(
+            children: [
+              IconButton(
+                icon: Icon(Icons.notifications),
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => StudentNoticesScreen()),
+                  );
+                  _loadUnreadCount();
+                },
+              ),
+              if (unreadCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      unreadCount > 99 ? '99+' : '$unreadCount',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),

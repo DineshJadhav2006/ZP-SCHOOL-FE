@@ -10,6 +10,7 @@ import 'attendance_list_screen.dart';
 import 'add_student_screen.dart';
 import 'homework_screen.dart';
 import 'teacher_profile_screen.dart';
+import '../admin/notices_screen.dart';
 import '../login_screen.dart';
 
 class ClassDashboardScreen extends StatefulWidget {
@@ -328,6 +329,18 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => NoticesScreen()),
+              );
+            },
+            tooltip: "Notices",
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(

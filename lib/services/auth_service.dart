@@ -196,4 +196,33 @@ class AuthService {
       return null;
     }
   }
+
+  // Get Student Data
+  static Future<Map<String, dynamic>?> getStudentData() async {
+    String? token = await getAccessToken();
+    String? clientId = await getClientId();
+    String? studentId = await getStudentId();
+
+    if (token == null || clientId == null || studentId == null) {
+      return null;
+    }
+
+    final url = ApiConfig.studentUrl(clientId, studentId);
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {"Authorization": "Bearer $token"},
+      );
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        return data["student"];
+      }
+    } catch (e) {
+      print("Error fetching student data: $e");
+    }
+
+    return null;
+  }
 }

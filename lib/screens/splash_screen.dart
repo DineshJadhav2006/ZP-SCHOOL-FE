@@ -1,22 +1,23 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
+import 'dart:async';
 
 class SplashScreen extends StatefulWidget {
+  final Widget nextScreen;
+
+  const SplashScreen({required this.nextScreen});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
   @override
   void initState() {
     super.initState();
-
-    Timer(Duration(seconds: 3), () {
+    Timer(Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+        MaterialPageRoute(builder: (_) => widget.nextScreen),
       );
     });
   }
@@ -24,22 +25,12 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue,
+      backgroundColor: Colors.white,
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.school, size: 100, color: Colors.white),
-            SizedBox(height: 20),
-            Text(
-              'School Management',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ],
+        child: Image.asset(
+          'assets/logo.png',
+          width: 200,
+          height: 200,
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../teacher/add_student_screen.dart';
 import 'add_teacher_screen.dart';
 import 'admin_reports_screen.dart';
+import 'notices_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   final String adminName;
@@ -132,10 +133,15 @@ class AdminDashboardScreen extends StatelessWidget {
                 SizedBox(width: 12),
                 Expanded(
                   child: _buildActionCard(
-                    icon: Icons.settings,
-                    label: "Settings",
-                    color: Colors.purple,
-                    onTap: () {},
+                    icon: Icons.notifications,
+                    label: "Notices",
+                    color: Colors.deepOrange,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => NoticesScreen()),
+                      );
+                    },
                   ),
                 ),
               ],
