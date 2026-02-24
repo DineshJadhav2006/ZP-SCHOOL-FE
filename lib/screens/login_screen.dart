@@ -17,8 +17,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool isLoading = false;
+  bool _obscurePassword = true;
 
   void loginUser() async {
+    FocusScope.of(context).unfocus();
     if (idController.text.isEmpty || passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -143,9 +145,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: Text(LanguageService.text("school_login")),
+        backgroundColor: Colors.transparent,
+        foregroundColor: theme.primaryColor,
+        elevation: 0,
         actions: [
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -157,63 +165,143 @@ class _LoginScreenState extends State<LoginScreen> {
               PopupMenuItem(value: "en", child: Text("English")),
               PopupMenuItem(value: "mr", child: Text("मराठी")),
             ],
-            icon: Icon(Icons.language),
+            icon: Icon(Icons.language, color: theme.primaryColor),
           ),
         ],
       ),
-
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  LanguageService.text("school_login"),
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                ),
-
-                SizedBox(height: 30),
-
-                TextField(
-                  controller: idController,
-                  decoration: InputDecoration(
-                    labelText: LanguageService.text("unique_id"),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-
-                SizedBox(height: 15),
-
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: LanguageService.text("password"),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-
-                SizedBox(height: 25),
-
-                isLoading
-                    ? CircularProgressIndicator()
-                    : SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: loginUser,
-                          child: Text(
-                            LanguageService.text("login"),
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-                      ),
-              ],
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          // Background Gradient decoration
+          Container(
+            height: MediaQuery.of(context).size.height * 0.4,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  theme.primaryColor,
+                  theme.primaryColor.withOpacity(0.8),
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(40),
+                bottomRight: Radius.circular(40),
+              ),
             ),
           ),
-        ),
+          
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo or Icon
+                  Container(
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.school,
+                      size: 60,
+                      color: theme.primaryColor,
+                    ),
+                  ),
+                  
+                  SizedBox(height: 30),
+                  
+                  // Login Card
+                  Card(
+                    elevation: 8,
+                    shadowColor: Colors.black26,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            LanguageService.text("school_login"),
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.primaryColor,
+                            ),
+                          ),
+                          
+                          SizedBox(height: 30),
+                          
+                          TextField(
+                            controller: idController,
+                            decoration: InputDecoration(
+                              labelText: LanguageService.text("unique_id"),
+                              prefixIcon: Icon(Icons.person_outline),
+                            ),
+                          ),
+                          
+                          SizedBox(height: 20),
+                          
+                          TextField(
+                            controller: passwordController,
+                            obscureText: _obscurePassword,
+                            decoration: InputDecoration(
+                              labelText: LanguageService.text("password"),
+                              prefixIcon: Icon(Icons.lock_outline),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                  color: theme.primaryColor.withOpacity(0.7),
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                          
+                          SizedBox(height: 30),
+                          
+                          isLoading
+                              ? CircularProgressIndicator()
+                              : SizedBox(
+                                  width: double.infinity,
+                                  height: 55,
+                                  child: ElevatedButton(
+                                    onPressed: loginUser,
+                                    style: ElevatedButton.styleFrom(
+                                      textStyle: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    child: Text(LanguageService.text("login")),
+                                  ),
+                                ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  SizedBox(height: 20),
+                  
+                  Text(
+                    "© 2026 School Management System",
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

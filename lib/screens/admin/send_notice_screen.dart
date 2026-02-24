@@ -96,10 +96,11 @@ class _SendNoticeScreenState extends State<SendNoticeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditMode ? "Edit Notice" : "Send Notice"),
-        backgroundColor: Colors.orange,
+        backgroundColor: theme.primaryColor,
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -114,8 +115,7 @@ class _SendNoticeScreenState extends State<SendNoticeScreen> {
                       controller: titleController,
                       decoration: InputDecoration(
                         labelText: "Title *",
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.title),
+                        prefixIcon: Icon(Icons.title_rounded, color: theme.primaryColor),
                       ),
                       validator: (v) => v!.isEmpty ? "Required" : null,
                     ),
@@ -124,8 +124,7 @@ class _SendNoticeScreenState extends State<SendNoticeScreen> {
                       controller: descriptionController,
                       decoration: InputDecoration(
                         labelText: "Description *",
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.description),
+                        prefixIcon: Icon(Icons.description_outlined, color: theme.primaryColor),
                       ),
                       maxLines: 4,
                       validator: (v) => v!.isEmpty ? "Required" : null,
@@ -136,12 +135,11 @@ class _SendNoticeScreenState extends State<SendNoticeScreen> {
                       child: InputDecorator(
                         decoration: InputDecoration(
                           labelText: "Notice Date *",
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.calendar_today),
+                          prefixIcon: Icon(Icons.calendar_month_rounded, color: theme.primaryColor),
                         ),
                         child: Text(
                           DateFormat('dd MMM yyyy').format(selectedDate),
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16, color: Colors.black87),
                         ),
                       ),
                     ),
@@ -150,8 +148,7 @@ class _SendNoticeScreenState extends State<SendNoticeScreen> {
                       value: selectedRole,
                       decoration: InputDecoration(
                         labelText: "Send To *",
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.people),
+                        prefixIcon: Icon(Icons.people_alt_rounded, color: theme.primaryColor),
                       ),
                       items: [
                         DropdownMenuItem(value: "student", child: Text("Students")),
@@ -169,8 +166,7 @@ class _SendNoticeScreenState extends State<SendNoticeScreen> {
                         value: selectedClass,
                         decoration: InputDecoration(
                           labelText: "Select Class (Optional)",
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.class_),
+                          prefixIcon: Icon(Icons.school_rounded, color: theme.primaryColor),
                           hintText: "All Classes",
                         ),
                         items: [
@@ -183,14 +179,17 @@ class _SendNoticeScreenState extends State<SendNoticeScreen> {
                     SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
-                      height: 50,
+                      height: 55,
                       child: ElevatedButton.icon(
                         onPressed: _sendNotice,
-                        icon: Icon(isEditMode ? Icons.save : Icons.send),
-                        label: Text(isEditMode ? "Update Notice" : "Send Notice", style: TextStyle(fontSize: 16)),
+                        icon: Icon(isEditMode ? Icons.check_circle_rounded : Icons.send_rounded),
+                        label: Text(isEditMode ? "Update Notice" : "Send Notice", style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
+                          backgroundColor: theme.primaryColor,
                           foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          elevation: 4,
+                          shadowColor: theme.primaryColor.withOpacity(0.3),
                         ),
                       ),
                     ),

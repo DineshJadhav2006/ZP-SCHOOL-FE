@@ -80,10 +80,12 @@ class _NoticesScreenState extends State<NoticesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text("Notices"),
-        backgroundColor: Colors.deepOrange,
+        title: Text("School Notices"),
+        backgroundColor: theme.primaryColor,
         actions: [
           IconButton(
             icon: Icon(selectedDate != null ? Icons.filter_alt : Icons.filter_alt_outlined),
@@ -110,17 +112,6 @@ class _NoticesScreenState extends State<NoticesScreen> {
               },
               tooltip: "Clear Filter",
             ),
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () async {
-              var result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => SendNoticeScreen()),
-              );
-              if (result == true) loadNotices();
-            },
-            tooltip: "Send Notice",
-          ),
         ],
       ),
       body: isLoading
@@ -130,108 +121,97 @@ class _NoticesScreenState extends State<NoticesScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.notifications_none, size: 64, color: Colors.grey),
+                      Icon(Icons.notifications_none, size: 80, color: Colors.grey.shade300),
                       SizedBox(height: 16),
-                      Text("No notices found", style: TextStyle(color: Colors.grey)),
+                      Text("No notices found", style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
                     ],
                   ),
                 )
               : RefreshIndicator(
                   onRefresh: loadNotices,
                   child: ListView.builder(
-                    padding: EdgeInsets.all(16),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                     itemCount: notices.length,
                     itemBuilder: (context, index) {
                       var notice = notices[index];
-                      return Card(
-                        margin: EdgeInsets.only(bottom: 12),
-                        elevation: 3,
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        notice['title'] ?? '-',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 4)),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: InkWell(
+                            onTap: () => _showNoticeDetails(notice),
+                            child: Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          notice['title'] ?? '-',
+                                          style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey.shade800,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Container(
-                                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.deepOrange.shade100,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        getRoleText(notice['role'], notice['class_name']),
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.deepOrange.shade900,
-                                          fontWeight: FontWeight.w500,
+                                      Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: theme.primaryColor.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          getRoleText(notice['role'], notice['class_name']),
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: theme.primaryColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    PopupMenuButton<String>(
-                                      onSelected: (value) {
-                                        if (value == 'edit') _editNotice(notice);
-                                        if (value == 'delete') _deleteNotice(notice);
-                                      },
-                                      itemBuilder: (context) => [
-                                        PopupMenuItem(value: 'edit', child: Text('Edit')),
-                                        PopupMenuItem(value: 'delete', child: Text('Delete')),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  notice['description'] ?? '-',
-                                  style: TextStyle(color: Colors.grey.shade700),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      formatDate(notice['notice_date']),
-                                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                                    ),
-                                    SizedBox(width: 16),
-                                    Icon(Icons.access_time, size: 14, color: Colors.grey),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      formatDateTime(notice['created_at']).split(',').last.trim(),
-                                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Icon(Icons.person, size: 14, color: Colors.grey),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      "${notice['creator']?['first_name'] ?? ''} ${notice['creator']?['last_name'] ?? ''}".trim(),
-                                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                      SizedBox(width: 4),
+                                      _buildActionMenu(notice),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    notice['description'] ?? '-',
+                                    style: TextStyle(color: Colors.grey.shade600, height: 1.4),
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  SizedBox(height: 16),
+                                  Row(
+                                    children: [
+                                      _metaInfo(Icons.event, formatDate(notice['notice_date'])),
+                                      SizedBox(width: 16),
+                                      _metaInfo(Icons.history, formatDateTime(notice['created_at']).split(',').last.trim()),
+                                      Spacer(),
+                                      _metaInfo(Icons.person_outline, 
+                                        "${notice['creator']?['first_name'] ?? ''}".trim(),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
+                ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           var result = await Navigator.push(
@@ -240,9 +220,56 @@ class _NoticesScreenState extends State<NoticesScreen> {
           );
           if (result == true) loadNotices();
         },
-        backgroundColor: Colors.deepOrange,
-        child: Icon(Icons.add),
+        backgroundColor: theme.primaryColor,
+        elevation: 6,
+        child: Icon(Icons.add_comment, color: Colors.white),
       ),
+    );
+  }
+
+  Widget _metaInfo(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: Colors.grey.shade400),
+        SizedBox(width: 4),
+        Text(
+          text,
+          style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionMenu(Map<String, dynamic> notice) {
+    return PopupMenuButton<String>(
+      padding: EdgeInsets.zero,
+      icon: Icon(Icons.more_vert, size: 18, color: Colors.grey.shade400),
+      onSelected: (value) {
+        if (value == 'edit') _editNotice(notice);
+        if (value == 'delete') _deleteNotice(notice);
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'edit', 
+          child: Row(
+            children: [
+              Icon(Icons.edit_outlined, size: 18, color: Colors.blue),
+              SizedBox(width: 8),
+              Text("Edit"),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'delete', 
+          child: Row(
+            children: [
+              Icon(Icons.delete_outline, size: 18, color: Colors.red),
+              SizedBox(width: 8),
+              Text("Delete", style: TextStyle(color: Colors.red)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

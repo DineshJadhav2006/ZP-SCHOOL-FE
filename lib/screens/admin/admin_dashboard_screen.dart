@@ -30,211 +30,220 @@ class AdminDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return RefreshIndicator(
       onRefresh: () async {
         await onRefresh();
       },
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         physics: AlwaysScrollableScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// GREETING
-            Text(
-              greeting(),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              adminName,
-              style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
-            ),
-            SizedBox(height: 8),
-            Text(
-              DateFormat('EEEE, MMMM dd, yyyy').format(DateTime.now()),
-              style: TextStyle(color: Colors.grey, fontSize: 12),
-            ),
-            SizedBox(height: 24),
-
-            /// STATS CARDS
-            Text(
-              "Overview",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 12),
-            _buildStatCard(
-              title: "Total Students",
-              value: totalStudents.toString(),
-              icon: Icons.people,
-              color: Colors.blue,
-              onTap: () => onTabChange?.call(1),
-            ),
-            SizedBox(height: 12),
-            _buildStatCard(
-              title: "Total Teachers",
-              value: totalTeachers.toString(),
-              icon: Icons.school,
-              color: Colors.green,
-              onTap: () => onTabChange?.call(2),
-            ),
-            SizedBox(height: 24),
-
-            /// QUICK ACTIONS
-            Text(
-              "Quick Actions",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionCard(
-                    icon: Icons.person_add,
-                    label: "Add Student",
-                    color: Colors.blue,
-                    onTap: () async {
-                      _showClassSelectorForStudent(context);
-                    },
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _buildActionCard(
-                    icon: Icons.school,
-                    label: "Add Teacher",
-                    color: Colors.green,
-                    onTap: () async {
-                      var result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => AddTeacherScreen()),
-                      );
-                      if (result == true) onRefresh();
-                    },
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionCard(
-                    icon: Icons.assessment,
-                    label: "Reports",
-                    color: Colors.orange,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => AdminReportsScreen()),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _buildActionCard(
-                    icon: Icons.notifications,
-                    label: "Notices",
-                    color: Colors.deepOrange,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => NoticesScreen()),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
+            _buildWelcomeHeader(theme),
+            SizedBox(height: 30),
+            _buildSectionHeader("School Overview"),
+            SizedBox(height: 16),
+            _buildStatsGrid(theme),
+            SizedBox(height: 32),
+            _buildSectionHeader("Quick Actions"),
+            SizedBox(height: 16),
+            _buildActionGrid(context, theme),
+            SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required Color color,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildWelcomeHeader(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "${greeting()},",
+          style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+        ),
+        Text(
+          adminName,
+          style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: theme.primaryColor),
+        ),
+        SizedBox(height: 6),
+        Row(
+          children: [
+            Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey.shade500),
+            SizedBox(width: 6),
+            Text(
+              DateFormat('EEEE, dd MMMM').format(DateTime.now()),
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+    );
+  }
+
+  Widget _buildStatsGrid(ThemeData theme) {
+    return Row(
+      children: [
+        Expanded(
+          child: _statCard(
+            "Total Students",
+            totalStudents.toString(),
+            Colors.blue,
+            Icons.people_alt_rounded,
+            () => onTabChange?.call(1),
+          ),
+        ),
+        SizedBox(width: 16),
+        Expanded(
+          child: _statCard(
+            "Total Teachers",
+            totalTeachers.toString(),
+            Colors.green,
+            Icons.school_rounded,
+            () => onTabChange?.call(2),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _statCard(String title, String value, Color color, IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
-      child: Card(
-        elevation: 4,
-        child: Container(
-          height: 90,
-          padding: EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: color, size: 32),
-              SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      value,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      title,
-                      style: TextStyle(fontSize: 12),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+      child: Container(
+        padding: EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(color: color.withOpacity(0.08), blurRadius: 15, offset: Offset(0, 8)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            SizedBox(height: 20),
+            Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+            Text(title, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildActionCard({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildActionGrid(BuildContext context, ThemeData theme) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _actionCard(
+                Icons.person_add_rounded,
+                "Add Student",
+                Colors.indigo,
+                () => _showClassSelectorForStudent(context),
+              ),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: _actionCard(
+                Icons.group_add_rounded,
+                "Add Teacher",
+                Colors.teal,
+                () async {
+                  var result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => AddTeacherScreen()),
+                  );
+                  if (result == true) onRefresh();
+                },
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _actionCard(
+                Icons.analytics_rounded,
+                "Reports",
+                Colors.amber.shade700,
+                () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => AdminReportsScreen()));
+                },
+              ),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: _actionCard(
+                Icons.campaign_rounded,
+                "Notices",
+                Colors.orange.shade800,
+                () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => NoticesScreen()));
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _actionCard(IconData icon, String label, Color color, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
-      child: Card(
-        elevation: 2,
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 28),
+      child: Container(
+        height: 110,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(color: color.withOpacity(0.3), blurRadius: 12, offset: Offset(0, 6)),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -10,
+              bottom: -10,
+              child: Icon(icon, size: 80, color: Colors.white.withOpacity(0.15)),
+            ),
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
+                    child: Icon(icon, color: Colors.white, size: 22),
+                  ),
+                  Text(
+                    label,
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                ],
               ),
-              SizedBox(height: 8),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -77,143 +77,152 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
   }
 
   Widget homeworkCard(Map<String, dynamic> hw) {
+    final theme = Theme.of(context);
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      elevation: 3,
+      elevation: 0,
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: theme.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.menu_book, color: theme.primaryColor, size: 24),
+                ),
+                SizedBox(width: 16),
                 Expanded(
-                  child: Text(
-                    hw["subject_name"] ?? "Subject",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade700,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hw["subject_name"] ?? "Subject",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade900,
+                        ),
+                      ),
+                      Text(
+                        formatDate(hw["homework_date"]),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: theme.primaryColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit, color: Colors.blue, size: 20),
-                      onPressed: () async {
-                        bool? result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => EditHomeworkScreen(homework: hw),
-                          ),
-                        );
-                        if (result == true) {
-                          loadHomework();
-                        }
-                      },
-                      tooltip: "Edit",
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red, size: 20),
-                      onPressed: () => deleteHomework(hw["id"]),
-                      tooltip: "Delete",
-                    ),
-                  ],
+                _actionButton(
+                  icon: Icons.edit_outlined,
+                  color: Colors.blue,
+                  onTap: () async {
+                    bool? result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EditHomeworkScreen(homework: hw),
+                      ),
+                    );
+                    if (result == true) loadHomework();
+                  },
+                ),
+                SizedBox(width: 8),
+                _actionButton(
+                  icon: Icons.delete_outline,
+                  color: Colors.red,
+                  onTap: () => deleteHomework(hw["id"]),
                 ),
               ],
             ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                formatDate(hw["homework_date"]),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.orange.shade900,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            SizedBox(height: 12),
+            SizedBox(height: 16),
             Text(
               hw["homework_text"] ?? "",
-              style: TextStyle(fontSize: 15),
+              style: TextStyle(fontSize: 15, color: Colors.grey.shade700, height: 1.4),
             ),
+            SizedBox(height: 16),
+            Divider(height: 1),
             SizedBox(height: 12),
             Row(
               children: [
-                Icon(Icons.person, size: 16, color: Colors.grey),
+                Icon(Icons.person_outline, size: 16, color: Colors.grey),
                 SizedBox(width: 4),
                 Text(
                   "By: ${hw["teacher"]?["first_name"] ?? ""} ${hw["teacher"]?["last_name"] ?? ""}",
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade700,
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                 ),
+                Spacer(),
+                if (hw["attachment_url"] != null && hw["attachment_url"].isNotEmpty)
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.attach_file, size: 14, color: Colors.blue),
+                        SizedBox(width: 4),
+                        Text(
+                          "Files",
+                          style: TextStyle(fontSize: 11, color: Colors.blue, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
-            if (hw["attachment_url"] != null && hw["attachment_url"].isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  children: [
-                    Icon(Icons.attach_file, size: 16, color: Colors.blue),
-                    SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        "Attachment",
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
           ],
         ),
       ),
     );
   }
 
+  Widget _actionButton({required IconData icon, required Color color, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, color: color, size: 20),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: loadHomework,
               child: homeworkList.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.book_outlined, size: 80, color: Colors.grey),
-                          SizedBox(height: 16),
-                          Text(
-                            "No Homework Found",
-                            style: TextStyle(fontSize: 18, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    )
+                  ? _buildEmptyState()
                   : ListView.builder(
-                      padding: EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.symmetric(vertical: 20),
                       itemCount: homeworkList.length,
                       itemBuilder: (context, index) {
                         return homeworkCard(homeworkList[index]);
                       },
                     ),
             ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           bool? result = await Navigator.push(
             context,
@@ -221,11 +230,28 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
               builder: (_) => AddHomeworkScreen(className: widget.className),
             ),
           );
-          if (result == true) {
-            loadHomework();
-          }
+          if (result == true) loadHomework();
         },
-        child: Icon(Icons.add),
+        backgroundColor: theme.primaryColor,
+        icon: Icon(Icons.add),
+        label: Text("Post Homework", style: TextStyle(fontWeight: FontWeight.bold)),
+        elevation: 4,
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.assignment_outlined, size: 80, color: Colors.grey.shade300),
+          SizedBox(height: 16),
+          Text(
+            "No Homework Posted",
+            style: TextStyle(fontSize: 16, color: Colors.grey.shade500),
+          ),
+        ],
       ),
     );
   }

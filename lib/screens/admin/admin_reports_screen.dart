@@ -138,155 +138,231 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text("Attendance Reports"),
-        backgroundColor: Colors.purple,
+        title: Text("School Reports"),
+        backgroundColor: theme.primaryColor,
+        elevation: 0,
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Card(
-                    elevation: 4,
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.calendar_today, color: Colors.purple),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("Selected Date", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      DateFormat('dd MMM yyyy').format(selectedDate),
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              ElevatedButton.icon(
-                                onPressed: _selectDate,
-                                icon: Icon(Icons.edit_calendar, size: 18),
-                                label: Text("Change"),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.purple,
-                                  foregroundColor: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    Text("View Class-wise", style: TextStyle(fontWeight: FontWeight.w500)),
-                                    SizedBox(width: 8),
-                                    Switch(
-                                      value: isClassWiseView,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          isClassWiseView = value;
-                                          if (value && selectedClass == null) {
-                                            selectedClass = "1st";
-                                          }
-                                        });
-                                        loadStatistics();
-                                        loadLast7DaysData();
-                                      },
-                                      activeColor: Colors.purple,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (isClassWiseView)
-                                ElevatedButton(
-                                  onPressed: _showClassSelector,
-                                  child: Text(selectedClass ?? "Select Class"),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.purple.shade100,
-                                    foregroundColor: Colors.purple,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 24),
-                  Text(
-                    "Attendance Statistics",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          "Total Students",
-                          totalStudents.toString(),
-                          Colors.blue,
-                          Icons.people,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: _buildStatCard(
-                          "Present",
-                          presentStudents.toString(),
-                          Colors.green,
-                          Icons.check_circle,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          "Absent",
-                          absentStudents.toString(),
-                          Colors.red,
-                          Icons.cancel,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: _buildStatCard(
-                          "Attendance %",
-                          totalStudents > 0
-                              ? "${((presentStudents / totalStudents) * 100).toStringAsFixed(1)}%"
-                              : "0%",
-                          Colors.orange,
-                          Icons.percent,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 24),
-                  Text(
-                    "Last 7 Days Attendance",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 16),
-                  last7DaysData.isEmpty
-                      ? Center(child: CircularProgressIndicator())
-                      : _buildAttendanceGraph(),
-                ],
+          : RefreshIndicator(
+              onRefresh: () async {
+                await loadStatistics();
+                await loadLast7DaysData();
+              },
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildDateSelector(theme),
+                    SizedBox(height: 30),
+                    _buildSectionHeader("Today's Overview"),
+                    SizedBox(height: 16),
+                    _buildStatsGrid(theme),
+                    SizedBox(height: 32),
+                    _buildSectionHeader("Attendance Trends (7 Days)"),
+                    SizedBox(height: 16),
+                    _buildAttendanceGraph(theme),
+                    SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+    );
+  }
+
+  Widget _buildDateSelector(ThemeData theme) {
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: Offset(0, 8)),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(color: theme.primaryColor.withOpacity(0.1), shape: BoxShape.circle),
+                child: Icon(Icons.calendar_today, color: theme.primaryColor, size: 20),
+              ),
+              SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Report Date", style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                  Text(DateFormat('dd MMMM yyyy').format(selectedDate), 
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Spacer(),
+              IconButton(onPressed: _selectDate, icon: Icon(Icons.edit_calendar, color: theme.primaryColor)),
+            ],
+          ),
+          Divider(height: 32),
+          Row(
+            children: [
+              Text("Class-wise View", style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
+              SizedBox(width: 12),
+              Switch.adaptive(
+                value: isClassWiseView,
+                onChanged: (value) {
+                  setState(() {
+                    isClassWiseView = value;
+                    if (value && selectedClass == null) selectedClass = "1st";
+                  });
+                  loadStatistics();
+                  loadLast7DaysData();
+                },
+                activeColor: theme.primaryColor,
+              ),
+              if (isClassWiseView) ...[
+                Spacer(),
+                GestureDetector(
+                  onTap: _showClassSelector,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: theme.primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(selectedClass ?? "Select", 
+                            style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold, fontSize: 13)),
+                        Icon(Icons.unfold_more, size: 14, color: theme.primaryColor),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsGrid(ThemeData theme) {
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      children: [
+        _statCard("Total Students", totalStudents.toString(), Colors.blue, Icons.people_outline),
+        _statCard("Present Today", presentStudents.toString(), Colors.green, Icons.check_circle_outline),
+        _statCard("Absent Today", absentStudents.toString(), Colors.red, Icons.cancel_outlined),
+        _statCard("Efficiency", totalStudents > 0 ? "${((presentStudents / totalStudents) * 100).toStringAsFixed(1)}%" : "0%",
+            Colors.orange, Icons.insights),
+      ],
+    );
+  }
+
+  Widget _statCard(String title, String value, Color color, IconData icon) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: color.withOpacity(0.06), blurRadius: 10, offset: Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          SizedBox(height: 12),
+          Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+          Text(title, style: TextStyle(fontSize: 11, color: Colors.grey.shade500), textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAttendanceGraph(ThemeData theme) {
+    if (last7DaysData.isEmpty) return Center(child: CircularProgressIndicator());
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: Offset(0, 8)),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _legendItem("Present", Colors.green),
+              SizedBox(width: 24),
+              _legendItem("Absent", Colors.red),
+            ],
+          ),
+          SizedBox(height: 24),
+          _customChart(theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _legendItem(String label, Color color) {
+    return Row(
+      children: [
+        Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        SizedBox(width: 6),
+        Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+      ],
+    );
+  }
+
+  Widget _customChart(ThemeData theme) {
+    int maxValue = 0;
+    for (var data in last7DaysData) {
+      int total = data['present'] + data['absent'];
+      if (total > maxValue) maxValue = total;
+    }
+    if (maxValue == 0) maxValue = 1;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        height: 200,
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: last7DaysData.map((data) {
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: _buildBar(data, maxValue, theme),
+            );
+          }).toList(),
+        ),
+      ),
     );
   }
 
@@ -323,64 +399,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
     );
   }
 
-  Widget _buildAttendanceGraph() {
-    int maxValue = 0;
-    for (var data in last7DaysData) {
-      int total = data['present'] + data['absent'];
-      if (total > maxValue) maxValue = total;
-    }
-    if (maxValue == 0) maxValue = 1;
-
-    return Card(
-      elevation: 4,
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Row(
-                  children: [
-                    Container(width: 16, height: 16, color: Colors.green),
-                    SizedBox(width: 4),
-                    Text("Present", style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Container(width: 16, height: 16, color: Colors.red),
-                    SizedBox(width: 4),
-                    Text("Absent", style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Container(
-                height: 200,
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: last7DaysData.map((data) {
-                    return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: _buildBar(data, maxValue),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBar(Map<String, dynamic> data, int maxValue) {
+  Widget _buildBar(Map<String, dynamic> data, int maxValue, ThemeData theme) {
     int present = data['present'];
     int absent = data['absent'];
     DateTime date = data['date'];

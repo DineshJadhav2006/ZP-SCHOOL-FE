@@ -110,70 +110,83 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final statusColor = widget.filterStatus == "Present" ? Colors.green : Colors.red;
+
     return Scaffold(
-      appBar: AppBar(title: Text("${widget.filterStatus} Students")),
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        title: Text("${widget.filterStatus} Students"),
+        backgroundColor: theme.primaryColor,
+        elevation: 0,
+      ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : attendanceList.isEmpty
-          ? Center(child: Text("No ${widget.filterStatus} Students"))
+          ? _buildEmptyState(statusColor)
           : ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               itemCount: attendanceList.length,
               itemBuilder: (_, index) {
                 final attendance = attendanceList[index];
                 final student = attendance.student;
 
-                return Card(
-                  margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                return Container(
+                  margin: EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: Offset(0, 2)),
+                    ],
+                  ),
                   child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: widget.filterStatus == "Present"
-                          ? Colors.green.shade100
-                          : Colors.red.shade100,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    leading: Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
                       child: Icon(
-                        widget.filterStatus == "Present"
-                            ? Icons.check
-                            : Icons.close,
-                        color: widget.filterStatus == "Present"
-                            ? Colors.green
-                            : Colors.red,
+                        widget.filterStatus == "Present" ? Icons.check : Icons.close,
+                        color: statusColor,
+                        size: 24,
                       ),
                     ),
                     title: Text(
-                      "${student.firstName} ${student.middleName ?? ''} ${student.lastName}",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      "${student.firstName} ${student.lastName}",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                     ),
-                    subtitle: Text(
-                      "Roll: ${student.rollNumber ?? '-'} | Division: ${student.division}",
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        "Roll No: ${student.rollNumber ?? '-'}  •  Class: ${widget.standard}",
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                      ),
                     ),
-
-                    // UPDATED TRAILING (Call + Edit)
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        IconButton(
-                          icon: Icon(Icons.call, color: Colors.green),
-                          tooltip: "Call Student",
-                          onPressed: () {
+                        _actionButton(
+                          Icons.call, 
+                          Colors.green, 
+                          () {
                             final String phone = student.mobileNumber;
-
                             if (phone.trim().isNotEmpty) {
                               makePhoneCall(phone);
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Mobile number not available"),
-                                ),
+                                SnackBar(content: Text("Mobile number not available")),
                               );
                             }
                           },
                         ),
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () => updateAttendanceStatus(
-                            attendance.id,
-                            attendance.status,
-                          ),
-                          tooltip: "Change Status",
+                        SizedBox(width: 8),
+                        _actionButton(
+                          Icons.edit_outlined, 
+                          theme.primaryColor, 
+                          () => updateAttendanceStatus(attendance.id, attendance.status),
                         ),
                       ],
                     ),
@@ -181,6 +194,41 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                 );
               },
             ),
+    );
+  }
+
+  Widget _actionButton(IconData icon, Color color, VoidCallback onTap) {
+    return Container(
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: color, size: 20),
+        onPressed: onTap,
+        padding: EdgeInsets.zero,
+        constraints: BoxConstraints(minWidth: 40, minHeight: 40),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(Color color) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            widget.filterStatus == "Present" ? Icons.person_off_outlined : Icons.people_outline,
+            size: 80,
+            color: Colors.grey.shade200,
+          ),
+          SizedBox(height: 16),
+          Text(
+            "No ${widget.filterStatus} Students found",
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+          ),
+        ],
+      ),
     );
   }
 }

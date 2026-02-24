@@ -83,28 +83,26 @@ class _AdminScreenState extends State<AdminScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () {},
-        ),
-        titleSpacing: 0,
+        backgroundColor: theme.primaryColor,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("ZP SCHOOL MANDAVE KH", style: TextStyle(fontSize: 16)),
+            Text("ZP SCHOOL MANDAVE KH", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
             Text(
               "Admin Dashboard",
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.normal, color: Colors.white70),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications),
+            icon: Icon(Icons.notifications_none, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,
@@ -120,42 +118,42 @@ class _AdminScreenState extends State<AdminScreen>
           : IndexedStack(
               index: selectedIndex,
               children: [
-                /// DASHBOARD
                 AdminDashboardScreen(
                   adminName: adminName,
                   totalStudents: totalStudents,
                   totalTeachers: totalTeachers,
                   onRefresh: refreshData,
-                  onTabChange: (index) {
-                    setState(() => selectedIndex = index);
-                  },
+                  onTabChange: (index) => setState(() => selectedIndex = index),
                 ),
-
-                /// STUDENTS
                 AdminStudentsScreen(totalStudents: totalStudents),
-
-                /// TEACHERS
                 AdminTeachersScreen(totalTeachers: totalTeachers),
-
-                /// PROFILE
                 AdminProfileScreen(),
               ],
             ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: selectedIndex,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        onTap: (index) {
-          setState(() {
-            selectedIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Dashboard"),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: "Students"),
-          BottomNavigationBarItem(icon: Icon(Icons.school), label: "Teachers"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]),
+        child: BottomNavigationBar(
+          currentIndex: selectedIndex,
+          onTap: (index) => setState(() => selectedIndex = index),
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 0 ? Icons.dashboard : Icons.dashboard_outlined),
+              label: "Dashboard",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 1 ? Icons.people : Icons.people_outline),
+              label: "Students",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 2 ? Icons.school : Icons.school_outlined),
+              label: "Teachers",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 3 ? Icons.person : Icons.person_outline),
+              label: "Profile",
+            ),
+          ],
+        ),
       ),
     );
   }

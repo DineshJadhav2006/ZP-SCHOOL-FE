@@ -107,38 +107,111 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text("Edit Student")),
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        title: Text("Edit Student Details"),
+        backgroundColor: Colors.white,
+        foregroundColor: theme.primaryColor,
+        elevation: 0,
+        shape: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+      ),
       body: SingleChildScrollView(
+        padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            SizedBox(height: 10),
-            textField("First Name", firstName),
-            textField("Middle Name", middleName),
-            textField("Last Name", lastName),
-            textField("Parent Name", parentName),
-            textField("Mobile Number", mobile),
-            dropdownField("Gender", gender, genders, (val) => setState(() => gender = val)),
-            dropdownField("Standard", standard, standards, (val) => setState(() => standard = val)),
-            textField("Division", division),
-            textField("Category", category),
-            textField("Address", address),
-            SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: updateStudent,
-                  child: Text("Update", style: TextStyle(fontSize: 16)),
+            _buildFormSection(
+              "Personal Details",
+              [
+                _buildTextField("First Name", firstName, Icons.person_outline),
+                _buildTextField("Middle Name", middleName, Icons.person_outline),
+                _buildTextField("Last Name", lastName, Icons.person_outline),
+                _buildDropdownField("Gender", gender, genders, (val) => setState(() => gender = val), Icons.wc_outlined),
+              ],
+            ),
+            SizedBox(height: 24),
+            _buildFormSection(
+              "Academic Information",
+              [
+                _buildDropdownField("Standard", standard, standards, (val) => setState(() => standard = val), Icons.school_outlined),
+                _buildTextField("Division", division, Icons.meeting_room_outlined),
+                _buildTextField("Category", category, Icons.category_outlined),
+              ],
+            ),
+            SizedBox(height: 24),
+            _buildFormSection(
+              "Parent & Contact",
+              [
+                _buildTextField("Parent Name", parentName, Icons.family_restroom_outlined),
+                _buildTextField("Mobile Number", mobile, Icons.phone_android_outlined),
+                _buildTextField("Address", address, Icons.location_on_outlined, maxLines: 2),
+              ],
+            ),
+            SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: updateStudent,
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 4,
                 ),
+                child: Text("Update Student", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 40),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFormSection(String title, List<Widget> children) {
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.indigo),
+          ),
+          SizedBox(height: 20),
+          ...children.expand((element) => [element, SizedBox(height: 16)]).toList()..removeLast(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {int maxLines = 1}) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+      ),
+    );
+  }
+
+  Widget _buildDropdownField(String label, String? value, List<String> items, Function(String?) onChanged, IconData icon) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+      ),
+      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      onChanged: onChanged,
     );
   }
 }

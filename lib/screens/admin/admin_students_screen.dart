@@ -87,197 +87,257 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          color: Colors.blue.shade50,
+    final theme = Theme.of(context);
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      body: Column(
+        children: [
+          _buildHeader(theme),
+          Expanded(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : students.isEmpty
+                    ? _buildEmptyState()
+                    : RefreshIndicator(
+                        onRefresh: () => loadClassData(selectedClass!),
+                        child: CustomScrollView(
+                          slivers: [
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildStatCard(
+                                        "Total",
+                                        totalStudents.toString(),
+                                        theme.primaryColor,
+                                        Icons.people_outline,
+                                        () {},
+                                      ),
+                                    ),
+                                    SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildStatCard(
+                                        "Present",
+                                        todayPresent.toString(),
+                                        Colors.green,
+                                        Icons.check_circle_outline,
+                                        () => _showFilteredStudents("Present"),
+                                      ),
+                                    ),
+                                    SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildStatCard(
+                                        "Absent",
+                                        todayAbsent.toString(),
+                                        Colors.red,
+                                        Icons.highlight_off,
+                                        () => _showFilteredStudents("Absent"),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            SliverPadding(
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              sliver: SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                  (context, index) {
+                                    var student = students[index];
+                                    String name = "${student['first_name']} ${student['last_name']}".trim();
+                                    return Container(
+                                      margin: EdgeInsets.only(bottom: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(16),
+                                        boxShadow: [
+                                          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 4)),
+                                        ],
+                                      ),
+                                      child: ListTile(
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        leading: CircleAvatar(
+                                          radius: 25,
+                                          backgroundColor: theme.primaryColor.withOpacity(0.1),
+                                          child: Text(
+                                            student['roll_number']?.toString() ?? '?',
+                                            style: TextStyle(
+                                              color: theme.primaryColor,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                        title: Text(
+                                          name,
+                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                        ),
+                                        subtitle: Padding(
+                                          padding: const EdgeInsets.only(top: 4),
+                                          child: Row(
+                                            children: [
+                                              _miniTag("ID: ${student['unique_id'] ?? '-'}"),
+                                              SizedBox(width: 8),
+                                              _miniTag("Class: ${student['standard'] ?? '-'}"),
+                                            ],
+                                          ),
+                                        ),
+                                        trailing: _buildStudentActionMenu(student),
+                                        onTap: () => _showStudentDetails(student),
+                                      ),
+                                    );
+                                  },
+                                  childCount: students.length,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(ThemeData theme) {
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: theme.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.school, color: theme.primaryColor, size: 24),
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Student Directory",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  "Managing Class $selectedClass",
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _showClassSelector,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: theme.primaryColor.withOpacity(0.3)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Text("Change", style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold, fontSize: 13)),
+                    Icon(Icons.unfold_more, color: theme.primaryColor, size: 16),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 8),
+          IconButton(
+            icon: Icon(Icons.person_add_outlined, color: theme.primaryColor),
+            onPressed: () async {
+              var result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => AddStudentScreen(standard: selectedClass!)),
+              );
+              if (result == true) loadClassData(selectedClass!);
+            },
+            tooltip: "Add Student",
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _miniTag(String text) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 10, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.people_outline, size: 80, color: Colors.grey.shade300),
+          SizedBox(height: 16),
+          Text(
+            "No students found in $selectedClass",
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStudentActionMenu(Map<String, dynamic> student) {
+    return PopupMenuButton<String>(
+      onSelected: (value) async {
+        if (value == 'edit') {
+          var result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => EditStudentScreen(student: student)),
+          );
+          if (result == true) loadClassData(selectedClass!);
+        } else if (value == 'delete') {
+          _confirmDelete(student);
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'edit',
           child: Row(
             children: [
-              Icon(Icons.class_, color: Colors.blue, size: 28),
+              Icon(Icons.edit_outlined, color: Colors.blue, size: 20),
               SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  "Class: $selectedClass",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade900,
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.person_add, color: Colors.blue),
-                onPressed: () async {
-                  var result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => AddStudentScreen(standard: selectedClass!),
-                    ),
-                  );
-                  if (result == true) loadClassData(selectedClass!);
-                },
-                tooltip: "Add Student",
-              ),
-              ElevatedButton.icon(
-                onPressed: _showClassSelector,
-                icon: Icon(Icons.swap_horiz, size: 20),
-                label: Text("Switch"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                ),
-              ),
+              Text('Edit Info'),
             ],
           ),
         ),
-
-        Expanded(
-          child: isLoading
-              ? Center(child: CircularProgressIndicator())
-              : students.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.people_outline,
-                              size: 64, color: Colors.grey),
-                          SizedBox(height: 16),
-                          Text(
-                            "No students found in $selectedClass",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    )
-                  : CustomScrollView(
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: _buildStatCard(
-                                    "Total",
-                                    totalStudents.toString(),
-                                    Colors.blue,
-                                    Icons.people,
-                                    () {},
-                                  ),
-                                ),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildStatCard(
-                                    "Present",
-                                    todayPresent.toString(),
-                                    Colors.green,
-                                    Icons.check_circle,
-                                    () => _showFilteredStudents("Present"),
-                                  ),
-                                ),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildStatCard(
-                                    "Absent",
-                                    todayAbsent.toString(),
-                                    Colors.red,
-                                    Icons.cancel,
-                                    () => _showFilteredStudents("Absent"),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              var student = students[index];
-                              String name =
-                                  "${student['first_name']} ${student['middle_name'] ?? ''} ${student['last_name']}"
-                                      .trim();
-                              return Card(
-                                margin: EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 6),
-                                child: ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Colors.blue.shade100,
-                                    child: Text(
-                                      student['roll_number']?.toString() ?? '?',
-                                      style: TextStyle(
-                                        color: Colors.blue,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  title: Text(
-                                    name,
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(height: 4),
-                                      Text(
-                                          "ID: ${student['unique_id'] ?? '-'}"),
-                                      Text(
-                                          "Class: ${student['standard'] ?? '-'}"),
-                                    ],
-                                  ),
-                                  trailing: PopupMenuButton<String>(
-                                    icon: Icon(Icons.more_vert),
-                                    onSelected: (value) async {
-                                      if (value == 'edit') {
-                                        var result = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => EditStudentScreen(student: student),
-                                          ),
-                                        );
-                                        if (result == true) loadClassData(selectedClass!);
-                                      } else if (value == 'delete') {
-                                        _confirmDelete(student);
-                                      }
-                                    },
-                                    itemBuilder: (context) => [
-                                      PopupMenuItem(
-                                        value: 'edit',
-                                        child: Row(
-                                          children: [
-                                            Icon(Icons.edit, color: Colors.blue, size: 20),
-                                            SizedBox(width: 12),
-                                            Text('Edit'),
-                                          ],
-                                        ),
-                                      ),
-                                      PopupMenuItem(
-                                        value: 'delete',
-                                        child: Row(
-                                          children: [
-                                            Icon(Icons.delete, color: Colors.red, size: 20),
-                                            SizedBox(width: 12),
-                                            Text('Delete'),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    _showStudentDetails(student);
-                                  },
-                                ),
-                              );
-                            },
-                            childCount: students.length,
-                          ),
-                        ),
-                      ],
-                    ),
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(Icons.delete_outline, color: Colors.red, size: 20),
+              SizedBox(width: 12),
+              Text('Delete Student', style: TextStyle(color: Colors.red)),
+            ],
+          ),
         ),
       ],
+      icon: Icon(Icons.more_vert, color: Colors.grey.shade400),
     );
   }
 

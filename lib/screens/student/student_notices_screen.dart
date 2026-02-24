@@ -97,10 +97,11 @@ class _StudentNoticesScreenState extends State<StudentNoticesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Notices"),
-        backgroundColor: Colors.deepOrange,
+        title: Text("School Notices"),
+        backgroundColor: theme.primaryColor,
         actions: [
           IconButton(
             icon: Icon(selectedDate != null ? Icons.filter_alt : Icons.filter_alt_outlined),
@@ -149,64 +150,80 @@ class _StudentNoticesScreenState extends State<StudentNoticesScreen> {
                     itemCount: notices.length,
                     itemBuilder: (context, index) {
                       var notice = notices[index];
-                      return Card(
-                        margin: EdgeInsets.only(bottom: 12),
-                        elevation: 3,
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                                Text(
-                                  notice['title'] ?? '-',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4)),
+                          ],
+                          border: Border.all(color: Colors.grey.shade100, width: 1),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => _showNoticeDetails(notice),
+                          child: Padding(
+                            padding: EdgeInsets.all(18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        notice['title'] ?? '-',
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey.shade800,
+                                        ),
+                                      ),
+                                    ),
+                                    Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300),
+                                  ],
                                 ),
-                                SizedBox(height: 8),
+                                SizedBox(height: 10),
                                 Text(
                                   notice['description'] ?? '-',
-                                  style: TextStyle(color: Colors.grey.shade700),
+                                  style: TextStyle(color: Colors.grey.shade600, height: 1.4, fontSize: 14),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                SizedBox(height: 8),
+                                SizedBox(height: 18),
                                 Row(
                                   children: [
-                                    Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      formatDate(notice['notice_date']),
-                                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                                    ),
+                                    _metaInfo(Icons.event_note_rounded, formatDate(notice['notice_date'])),
                                     SizedBox(width: 16),
-                                    Icon(Icons.access_time, size: 14, color: Colors.grey),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      formatDateTime(notice['created_at']).split(',').last.trim(),
-                                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Icon(Icons.person, size: 14, color: Colors.grey),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      "${notice['creator']?['first_name'] ?? ''} ${notice['creator']?['last_name'] ?? ''}".trim(),
-                                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                                    _metaInfo(Icons.history_rounded, formatDateTime(notice['created_at']).split(',').last.trim()),
+                                    Spacer(),
+                                    _metaInfo(Icons.person_pin_circle_rounded, 
+                                      "${notice['creator']?['first_name'] ?? ''}".trim(),
                                     ),
                                   ],
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
+                ),
+    );
+  }
+
+  Widget _metaInfo(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: Colors.grey.shade400),
+        SizedBox(width: 4),
+        Text(
+          text,
+          style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+        ),
+      ],
     );
   }
 

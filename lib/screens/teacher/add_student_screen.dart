@@ -124,202 +124,216 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text("Add Student")),
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        title: Text("Add New Student"),
+        backgroundColor: theme.primaryColor,
+        elevation: 0,
+      ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(20),
               child: Form(
                 key: _formKey,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextFormField(
-                      controller: firstName,
-                      decoration: InputDecoration(
-                        labelText: "First Name *",
-                        border: OutlineInputBorder(),
+                    _sectionHeader(Icons.person, "Basic Information"),
+                    _buildFormCard([
+                      _buildTextField(firstName, "First Name *", Icons.person_outline),
+                      _buildTextField(middleName, "Middle Name", Icons.person_outline),
+                      _buildTextField(lastName, "Last Name *", Icons.person_outline),
+                      _buildDropdownField(
+                        value: gender,
+                        label: "Gender *",
+                        items: ["male", "female"],
+                        icon: Icons.wc,
+                        onChanged: (v) => setState(() => gender = v),
                       ),
-                      validator: (v) => v!.isEmpty ? "Required" : null,
-                    ),
-                    SizedBox(height: 12),
-                    TextFormField(
-                      controller: middleName,
-                      decoration: InputDecoration(
-                        labelText: "Middle Name",
-                        border: OutlineInputBorder(),
+                      _buildDatePicker(
+                        label: "Date of Birth *",
+                        value: dateOfBirth,
+                        onTap: selectDateOfBirth,
                       ),
-                    ),
-                    SizedBox(height: 12),
-                    TextFormField(
-                      controller: lastName,
-                      decoration: InputDecoration(
-                        labelText: "Last Name *",
-                        border: OutlineInputBorder(),
+                    ]),
+                    
+                    SizedBox(height: 24),
+                    _sectionHeader(Icons.school, "Academic Details"),
+                    _buildFormCard([
+                      _buildTextField(rollNumber, "Roll Number *", Icons.numbers, keyboardType: TextInputType.number),
+                      _buildDropdownField(
+                        value: division,
+                        label: "Division",
+                        items: ["A", "B", "C", "D"],
+                        icon: Icons.grid_view,
+                        onChanged: (v) => setState(() => division = v),
                       ),
-                      validator: (v) => v!.isEmpty ? "Required" : null,
-                    ),
-                    SizedBox(height: 12),
-                    TextFormField(
-                      controller: mobileNumber,
-                      decoration: InputDecoration(
-                        labelText: "Mobile Number *",
-                        border: OutlineInputBorder(),
+                      _buildDatePicker(
+                        label: "Admission Date *",
+                        value: admissionDate,
+                        onTap: selectAdmissionDate,
+                      ),
+                      _buildDropdownField(
+                        value: category,
+                        label: "Category",
+                        items: ["General", "OBC", "SC", "ST", "Other"],
+                        icon: Icons.category,
+                        onChanged: (v) => setState(() => category = v),
+                      ),
+                    ]),
+
+                    SizedBox(height: 24),
+                    _sectionHeader(Icons.contact_phone, "Contact & Other"),
+                    _buildFormCard([
+                      _buildTextField(
+                        mobileNumber, 
+                        "Mobile Number *", 
+                        Icons.phone_android, 
                         prefixText: "+91 ",
-                        hintText: "9876543210",
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
                       ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(10),
-                      ],
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return "Required";
-                        if (v.length != 10) return "Must be 10 digits";
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 12),
-                    TextFormField(
-                      controller: password,
-                      decoration: InputDecoration(
-                        labelText: "Password *",
-                        border: OutlineInputBorder(),
-                        hintText: "student123",
+                      _buildTextField(parentName, "Parent Name *", Icons.family_restroom),
+                      _buildTextField(
+                        aadharNumber, 
+                        "Aadhar Number", 
+                        Icons.credit_card,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(12)],
                       ),
-                      validator: (v) => v!.isEmpty ? "Required" : null,
-                    ),
-                    SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: gender,
-                      decoration: InputDecoration(
-                        labelText: "Gender *",
-                        border: OutlineInputBorder(),
-                      ),
-                      items: ["male", "female"]
-                          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                          .toList(),
-                      onChanged: (v) => setState(() => gender = v),
-                      validator: (v) => v == null ? "Required" : null,
-                    ),
-                    SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: division,
-                      decoration: InputDecoration(
-                        labelText: "Division",
-                        border: OutlineInputBorder(),
-                      ),
-                      items: ["A", "B", "C", "D"]
-                          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                          .toList(),
-                      onChanged: (v) => setState(() => division = v),
-                    ),
-                    SizedBox(height: 12),
-                    TextFormField(
-                      controller: rollNumber,
-                      decoration: InputDecoration(
-                        labelText: "Roll Number *",
-                        border: OutlineInputBorder(),
-                        hintText: "22",
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (v) => v!.isEmpty ? "Required" : null,
-                    ),
-                    SizedBox(height: 12),
-                    TextFormField(
-                      controller: parentName,
-                      decoration: InputDecoration(
-                        labelText: "Parent Name *",
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (v) => v!.isEmpty ? "Required" : null,
-                    ),
-                    SizedBox(height: 12),
-                    TextFormField(
-                      controller: aadharNumber,
-                      decoration: InputDecoration(
-                        labelText: "Aadhar Number",
-                        border: OutlineInputBorder(),
-                        hintText: "123456789012",
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(12),
-                      ],
-                      validator: (v) {
-                        if (v != null && v.isNotEmpty && v.length != 12) {
-                          return "Must be 12 digits";
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: category,
-                      decoration: InputDecoration(
-                        labelText: "Category",
-                        border: OutlineInputBorder(),
-                      ),
-                      items: ["General", "OBC", "SC", "ST", "Other"]
-                          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                          .toList(),
-                      onChanged: (v) => setState(() => category = v),
-                    ),
-                    SizedBox(height: 12),
-                    InkWell(
-                      onTap: selectDateOfBirth,
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: "Date of Birth *",
-                          border: OutlineInputBorder(),
-                          suffixIcon: Icon(Icons.calendar_today),
-                        ),
-                        child: Text(
-                          formatDate(dateOfBirth),
-                          style: TextStyle(
-                            color: dateOfBirth == null ? Colors.grey : Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    InkWell(
-                      onTap: selectAdmissionDate,
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: "Admission Date *",
-                          border: OutlineInputBorder(),
-                          suffixIcon: Icon(Icons.calendar_today),
-                        ),
-                        child: Text(
-                          formatDate(admissionDate),
-                          style: TextStyle(color: Colors.black),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    TextFormField(
-                      controller: address,
-                      decoration: InputDecoration(
-                        labelText: "Address",
-                        border: OutlineInputBorder(),
-                      ),
-                      maxLines: 2,
-                    ),
-                    SizedBox(height: 20),
-                    SizedBox(
+                      _buildTextField(password, "Login Password *", Icons.lock_outline),
+                      _buildTextField(address, "Address", Icons.home_outlined, maxLines: 2),
+                    ]),
+
+                    SizedBox(height: 40),
+                    Container(
                       width: double.infinity,
-                      height: 50,
+                      height: 55,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.primaryColor.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: Offset(0, 6),
+                          ),
+                        ],
+                      ),
                       child: ElevatedButton(
                         onPressed: addStudent,
-                        child: Text("Add Student", style: TextStyle(fontSize: 16)),
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: Text("Register Student", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
+                    SizedBox(height: 40),
                   ],
                 ),
               ),
             ),
+    );
+  }
+
+  Widget _sectionHeader(IconData icon, String title) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: theme.primaryColor),
+          SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormCard(List<Widget> children) {
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        children: children.expand((w) => [w, SizedBox(height: 16)]).toList()..removeLast(),
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller, 
+    String label, 
+    IconData icon, {
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    int maxLines = 1,
+    String? prefixText,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20),
+        prefixText: prefixText,
+      ),
+      validator: (v) => (label.contains('*') && (v == null || v.isEmpty)) ? "Required" : null,
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String? value,
+    required String label,
+    required List<String> items,
+    required IconData icon,
+    required Function(String?) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20),
+      ),
+      validator: (v) => (label.contains('*') && v == null) ? "Required" : null,
+    );
+  }
+
+  Widget _buildDatePicker({
+    required String label,
+    required DateTime? value,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(Icons.calendar_today, size: 20),
+        ),
+        child: Text(
+          formatDate(value),
+          style: TextStyle(
+            color: value == null ? Colors.grey.shade500 : Colors.black87,
+            fontSize: 15,
+          ),
+        ),
+      ),
     );
   }
 }

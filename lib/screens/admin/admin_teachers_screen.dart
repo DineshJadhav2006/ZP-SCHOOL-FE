@@ -43,138 +43,195 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          color: Colors.green.shade50,
+    final theme = Theme.of(context);
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      body: Column(
+        children: [
+          _buildHeader(theme),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: loadTeachers,
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : teachers.isEmpty
+                      ? _buildEmptyState()
+                      : ListView.builder(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                          itemCount: teachers.length,
+                          itemBuilder: (context, index) {
+                            var teacher = teachers[index];
+                            String name = "${teacher['first_name']} ${teacher['last_name']}".trim();
+                            return _buildTeacherCard(teacher, name, theme);
+                          },
+                        ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(ThemeData theme) {
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: theme.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.school, color: theme.primaryColor, size: 24),
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Faculty Directory",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  "Total Staff: ${teachers.length}",
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.person_add_outlined, color: theme.primaryColor),
+            onPressed: () async {
+              var result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => AddTeacherScreen()),
+              );
+              if (result == true) loadTeachers();
+            },
+            tooltip: "Add Teacher",
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.school_outlined, size: 80, color: Colors.grey.shade300),
+          SizedBox(height: 16),
+          Text(
+            "No teachers found",
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTeacherCard(Map<String, dynamic> teacher, String name, ThemeData theme) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 4)),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: CircleAvatar(
+          radius: 25,
+          backgroundColor: theme.primaryColor.withOpacity(0.1),
+          child: Icon(Icons.person, color: theme.primaryColor),
+        ),
+        title: Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 4),
+            Text(teacher['designation'] ?? 'Staff', style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+            SizedBox(height: 4),
+            Row(
+              children: [
+                _miniTag("ID: ${teacher['unique_id'] ?? '-'}"),
+                if (teacher['is_class_teacher'] == true) ...[
+                  SizedBox(width: 8),
+                  _miniTag("Class: ${teacher['assigned_standard']}", isPrimary: true),
+                ],
+              ],
+            ),
+          ],
+        ),
+        trailing: _buildTeacherActionMenu(teacher),
+        onTap: () => _showTeacherDetails(teacher),
+      ),
+    );
+  }
+
+  Widget _miniTag(String text, {bool isPrimary = false}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: isPrimary ? Colors.indigo.shade50 : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 10, 
+          color: isPrimary ? Colors.indigo : Colors.grey.shade600, 
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTeacherActionMenu(Map<String, dynamic> teacher) {
+    return PopupMenuButton<String>(
+      onSelected: (value) async {
+        if (value == 'edit') {
+          var result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => EditTeacherScreen(teacher: teacher)),
+          );
+          if (result == true) loadTeachers();
+        } else if (value == 'delete') {
+          _confirmDelete(teacher);
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'edit',
           child: Row(
             children: [
-              Icon(Icons.school, color: Colors.green, size: 28),
+              Icon(Icons.edit_outlined, color: Colors.blue, size: 20),
               SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  "Teachers",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green.shade900,
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.person_add, color: Colors.green),
-                onPressed: () async {
-                  var result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => AddTeacherScreen()),
-                  );
-                  if (result == true) loadTeachers();
-                },
-                tooltip: "Add Teacher",
-              ),
+              Text('Edit Profile'),
             ],
           ),
         ),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: loadTeachers,
-            child: isLoading
-                ? Center(child: CircularProgressIndicator())
-                : teachers.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.school, size: 64, color: Colors.grey),
-                            SizedBox(height: 16),
-                            Text("No teachers found"),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: EdgeInsets.all(16),
-                        itemCount: teachers.length,
-                        itemBuilder: (context, index) {
-                          var teacher = teachers[index];
-                          String name =
-                              "${teacher['first_name']} ${teacher['middle_name'] ?? ''} ${teacher['last_name']}"
-                                  .trim();
-                          return Card(
-                            margin: EdgeInsets.only(bottom: 12),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.green.shade100,
-                                child: Icon(Icons.person, color: Colors.green),
-                              ),
-                              title: Text(
-                                name,
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(height: 4),
-                                  Text(teacher['designation'] ?? 'Teacher'),
-                                  Text("ID: ${teacher['unique_id'] ?? '-'}"),
-                                  if (teacher['is_class_teacher'] == true)
-                                    Text(
-                                      "Class: ${teacher['assigned_standard']} - ${teacher['assigned_division']}",
-                                      style: TextStyle(
-                                        color: Colors.blue,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              trailing: PopupMenuButton<String>(
-                                icon: Icon(Icons.more_vert),
-                                onSelected: (value) async {
-                                  if (value == 'edit') {
-                                    var result = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => EditTeacherScreen(teacher: teacher),
-                                      ),
-                                    );
-                                    if (result == true) loadTeachers();
-                                  } else if (value == 'delete') {
-                                    _confirmDelete(teacher);
-                                  }
-                                },
-                                itemBuilder: (context) => [
-                                  PopupMenuItem(
-                                    value: 'edit',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.edit, color: Colors.blue, size: 20),
-                                        SizedBox(width: 12),
-                                        Text('Edit'),
-                                      ],
-                                    ),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'delete',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.delete, color: Colors.red, size: 20),
-                                        SizedBox(width: 12),
-                                        Text('Delete'),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              onTap: () {
-                                _showTeacherDetails(teacher);
-                              },
-                            ),
-                          );
-                        },
-                      ),
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(Icons.delete_outline, color: Colors.red, size: 20),
+              SizedBox(width: 12),
+              Text('Remove Staff', style: TextStyle(color: Colors.red)),
+            ],
           ),
         ),
       ],
+      icon: Icon(Icons.more_vert, color: Colors.grey.shade400),
     );
   }
 

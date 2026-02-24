@@ -60,203 +60,172 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : admin == null
           ? Center(child: Text("Failed to load profile"))
           : RefreshIndicator(
-              onRefresh: () async {
-                await loadAdminProfile();
-              },
+              onRefresh: () async => loadAdminProfile(),
               child: SingleChildScrollView(
                 physics: AlwaysScrollableScrollPhysics(),
                 child: Column(
                   children: [
-                    // Header Section with Gradient
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.purple.shade700,
-                            Colors.purple.shade400,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: SafeArea(
-                        child: Column(
-                          children: [
-                            SizedBox(height: 20),
-                                CircleAvatar(
-                                  radius: 60,
-                                  backgroundColor: Colors.white,
-                                  child: CircleAvatar(
-                                    radius: 55,
-                                    backgroundColor: Colors.purple.shade100,
-                                    child: Icon(
-                                      Icons.admin_panel_settings,
-                                      size: 60,
-                                      color: Colors.purple.shade700,
-                                    ),
-                                  ),
-                                ),
-                            SizedBox(height: 16),
-                            Text(
-                              "${admin!["first_name"]} ${admin!["middle_name"] ?? ""} ${admin!["last_name"]}",
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              admin!["designation"] ?? "Administrator",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white.withOpacity(0.9),
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            if (admin!["unique_id"] != null)
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  "ID: ${admin!["unique_id"]}",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            SizedBox(height: 20),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 16),
-
-                    // Personal Information
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Personal Information",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    infoCard(
-                      "Mobile Number",
-                      admin!["mobile_number"] ?? "-",
-                      Icons.phone,
-                      Colors.green,
-                    ),
-                    infoCard(
-                      "Gender",
-                      admin!["gender"] ?? "-",
-                      Icons.person_outline,
-                      Colors.pink,
-                    ),
-                    infoCard(
-                      "Date of Birth",
-                      formatDate(admin!["date_of_birth"]),
-                      Icons.cake,
-                      Colors.orange,
-                    ),
-
-                    SizedBox(height: 16),
-
-                    // Professional Information
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Professional Information",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    infoCard(
-                      "Qualification",
-                      admin!["qualification"] ?? "-",
-                      Icons.school,
-                      Colors.blue,
-                    ),
-                    infoCard(
-                      "Experience",
-                      "${admin!["experience"] ?? 0} years",
-                      Icons.work,
-                      Colors.teal,
-                    ),
-                    infoCard(
-                      "Joined Date",
-                      formatDate(admin!["created_on"]),
-                      Icons.calendar_today,
-                      Colors.indigo,
-                    ),
-
+                    _buildProfileHeader(theme),
                     SizedBox(height: 24),
-
-                    // Logout Button
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            await AuthService.logout();
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(builder: (_) => LoginScreen()),
-                              (route) => false,
-                            );
-                          },
-                          icon: Icon(Icons.logout),
-                          label: Text("Logout", style: TextStyle(fontSize: 16)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-
+                    _buildSectionHeader("Personal Information"),
+                    _buildInfoGrid([
+                      _infoTile("Phone", admin!["mobile_number"] ?? "-", Icons.phone_outlined, Colors.green),
+                      _infoTile("Gender", admin!["gender"] ?? "-", Icons.person_outline, Colors.pink),
+                      _infoTile("Date of Birth", formatDate(admin!["date_of_birth"]), Icons.cake_outlined, Colors.orange),
+                    ]),
                     SizedBox(height: 24),
+                    _buildSectionHeader("Professional Information"),
+                    _buildInfoGrid([
+                      _infoTile("Qualification", admin!["qualification"] ?? "-", Icons.school_outlined, Colors.blue),
+                      _infoTile("Experience", "${admin!["experience"] ?? 0} years", Icons.work_outline, Colors.teal),
+                      _infoTile("Joined Date", formatDate(admin!["created_on"]), Icons.calendar_today_outlined, Colors.indigo),
+                    ]),
+                    SizedBox(height: 40),
+                    _buildLogoutButton(context, theme),
+                    SizedBox(height: 40),
                   ],
                 ),
               ),
             ),
+    );
+  }
+
+  Widget _buildProfileHeader(ThemeData theme) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(40), bottomRight: Radius.circular(40)),
+        boxShadow: [
+          BoxShadow(color: theme.primaryColor.withOpacity(0.3), blurRadius: 20, offset: Offset(0, 10)),
+        ],
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            SizedBox(height: 30),
+            Container(
+              padding: EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: CircleAvatar(
+                radius: 55,
+                backgroundColor: theme.primaryColor.withOpacity(0.1),
+                child: Icon(Icons.admin_panel_settings, size: 50, color: theme.primaryColor),
+              ),
+            ),
+            SizedBox(height: 16),
+            Text(
+              "${admin!["first_name"]} ${admin!["last_name"]}",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            SizedBox(height: 6),
+            Text(
+              admin!["designation"] ?? "School Administrator",
+              style: TextStyle(fontSize: 14, color: Colors.white70),
+            ),
+            SizedBox(height: 16),
+            if (admin!["unique_id"] != null)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  "ID: ${admin!["unique_id"]}",
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+            SizedBox(height: 30),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Row(
+        children: [
+          Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+          Spacer(),
+          Container(height: 1, width: 60, color: Colors.grey.shade300),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoGrid(List<Widget> children) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _infoTile(String label, String value, IconData icon, Color color) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: Offset(0, 4)),
+        ],
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        title: Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+        subtitle: Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context, ThemeData theme) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: SizedBox(
+        width: double.infinity,
+        height: 54,
+        child: ElevatedButton.icon(
+          onPressed: () async {
+            await AuthService.logout();
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => LoginScreen()),
+              (route) => false,
+            );
+          },
+          icon: Icon(Icons.power_settings_new),
+          label: Text("Logout Securely", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.red,
+            side: BorderSide(color: Colors.red.withOpacity(0.2)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 0,
+          ),
+        ),
+      ),
     );
   }
 }

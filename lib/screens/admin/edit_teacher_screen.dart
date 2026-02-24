@@ -103,124 +103,152 @@ class _EditTeacherScreenState extends State<EditTeacherScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text("Edit Teacher")),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              controller: firstNameController,
-              decoration: InputDecoration(labelText: "First Name *"),
-              validator: (v) => v!.isEmpty ? "Required" : null,
-            ),
-            SizedBox(height: 12),
-            TextFormField(
-              controller: middleNameController,
-              decoration: InputDecoration(labelText: "Middle Name"),
-            ),
-            SizedBox(height: 12),
-            TextFormField(
-              controller: lastNameController,
-              decoration: InputDecoration(labelText: "Last Name *"),
-              validator: (v) => v!.isEmpty ? "Required" : null,
-            ),
-            SizedBox(height: 12),
-            TextFormField(
-              controller: mobileController,
-              decoration: InputDecoration(labelText: "Mobile Number *"),
-              keyboardType: TextInputType.number,
-              maxLength: 10,
-              validator: (v) {
-                if (v == null || v.isEmpty) return "Required";
-                if (v.length != 10) return "Must be 10 digits";
-                if (!RegExp(r'^[0-9]+$').hasMatch(v)) return "Only numbers allowed";
-                return null;
-              },
-            ),
-            SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: gender,
-              decoration: InputDecoration(labelText: "Gender"),
-              items: [
-                DropdownMenuItem(value: "male", child: Text("Male")),
-                DropdownMenuItem(value: "female", child: Text("Female")),
-              ],
-              onChanged: (v) => setState(() => gender = v!),
-            ),
-            SizedBox(height: 12),
-            TextFormField(
-              controller: designationController,
-              decoration: InputDecoration(labelText: "Designation *"),
-              validator: (v) => v!.isEmpty ? "Required" : null,
-            ),
-            SizedBox(height: 12),
-            TextFormField(
-              controller: qualificationController,
-              decoration: InputDecoration(labelText: "Qualification *"),
-              validator: (v) => v!.isEmpty ? "Required" : null,
-            ),
-            SizedBox(height: 12),
-            TextFormField(
-              readOnly: true,
-              decoration: InputDecoration(
-                labelText: "Date of Birth",
-                suffixIcon: Icon(Icons.calendar_today),
-              ),
-              onTap: () async {
-                var date = await showDatePicker(
-                  context: context,
-                  initialDate: dateOfBirth ?? DateTime(1990),
-                  firstDate: DateTime(1950),
-                  lastDate: DateTime.now(),
-                );
-                if (date != null) setState(() => dateOfBirth = date);
-              },
-              controller: TextEditingController(
-                text: dateOfBirth != null
-                    ? DateFormat('dd/MM/yyyy').format(dateOfBirth!)
-                    : "",
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        title: Text("Edit Teacher Profile"),
+        backgroundColor: Colors.white,
+        foregroundColor: theme.primaryColor,
+        elevation: 0,
+        shape: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+      ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: EdgeInsets.all(20),
+                children: [
+                  _buildFormSection(
+                    "Personal Information",
+                    [
+                      _buildTextField("First Name *", firstNameController, Icons.person_outline),
+                      _buildTextField("Middle Name", middleNameController, Icons.person_outline),
+                      _buildTextField("Last Name *", lastNameController, Icons.person_outline),
+                      _buildDropdownField("Gender", gender, ["male", "female"], (v) => setState(() => gender = v!), Icons.wc_outlined),
+                    ],
+                  ),
+                  SizedBox(height: 24),
+                  _buildFormSection(
+                    "Professional Details",
+                    [
+                      _buildTextField("Designation *", designationController, Icons.work_outline),
+                      _buildTextField("Qualification *", qualificationController, Icons.school_outlined),
+                      _buildTextField("Experience (Years)", null, Icons.history_edu_outlined, initialValue: experienceYears.toString(), onChanged: (v) => experienceYears = int.tryParse(v) ?? 0),
+                      _buildDatePicker("Date of Birth", dateOfBirth, (date) => setState(() => dateOfBirth = date)),
+                    ],
+                  ),
+                  SizedBox(height: 24),
+                  _buildFormSection(
+                    "Contact & Class Assignment",
+                    [
+                      _buildTextField("Mobile Number *", mobileController, Icons.phone_android_outlined, maxLength: 10, keyboardType: TextInputType.number),
+                      SwitchListTile(
+                        title: Text("Is Class Teacher?", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                        value: isClassTeacher,
+                        activeColor: theme.primaryColor,
+                        onChanged: (v) => setState(() => isClassTeacher = v),
+                      ),
+                      if (isClassTeacher) ...[
+                        _buildDropdownField("Assigned Class", assignedStandard, classes, (v) => setState(() => assignedStandard = v), Icons.class_outlined),
+                        SizedBox(height: 16),
+                        _buildTextField("Division", null, Icons.meeting_room_outlined, initialValue: assignedDivision, onChanged: (v) => assignedDivision = v),
+                      ],
+                    ],
+                  ),
+                  SizedBox(height: 40),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: updateTeacher,
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 4,
+                      ),
+                      child: Text("Update Teacher", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  SizedBox(height: 40),
+                ],
               ),
             ),
-            SizedBox(height: 12),
-            TextFormField(
-              decoration: InputDecoration(labelText: "Experience (Years)"),
-              keyboardType: TextInputType.number,
-              initialValue: experienceYears.toString(),
-              onChanged: (v) => experienceYears = int.tryParse(v) ?? 0,
-            ),
-            SizedBox(height: 12),
-            SwitchListTile(
-              title: Text("Is Class Teacher?"),
-              value: isClassTeacher,
-              onChanged: (v) => setState(() => isClassTeacher = v),
-            ),
-            if (isClassTeacher) ...[
-              DropdownButtonFormField<String>(
-                value: assignedStandard,
-                decoration: InputDecoration(labelText: "Assigned Class"),
-                items: classes.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                onChanged: (v) => setState(() => assignedStandard = v),
-              ),
-              SizedBox(height: 12),
-              TextFormField(
-                initialValue: assignedDivision,
-                decoration: InputDecoration(labelText: "Division"),
-                onChanged: (v) => assignedDivision = v,
-              ),
-            ],
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: isLoading ? null : updateTeacher,
-              child: isLoading
-                  ? CircularProgressIndicator(color: Colors.white)
-                  : Text("Update Teacher"),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 16),
-              ),
-            ),
-          ],
+    );
+  }
+
+  Widget _buildFormSection(String title, List<Widget> children) {
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.indigo),
+          ),
+          SizedBox(height: 20),
+          ...children.expand((element) => element is SwitchListTile ? [element] : [element, SizedBox(height: 16)]).toList()..removeLast(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController? controller, IconData icon, {String? initialValue, Function(String)? onChanged, int? maxLength, TextInputType? keyboardType}) {
+    return TextFormField(
+      controller: controller,
+      initialValue: initialValue,
+      onChanged: onChanged,
+      maxLength: maxLength,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        counterText: "",
+      ),
+      validator: (v) => (label.contains("*") && (v == null || v.isEmpty)) ? "Required" : null,
+    );
+  }
+
+  Widget _buildDropdownField(String label, String? value, List<String> items, Function(String?) onChanged, IconData icon) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+      ),
+      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildDatePicker(String label, DateTime? date, Function(DateTime) onSelected) {
+    return InkWell(
+      onTap: () async {
+        var picked = await showDatePicker(
+          context: context,
+          initialDate: date ?? DateTime(1990),
+          firstDate: DateTime(1950),
+          lastDate: DateTime.now(),
+        );
+        if (picked != null) onSelected(picked);
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(Icons.calendar_today_outlined),
+        ),
+        child: Text(
+          date != null ? DateFormat('dd/MM/yyyy').format(date) : "Select Date",
+          style: TextStyle(color: date != null ? Colors.grey.shade800 : Colors.grey.shade500, fontWeight: date != null ? FontWeight.w500 : FontWeight.normal),
         ),
       ),
     );

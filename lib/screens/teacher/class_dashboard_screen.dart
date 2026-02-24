@@ -98,24 +98,49 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
   }
 
   Widget infoBox(String title, String value, Color color, Future<void> Function() onTap) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Card(
-        elevation: 4,
+        elevation: 0,
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: color.withOpacity(0.1), width: 1),
+        ),
         child: Container(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withOpacity(0.05),
+                color.withOpacity(0.15),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(value,
-                  style: TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold)),
-              SizedBox(height: 5),
-              Text(title),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: color.withOpacity(0.8),
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade700,
+                ),
+              ),
             ],
           ),
         ),
@@ -125,8 +150,9 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
 
   // ================= HOME =================
   Widget homePage() {
+    final theme = Theme.of(context);
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -137,34 +163,54 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(greeting(), style: TextStyle(fontSize: 20)),
+                    Text(
+                      "${greeting()},",
+                      style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                    ),
                     Text(
                       widget.teacherName,
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: theme.primaryColor,
+                      ),
                     ),
-                    SizedBox(height: 5),
-                    Text("Class: ${widget.className}"),
                   ],
                 ),
               ),
-              IconButton(
-                icon: Icon(Icons.person_add, size: 32, color: Colors.blue),
-                onPressed: () async {
-                  bool? result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => AddStudentScreen(standard: widget.className),
-                    ),
-                  );
-                  if (result == true) {
-                    loadStudentCount();
-                  }
-                },
-                tooltip: "Add Student",
+              Container(
+                decoration: BoxDecoration(
+                  color: theme.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.person_add_outlined, color: theme.primaryColor),
+                  onPressed: () async {
+                    bool? result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AddStudentScreen(standard: widget.className),
+                      ),
+                    );
+                    if (result == true) {
+                      loadStudentCount();
+                    }
+                  },
+                  tooltip: "Add Student",
+                ),
               ),
             ],
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 24),
+          Text(
+            "Overview",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade800,
+            ),
+          ),
+          SizedBox(height: 12),
           GridView.count(
             crossAxisCount: 2,
             crossAxisSpacing: 12,
@@ -307,154 +353,164 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      appBar: AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "ZP SCHOOL MANDAVE KH",
-              style: TextStyle(fontSize: 16),
-            ),
-            Text(
-              "Class: ${widget.className}",
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => NoticesScreen()),
-              );
-            },
-            tooltip: "Notices",
-          ),
-        ],
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue.shade700, Colors.blue.shade400],
-                ),
-              ),
-              child: Column(
+      backgroundColor: Colors.grey.shade50,
+      drawer: _buildDrawer(theme),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          SliverAppBar(
+            expandedHeight: 140.0,
+            floating: false,
+            pinned: true,
+            elevation: 0,
+            backgroundColor: theme.primaryColor,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: EdgeInsets.only(left: 72, bottom: 20),
+              title: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.person, size: 35, color: Colors.blue),
-                  ),
-                  SizedBox(height: 10),
                   Text(
-                    widget.teacherName,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    "ZP SCHOOL MANDAVE KH",
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   Text(
-                    widget.designation,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
+                    "Class Teacher: ${widget.className}",
+                    style: TextStyle(fontSize: 10, color: Colors.white70),
                   ),
                 ],
               ),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.8)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Opacity(
+                  opacity: 0.1,
+                  child: Icon(Icons.school, size: 200, color: Colors.white),
+                ),
+              ),
             ),
-            ListTile(
-              leading: Icon(Icons.class_, color: Colors.blue),
-              title: Text("Switch Class"),
-              onTap: () {
-                Navigator.pop(context); // Close drawer
-                showClassSelectionDialog();
-              },
+            actions: [
+              IconButton(
+                icon: Icon(Icons.notifications_none_outlined),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => NoticesScreen()),
+                  );
+                },
+              ),
+              SizedBox(width: 8),
+            ],
+          ),
+        ],
+        body: IndexedStack(
+          index: selectedIndex,
+          children: [
+            homePage(),
+            attendancePage(),
+            homeworkPage(),
+            profilePage(),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: Offset(0, -4)),
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: selectedIndex,
+          onTap: (index) {
+            setState(() => selectedIndex = index);
+            if (index == 0) loadTodayAttendance();
+            if (index == 1) setState(() => attendanceKey = UniqueKey());
+          },
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 0 ? Icons.grid_view_rounded : Icons.grid_view),
+              label: "Overview",
             ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.logout, color: Colors.red),
-              title: Text("Logout"),
-              onTap: () async {
-                await AuthService.logout();
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => LoginScreen()),
-                  (route) => false,
-                );
-              },
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 1 ? Icons.fact_check_rounded : Icons.fact_check_outlined),
+              label: "Attendance",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 2 ? Icons.assignment_rounded : Icons.assignment_outlined),
+              label: "Homework",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 3 ? Icons.account_circle_rounded : Icons.account_circle_outlined),
+              label: "Profile",
             ),
           ],
         ),
       ),
-      body: Builder(
-        builder: (context) {
-          return PageStorage(
-            bucket: PageStorageBucket(),
-            child: IndexedStack(
-              index: selectedIndex,
-              children: [
-                homePage(),
-                attendancePage(),
-                homeworkPage(),
-                profilePage(),
-              ],
+    );
+  }
+
+  Widget _buildDrawer(ThemeData theme) {
+    return Drawer(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(30), bottomRight: Radius.circular(30))),
+      child: Column(
+        children: [
+          UserAccountsDrawerHeader(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.9)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-          );
-        },
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: selectedIndex,
-        onTap: (index) {
-          setState(() {
-            selectedIndex = index;
-          });
-          if (index == 0) {
-            loadTodayAttendance();
-          } else if (index == 1) {
-            setState(() {
-              attendanceKey = UniqueKey();
-            });
-          }
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
+            currentAccountPicture: Container(
+              padding: EdgeInsets.all(4),
+              decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+              child: CircleAvatar(
+                backgroundColor: theme.primaryColor.withOpacity(0.1),
+                child: Icon(Icons.person, size: 40, color: theme.primaryColor),
+              ),
+            ),
+            accountName: Text(widget.teacherName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            accountEmail: Text(widget.designation, style: TextStyle(color: Colors.white70)),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.check_circle),
-            label: "Attendance",
+          ListTile(
+            leading: Icon(Icons.swap_horiz_rounded, color: theme.primaryColor),
+            title: Text("Switch Class", style: TextStyle(fontWeight: FontWeight.w600)),
+            onTap: () {
+              Navigator.pop(context);
+              showClassSelectionDialog();
+            },
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: "Homework",
+          ListTile(
+            leading: Icon(Icons.info_outline_rounded, color: theme.primaryColor),
+            title: Text("School Information", style: TextStyle(fontWeight: FontWeight.w600)),
+            onTap: () => Navigator.pop(context),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
+          Spacer(),
+          Divider(indent: 20, endIndent: 20),
+          ListTile(
+            leading: Icon(Icons.logout_rounded, color: Colors.red),
+            title: Text("Logout", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            onTap: () async {
+              await AuthService.logout();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => LoginScreen()),
+                (route) => false,
+              );
+            },
           ),
+          SizedBox(height: 20),
         ],
       ),
     );

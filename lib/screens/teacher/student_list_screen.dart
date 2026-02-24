@@ -110,56 +110,125 @@ class _StudentListScreenState extends State<StudentListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text("Class ${widget.standard} Students"),
+        title: Text("Class ${widget.standard}"),
+        backgroundColor: theme.primaryColor,
+        elevation: 0,
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: () async {
-                loadStudents();
-              },
+              onRefresh: () async => loadStudents(),
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Text(
-                      "Total Students: ${students.length}",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: TextField(
-                      controller: searchController,
-                      onChanged: searchStudent,
-                      decoration: InputDecoration(
-                        hintText: "Search Student",
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
+                  _buildSearchBar(theme),
+                  _buildSummaryInfo(theme),
                   Expanded(
                     child: filteredStudents.isEmpty
-                        ? Center(child: Text("No Students Found"))
+                        ? _buildEmptyState()
                         : ListView.builder(
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             itemCount: filteredStudents.length,
                             itemBuilder: (context, index) {
-                              return studentCard(filteredStudents[index]);
+                              return _studentListItem(filteredStudents[index], theme);
                             },
                           ),
                   ),
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildSearchBar(ThemeData theme) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+      color: Colors.white,
+      child: TextField(
+        controller: searchController,
+        onChanged: searchStudent,
+        decoration: InputDecoration(
+          hintText: "Search students by name or ID...",
+          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+          prefixIcon: Icon(Icons.search, color: theme.primaryColor, size: 20),
+          filled: true,
+          fillColor: Colors.grey.shade100,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: EdgeInsets.symmetric(vertical: 0),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryInfo(ThemeData theme) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.white,
+      child: Row(
+        children: [
+          Icon(Icons.people_outline, size: 16, color: Colors.grey),
+          SizedBox(width: 8),
+          Text(
+            "${students.length} Students Enrolled",
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off, size: 80, color: Colors.grey.shade200),
+          SizedBox(height: 16),
+          Text("No students match your search", style: TextStyle(color: Colors.grey.shade500)),
+        ],
+      ),
+    );
+  }
+
+  Widget _studentListItem(Map<String, dynamic> s, ThemeData theme) {
+    String name = "${s["first_name"]} ${s["last_name"]}".trim();
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: Offset(0, 2)),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: CircleAvatar(
+          radius: 22,
+          backgroundColor: theme.primaryColor.withOpacity(0.1),
+          child: Text(
+            s['roll_number']?.toString() ?? '?',
+            style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold),
+          ),
+        ),
+        title: Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+        subtitle: Text("ID: ${s["unique_id"] ?? '-'}", style: TextStyle(fontSize: 12, color: Colors.grey)),
+        trailing: Icon(Icons.chevron_right, color: Colors.grey.shade300),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => StudentProfileScreen(studentId: s["id"]),
+            ),
+          );
+        },
+      ),
     );
   }
 

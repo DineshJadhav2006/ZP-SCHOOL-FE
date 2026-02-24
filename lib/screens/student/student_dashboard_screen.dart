@@ -108,28 +108,34 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         elevation: 0,
-        titleSpacing: 0,
+        backgroundColor: theme.primaryColor,
+        leading: IconButton(
+          icon: Icon(Icons.menu, color: Colors.white),
+          onPressed: () {
+            // Placeholder: No action as requested
+          },
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("ZP SCHOOL MANDAVE KH", style: TextStyle(fontSize: 16)),
+            Text("ZP SCHOOL MANDAVE KH", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
             Text(
               "Student Dashboard",
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.normal, color: Colors.white70),
             ),
           ],
         ),
-
-        // Right side notification icon
         actions: [
           Stack(
             children: [
               IconButton(
-                icon: Icon(Icons.notifications),
+                icon: Icon(Icons.notifications_none, color: Colors.white),
                 onPressed: () async {
                   await Navigator.push(
                     context,
@@ -144,21 +150,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
                   top: 8,
                   child: Container(
                     padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: BoxConstraints(
-                      minWidth: 18,
-                      minHeight: 18,
-                    ),
+                    decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                    constraints: BoxConstraints(minWidth: 16, minHeight: 16),
                     child: Text(
                       unreadCount > 99 ? '99+' : '$unreadCount',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -167,35 +163,24 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
           ),
         ],
       ),
-
-      // ================= BODY =================
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : IndexedStack(
               index: selectedIndex,
               children: [
-                /// HOME
                 HomeScreen(
                   studentData: studentData,
                   studentName: studentName,
                   studentClass: studentClass,
                   greeting: greeting(),
-                  onTabChange: (index) {
-                    setState(() => selectedIndex = index);
-                  },
+                  onTabChange: (index) => setState(() => selectedIndex = index),
                 ),
-
-                /// HOMEWORK
                 HomeworkScreen(
                   homeworkList: homeworkList,
                   isLoading: isHomeworkLoading,
                   onRefresh: () => loadHomework(studentClass ?? ""),
                 ),
-
-                /// RESULTS
                 const ResultsScreen(),
-
-                /// PROFILE
                 ProfileScreen(
                   studentData: studentData,
                   studentName: studentName,
@@ -203,34 +188,33 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
                 ),
               ],
             ),
-
-      // ================= BOTTOM NAV =================
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: selectedIndex,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        onTap: (index) async {
-          setState(() {
-            selectedIndex = index;
-          });
-
-          // If Homework tab opened
-          if (index == 1) {
-            await loadHomework(studentClass ?? "");
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: "Homework",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assessment),
-            label: "Results",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]),
+        child: BottomNavigationBar(
+          currentIndex: selectedIndex,
+          onTap: (index) async {
+            setState(() => selectedIndex = index);
+            if (index == 1) await loadHomework(studentClass ?? "");
+          },
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 0 ? Icons.home : Icons.home_outlined),
+              label: "Home",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 1 ? Icons.assignment : Icons.assignment_outlined),
+              label: "Homework",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 2 ? Icons.assessment : Icons.assessment_outlined),
+              label: "Results",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 3 ? Icons.person : Icons.person_outline),
+              label: "Profile",
+            ),
+          ],
+        ),
       ),
     );
   }

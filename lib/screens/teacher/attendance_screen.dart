@@ -126,119 +126,164 @@ class _AttendanceScreenState extends State<AttendanceScreen> with AutomaticKeepA
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
+    final theme = Theme.of(context);
+    
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: students.isEmpty
-                      ? Center(child: Text("No Students Found"))
-                      : ListView.builder(
-                          itemCount: students.length,
-                          itemBuilder: (_, index) {
-                            final s = students[index];
-                            String studentName =
-                                "${s['first_name']} ${s['middle_name'] ?? ''} ${s['last_name']}";
-                            String studentId = s['id'];
-                            String currentStatus = attendanceMap[studentId] ?? "Present";
+          : students.isEmpty
+              ? _buildEmptyState()
+              : ListView.separated(
+                  padding: EdgeInsets.fromLTRB(16, 20, 16, 100),
+                  itemCount: students.length,
+                  separatorBuilder: (context, index) => SizedBox(height: 12),
+                  itemBuilder: (_, index) {
+                    final s = students[index];
+                    String studentName = "${s['first_name']} ${s['last_name']}";
+                    String studentId = s['id'];
+                    String currentStatus = attendanceMap[studentId] ?? "Present";
 
-                            return ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.blue.shade100,
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 4)),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: theme.primaryColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
                                 child: Text(
                                   s['roll_number']?.toString() ?? '?',
-                                  style: TextStyle(
-                                    color: Colors.blue.shade900,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              title: Text(studentName.trim()),
-                              subtitle: Text("Div: ${s['division']}"),
-                              trailing: isAttendanceTaken
-                                  ? Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: currentStatus == "Present"
-                                            ? Colors.green.shade100
-                                            : Colors.red.shade100,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        currentStatus,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: currentStatus == "Present"
-                                              ? Colors.green.shade900
-                                              : Colors.red.shade900,
-                                        ),
-                                      ),
-                                    )
-                                  : Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.check_circle,
-                                            color: currentStatus == "Present"
-                                                ? Colors.green
-                                                : Colors.grey,
-                                            size: 32,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              attendanceMap[studentId] = "Present";
-                                            });
-                                          },
-                                        ),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.cancel,
-                                            color: currentStatus == "Absent"
-                                                ? Colors.red
-                                                : Colors.grey,
-                                            size: 32,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              attendanceMap[studentId] = "Absent";
-                                            });
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                            );
-                          },
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    studentName.trim(),
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.grey.shade800),
+                                  ),
+                                  Text(
+                                    "ID: ${s['unique_id'] ?? 'N/A'}",
+                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isAttendanceTaken)
+                              _statusChip(currentStatus)
+                            else
+                              _buildToggleButtons(studentId, currentStatus),
+                          ],
                         ),
+                      ),
+                    );
+                  },
                 ),
-              ],
+      floatingActionButton: isAttendanceTaken
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: saveAttendance,
+              backgroundColor: theme.primaryColor,
+              icon: Icon(Icons.check_circle_outline),
+              label: Text("Submit Attendance", style: TextStyle(fontWeight: FontWeight.bold)),
+              elevation: 4,
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          if (isAttendanceTaken) {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text("Attendance Already Taken"),
-                content: Text("Attendance has already been recorded for today."),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text("OK"),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            saveAttendance();
-          }
-        },
-        backgroundColor: Colors.blue,
-        icon: Icon(Icons.save),
-        label: Text("Save Attendance"),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.people_outline, size: 80, color: Colors.grey.shade300),
+          SizedBox(height: 16),
+          Text("No Students Found", style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
+  Widget _statusChip(String status) {
+    bool isPresent = status == "Present";
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: isPresent ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: isPresent ? Colors.green : Colors.red,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToggleButtons(String studentId, String currentStatus) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _attendanceIconButton(
+          icon: Icons.check,
+          color: Colors.green,
+          isSelected: currentStatus == "Present",
+          onTap: () => setState(() => attendanceMap[studentId] = "Present"),
+        ),
+        SizedBox(width: 12),
+        _attendanceIconButton(
+          icon: Icons.close,
+          color: Colors.red,
+          isSelected: currentStatus == "Absent",
+          onTap: () => setState(() => attendanceMap[studentId] = "Absent"),
+        ),
+      ],
+    );
+  }
+
+  Widget _attendanceIconButton({
+    required IconData icon,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 200),
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isSelected ? color : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isSelected ? color : Colors.grey.shade300, width: 1.5),
+          boxShadow: isSelected ? [BoxShadow(color: color.withOpacity(0.3), blurRadius: 8, offset: Offset(0, 4))] : [],
+        ),
+        child: Icon(
+          icon,
+          color: isSelected ? Colors.white : Colors.grey.shade400,
+          size: 20,
+        ),
       ),
     );
   }
