@@ -7,6 +7,7 @@ import 'admin_students_screen.dart';
 import 'admin_teachers_screen.dart';
 import 'admin_profile_screen.dart';
 import 'notices_screen.dart';
+import 'admin_books_screen.dart';
 
 class AdminScreen extends StatefulWidget {
   @override
@@ -21,6 +22,7 @@ class _AdminScreenState extends State<AdminScreen>
   bool isLoading = true;
   String adminName = "Admin";
   Map<String, dynamic>? adminData;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   bool get wantKeepAlive => true;
@@ -86,15 +88,15 @@ class _AdminScreenState extends State<AdminScreen>
     final theme = Theme.of(context);
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: theme.primaryColor,
-        automaticallyImplyLeading: false,
         leading: IconButton(
           icon: Icon(Icons.menu, color: Colors.white),
           onPressed: () {
-            // Placeholder: No action as requested
+            _scaffoldKey.currentState?.openDrawer();
           },
         ),
         title: Column(
@@ -119,6 +121,53 @@ class _AdminScreenState extends State<AdminScreen>
             tooltip: "Notices",
           ),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: theme.primaryColor),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.admin_panel_settings, size: 35, color: theme.primaryColor),
+                  ),
+                  SizedBox(height: 10),
+                  Text(adminName, style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Administrator', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.book_outlined),
+              title: Text('Books'),
+              onTap: () async {
+                Navigator.pop(context);
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => AdminBooksScreen()),
+                );
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.logout, color: Colors.red),
+              title: Text('Logout', style: TextStyle(color: Colors.red)),
+              onTap: () async {
+                await AuthService.logout();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => LoginScreen()),
+                );
+              },
+            ),
+          ],
+        ),
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())

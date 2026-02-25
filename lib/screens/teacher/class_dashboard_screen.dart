@@ -9,6 +9,7 @@ import 'attendance_screen.dart';
 import 'attendance_list_screen.dart';
 import 'add_student_screen.dart';
 import 'homework_screen.dart';
+import 'books_screen.dart';
 import 'teacher_profile_screen.dart';
 import '../admin/notices_screen.dart';
 import '../login_screen.dart';
@@ -302,6 +303,11 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
     return HomeworkScreen(className: widget.className);
   }
 
+  // ================= BOOKS =================
+  Widget booksPage() {
+    return BooksScreen(className: widget.className);
+  }
+
   // ================= PROFILE =================
   Widget profilePage() {
     return TeacherProfileScreen();
@@ -391,6 +397,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
           homePage(),
           attendancePage(),
           homeworkPage(),
+          booksPage(),
           profilePage(),
         ],
       ),
@@ -402,7 +409,10 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
           ],
         ),
         child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
           currentIndex: selectedIndex,
+          selectedFontSize: 11,
+          unselectedFontSize: 10,
           onTap: (index) {
             setState(() => selectedIndex = index);
             if (index == 0) loadTodayAttendance();
@@ -410,8 +420,8 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
           },
           items: [
             BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 0 ? Icons.grid_view_rounded : Icons.grid_view),
-              label: "Overview",
+              icon: Icon(selectedIndex == 0 ? Icons.home : Icons.home_outlined),
+              label: "Home",
             ),
             BottomNavigationBarItem(
               icon: Icon(selectedIndex == 1 ? Icons.fact_check_rounded : Icons.fact_check_outlined),
@@ -422,7 +432,11 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
               label: "Homework",
             ),
             BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 3 ? Icons.account_circle_rounded : Icons.account_circle_outlined),
+              icon: Icon(selectedIndex == 3 ? Icons.book : Icons.book_outlined),
+              label: "Books",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 4 ? Icons.account_circle_rounded : Icons.account_circle_outlined),
               label: "Profile",
             ),
           ],

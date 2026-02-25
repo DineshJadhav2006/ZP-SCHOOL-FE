@@ -9,6 +9,7 @@ import 'results_screen.dart';
 import 'profile_screen.dart';
 import 'notification_screen.dart';
 import 'student_notices_screen.dart';
+import 'books_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
@@ -180,6 +181,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
                   onRefresh: () => loadHomework(studentClass ?? ""),
                 ),
                 const ResultsScreen(),
+                BooksScreen(className: studentClass ?? ""),
                 ProfileScreen(
                   studentData: studentData,
                   studentName: studentName,
@@ -208,7 +210,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
               label: "Results",
             ),
             BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 3 ? Icons.person : Icons.person_outline),
+              icon: Icon(selectedIndex == 3 ? Icons.book : Icons.book_outlined),
+              label: "Books",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(selectedIndex == 4 ? Icons.person : Icons.person_outline),
               label: "Profile",
             ),
           ],

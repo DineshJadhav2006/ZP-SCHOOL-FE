@@ -59,4 +59,16 @@ class ApiConfig {
 
   // ============== NOTICE ENDPOINTS ==============
   static String get noticesUrl => '$baseUrl/notice/notices';
+
+  // ============== BOOKS ENDPOINTS ==============
+  static String booksUrl(String clientId, String className) =>
+      '$baseUrl/books/$clientId/books?class_name=$className';
+  
+  static String addBookUrl(String clientId) =>
+      '$baseUrl/books/$clientId/books';
+  
+  static String bookByIdUrl(String clientId, String bookId) =>
+      '$baseUrl/books/$clientId/books/$bookId';
+  
+  static String get bookUploadUrl => '$baseUrl/books/upload-file';
 }
