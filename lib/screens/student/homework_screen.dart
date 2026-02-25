@@ -98,50 +98,66 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
       onRefresh: loadHomework,
       child: Scaffold(
         backgroundColor: Colors.grey.shade50,
-        appBar: AppBar(
-          title: Text("Homework"),
-          backgroundColor: theme.primaryColor,
-          actions: [
-            IconButton(
-              icon: Icon(selectedDate != null ? Icons.filter_alt : Icons.filter_alt_outlined),
-              onPressed: () async {
-                final DateTime? picked = await showDatePicker(
-                  context: context,
-                  initialDate: selectedDate ?? DateTime.now(),
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime.now().add(Duration(days: 365)),
-                );
-                if (picked != null) {
-                  setState(() => selectedDate = picked);
-                  loadHomework();
-                }
-              },
-              tooltip: "Filter by Date",
-            ),
-            if (selectedDate != null)
-              IconButton(
-                icon: Icon(Icons.clear),
-                onPressed: () {
-                  setState(() => selectedDate = null);
-                  loadHomework();
-                },
-                tooltip: "Clear Filter",
-              ),
-          ],
-        ),
-        body: isLoading
-            ? Center(child: CircularProgressIndicator())
-            : homeworkList.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.assignment_turned_in_outlined, size: 80, color: Colors.grey.shade300),
-                        SizedBox(height: 16),
-                        Text("No homework assigned", style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
-                      ],
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
+              child: Row(
+                children: [
+                  Text(
+                    "Homework",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: theme.primaryColor,
                     ),
-                  )
+                  ),
+                  Spacer(),
+                  IconButton(
+                    icon: Icon(selectedDate != null ? Icons.filter_alt : Icons.filter_alt_outlined),
+                    color: theme.primaryColor,
+                    onPressed: () async {
+                      final DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate ?? DateTime.now(),
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now().add(Duration(days: 365)),
+                      );
+                      if (picked != null) {
+                        setState(() => selectedDate = picked);
+                        loadHomework();
+                      }
+                    },
+                    tooltip: "Filter by Date",
+                  ),
+                  if (selectedDate != null)
+                    IconButton(
+                      icon: Icon(Icons.clear),
+                      color: Colors.red,
+                      onPressed: () {
+                        setState(() => selectedDate = null);
+                        loadHomework();
+                      },
+                      tooltip: "Clear Filter",
+                    ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : homeworkList.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.assignment_turned_in_outlined, size: 80, color: Colors.grey.shade300),
+                              SizedBox(height: 16),
+                              Text("No homework assigned", style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
+                            ],
+                          ),
+                        )
                 : ListView.builder(
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                     itemCount: homeworkList.length,
@@ -247,6 +263,9 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                       );
                     },
                   ),
+            ),
+          ],
+        ),
       ),
     );
   }

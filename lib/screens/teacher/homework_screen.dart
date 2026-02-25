@@ -227,51 +227,70 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        title: Text("Homework"),
-        backgroundColor: theme.primaryColor,
-        actions: [
-          IconButton(
-            icon: Icon(selectedDate != null ? Icons.filter_alt : Icons.filter_alt_outlined),
-            onPressed: () async {
-              final DateTime? picked = await showDatePicker(
-                context: context,
-                initialDate: selectedDate ?? DateTime.now(),
-                firstDate: DateTime(2020),
-                lastDate: DateTime.now().add(Duration(days: 365)),
-              );
-              if (picked != null) {
-                setState(() => selectedDate = picked);
-                loadHomework();
-              }
-            },
-            tooltip: "Filter by Date",
-          ),
-          if (selectedDate != null)
-            IconButton(
-              icon: Icon(Icons.clear),
-              onPressed: () {
-                setState(() => selectedDate = null);
-                loadHomework();
-              },
-              tooltip: "Clear Filter",
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
+            child: Row(
+              children: [
+                Text(
+                  "Homework",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: theme.primaryColor,
+                  ),
+                ),
+                Spacer(),
+                IconButton(
+                  icon: Icon(selectedDate != null ? Icons.filter_alt : Icons.filter_alt_outlined),
+                  color: theme.primaryColor,
+                  onPressed: () async {
+                    final DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate ?? DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now().add(Duration(days: 365)),
+                    );
+                    if (picked != null) {
+                      setState(() => selectedDate = picked);
+                      loadHomework();
+                    }
+                  },
+                  tooltip: "Filter by Date",
+                ),
+                if (selectedDate != null)
+                  IconButton(
+                    icon: Icon(Icons.clear),
+                    color: Colors.red,
+                    onPressed: () {
+                      setState(() => selectedDate = null);
+                      loadHomework();
+                    },
+                    tooltip: "Clear Filter",
+                  ),
+              ],
             ),
+          ),
+          Expanded(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : RefreshIndicator(
+                    onRefresh: loadHomework,
+                    child: homeworkList.isEmpty
+                        ? _buildEmptyState()
+                        : ListView.builder(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            itemCount: homeworkList.length,
+                            itemBuilder: (context, index) {
+                              return homeworkCard(homeworkList[index]);
+                            },
+                          ),
+                  ),
+          ),
         ],
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: loadHomework,
-              child: homeworkList.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      itemCount: homeworkList.length,
-                      itemBuilder: (context, index) {
-                        return homeworkCard(homeworkList[index]);
-                      },
-                    ),
-            ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           bool? result = await Navigator.push(
