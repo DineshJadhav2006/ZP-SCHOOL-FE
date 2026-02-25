@@ -16,6 +16,7 @@ class HomeworkScreen extends StatefulWidget {
 class _HomeworkScreenState extends State<HomeworkScreen> {
   List<dynamic> homeworkList = [];
   bool isLoading = true;
+  DateTime? selectedDate;
 
   @override
   void initState() {
@@ -25,7 +26,25 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
 
   Future<void> loadHomework() async {
     setState(() => isLoading = true);
-    var data = await HomeworkService.getHomeworkByClass(widget.className);
+    
+    var data = await HomeworkService.getHomeworkByClass(widget.className, date: selectedDate != null ? DateFormat('yyyy-MM-dd').format(selectedDate!) : null);
+    
+    // Filter to show only last 3 days by default (unless date filter is active)
+    if (selectedDate == null) {
+      DateTime now = DateTime.now();
+      DateTime threeDaysAgo = DateTime(now.year, now.month, now.day).subtract(Duration(days: 2));
+      data = data.where((hw) {
+        String? dateStr = hw['homework_date'];
+        if (dateStr == null) return false;
+        try {
+          DateTime hwDate = DateTime.parse(dateStr.split('T')[0]);
+          return !hwDate.isBefore(threeDaysAgo);
+        } catch (_) {
+          return false;
+        }
+      }).toList();
+    }
+    
     setState(() {
       homeworkList = data;
       isLoading = false;
@@ -208,6 +227,37 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        title: Text("Homework"),
+        backgroundColor: theme.primaryColor,
+        actions: [
+          IconButton(
+            icon: Icon(selectedDate != null ? Icons.filter_alt : Icons.filter_alt_outlined),
+            onPressed: () async {
+              final DateTime? picked = await showDatePicker(
+                context: context,
+                initialDate: selectedDate ?? DateTime.now(),
+                firstDate: DateTime(2020),
+                lastDate: DateTime.now().add(Duration(days: 365)),
+              );
+              if (picked != null) {
+                setState(() => selectedDate = picked);
+                loadHomework();
+              }
+            },
+            tooltip: "Filter by Date",
+          ),
+          if (selectedDate != null)
+            IconButton(
+              icon: Icon(Icons.clear),
+              onPressed: () {
+                setState(() => selectedDate = null);
+                loadHomework();
+              },
+              tooltip: "Clear Filter",
+            ),
+        ],
+      ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : RefreshIndicator(

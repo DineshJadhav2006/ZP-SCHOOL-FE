@@ -176,8 +176,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
                   onTabChange: (index) => setState(() => selectedIndex = index),
                 ),
                 HomeworkScreen(
-                  homeworkList: homeworkList,
-                  isLoading: isHomeworkLoading,
+                  className: studentClass ?? "",
                   onRefresh: () => loadHomework(studentClass ?? ""),
                 ),
                 const ResultsScreen(),
@@ -192,9 +191,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
         decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]),
         child: BottomNavigationBar(
           currentIndex: selectedIndex,
-          onTap: (index) async {
+          onTap: (index) {
             setState(() => selectedIndex = index);
-            if (index == 1) await loadHomework(studentClass ?? "");
           },
           items: [
             BottomNavigationBarItem(

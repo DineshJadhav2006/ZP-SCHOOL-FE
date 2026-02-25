@@ -39,8 +39,11 @@ class ApiConfig {
       '$baseUrl/attendance/student/$studentId/month?month=$month&year=$year';
 
   // ============== HOMEWORK ENDPOINTS ==============
-  static String homeworkByClassUrl(String clientId, String className) =>
-      '$baseUrl/homework/$clientId/homework?className=$className';
+  static String homeworkByClassUrl(String clientId, String className, {String? date}) {
+    String url = '$baseUrl/homework/$clientId/homework?class_name=$className';
+    if (date != null) url += '&homework_date=$date';
+    return url;
+  }
   
   static String homeworkUrl(String clientId) =>
       '$baseUrl/homework/$clientId/homework';

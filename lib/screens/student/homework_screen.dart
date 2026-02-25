@@ -1,17 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../services/homework_service.dart';
 
-class HomeworkScreen extends StatelessWidget {
-  final List<dynamic> homeworkList;
-  final bool isLoading;
+class HomeworkScreen extends StatefulWidget {
+  final String className;
   final Future<void> Function() onRefresh;
 
   const HomeworkScreen({
-    required this.homeworkList,
-    required this.isLoading,
+    required this.className,
     required this.onRefresh,
   });
+
+  @override
+  _HomeworkScreenState createState() => _HomeworkScreenState();
+}
+
+class _HomeworkScreenState extends State<HomeworkScreen> {
+  DateTime? selectedDate;
+  List<dynamic> homeworkList = [];
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    loadHomework();
+  }
+
+  Future<void> loadHomework() async {
+    setState(() => isLoading = true);
+    
+    var data = await HomeworkService.getHomeworkByClass(widget.className, date: selectedDate != null ? DateFormat('yyyy-MM-dd').format(selectedDate!) : null);
+    
+    // Filter to show only last 3 days by default (unless date filter is active)
+    if (selectedDate == null) {
+      DateTime now = DateTime.now();
+      DateTime threeDaysAgo = DateTime(now.year, now.month, now.day).subtract(Duration(days: 2));
+      data = data.where((hw) {
+        String? dateStr = hw['homework_date'];
+        if (dateStr == null) return false;
+        try {
+          DateTime hwDate = DateTime.parse(dateStr.split('T')[0]);
+          return !hwDate.isBefore(threeDaysAgo);
+        } catch (_) {
+          return false;
+        }
+      }).toList();
+    }
+    
+    setState(() {
+      homeworkList = data;
+      isLoading = false;
+    });
+  }
 
   String formatDate(String? dateStr) {
     if (dateStr == null) return "-";
@@ -54,9 +95,40 @@ class HomeworkScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return RefreshIndicator(
-      onRefresh: onRefresh,
+      onRefresh: loadHomework,
       child: Scaffold(
         backgroundColor: Colors.grey.shade50,
+        appBar: AppBar(
+          title: Text("Homework"),
+          backgroundColor: theme.primaryColor,
+          actions: [
+            IconButton(
+              icon: Icon(selectedDate != null ? Icons.filter_alt : Icons.filter_alt_outlined),
+              onPressed: () async {
+                final DateTime? picked = await showDatePicker(
+                  context: context,
+                  initialDate: selectedDate ?? DateTime.now(),
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime.now().add(Duration(days: 365)),
+                );
+                if (picked != null) {
+                  setState(() => selectedDate = picked);
+                  loadHomework();
+                }
+              },
+              tooltip: "Filter by Date",
+            ),
+            if (selectedDate != null)
+              IconButton(
+                icon: Icon(Icons.clear),
+                onPressed: () {
+                  setState(() => selectedDate = null);
+                  loadHomework();
+                },
+                tooltip: "Clear Filter",
+              ),
+          ],
+        ),
         body: isLoading
             ? Center(child: CircularProgressIndicator())
             : homeworkList.isEmpty
