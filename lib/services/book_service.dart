@@ -4,6 +4,9 @@ import 'auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
+import 'download_helper_stub.dart'
+    if (dart.library.html) 'download_helper_web.dart'
+    if (dart.library.io) 'download_helper_mobile.dart';
 
 class BookService {
   static Future<List<dynamic>> getBooksByClass(String className) async {
@@ -134,5 +137,17 @@ class BookService {
       print('Error deleting book: $e');
       return false;
     }
+  }
+
+  static Future<String?> downloadBook({
+    required String bookUrl,
+    required String bookName,
+    Function(int, int)? onProgress,
+  }) async {
+    return await downloadBookPlatform(
+      bookUrl: bookUrl,
+      bookName: bookName,
+      onProgress: onProgress,
+    );
   }
 }

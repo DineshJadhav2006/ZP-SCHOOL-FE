@@ -15,6 +15,8 @@ class BooksScreen extends StatefulWidget {
 class _BooksScreenState extends State<BooksScreen> {
   List<dynamic> books = [];
   bool isLoading = true;
+  String? errorMessage;
+  Map<int, double> downloadProgress = {};
 
   @override
   void initState() {
@@ -23,7 +25,10 @@ class _BooksScreenState extends State<BooksScreen> {
   }
 
   Future<void> loadBooks() async {
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
     try {
       final data = await BookService.getBooksByClass(widget.className);
       setState(() {
@@ -32,18 +37,74 @@ class _BooksScreenState extends State<BooksScreen> {
       });
     } catch (e) {
       print('Error loading books: $e');
-      setState(() => isLoading = false);
+      setState(() {
+        isLoading = false;
+        errorMessage = e.toString().contains('SocketException') || e.toString().contains('Failed host lookup')
+            ? 'No internet connection. Please check your network.'
+            : 'Failed to load books. Please try again.';
+      });
     }
   }
 
   Future<void> openBook(String url) async {
+    if (url.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Book URL not available'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    
     String fullUrl = url;
     if (url.startsWith('/')) {
       fullUrl = '${EnvConfig.apiBaseUrl}$url';
     }
     
-    final uri = Uri.parse(fullUrl);
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      final uri = Uri.parse(fullUrl);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to open book'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> downloadBook(int index, String bookUrl, String bookName) async {
+    if (bookUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Book URL not available'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    
+    String fullUrl = bookUrl;
+    if (bookUrl.startsWith('/')) {
+      fullUrl = '${EnvConfig.apiBaseUrl}$bookUrl';
+    }
+
+    setState(() => downloadProgress[index] = 0.0);
+
+    final filePath = await BookService.downloadBook(
+      bookUrl: fullUrl,
+      bookName: bookName,
+      onProgress: (received, total) {
+        if (total != -1 && mounted) {
+          setState(() => downloadProgress[index] = received / total);
+        }
+      },
+    );
+
+    if (mounted) {
+      setState(() => downloadProgress.remove(index));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(filePath != null ? 'Downloaded: $bookName' : 'Download failed'),
+          backgroundColor: filePath != null ? Colors.green : Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -51,18 +112,38 @@ class _BooksScreenState extends State<BooksScreen> {
     return Scaffold(
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : books.isEmpty
+          : errorMessage != null
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.book_outlined, size: 64, color: Colors.grey),
+                      Icon(Icons.error_outline, size: 64, color: Colors.red),
                       SizedBox(height: 16),
-                      Text('No books available', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(errorMessage!, style: TextStyle(fontSize: 16, color: Colors.grey), textAlign: TextAlign.center),
+                      ),
+                      SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: loadBooks,
+                        icon: Icon(Icons.refresh),
+                        label: Text('Retry'),
+                      ),
                     ],
                   ),
                 )
-              : RefreshIndicator(
+              : books.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.book_outlined, size: 64, color: Colors.grey),
+                          SizedBox(height: 16),
+                          Text('No books available', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                        ],
+                      ),
+                    )
+                  : RefreshIndicator(
                   onRefresh: loadBooks,
                   child: ListView.builder(
                     padding: EdgeInsets.all(16),
@@ -79,16 +160,46 @@ class _BooksScreenState extends State<BooksScreen> {
                           title: Text(
                             book['book_name'] ?? 'Unknown',
                             style: TextStyle(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SizedBox(height: 4),
-                              Text('Subject: ${book['subject_name'] ?? 'N/A'}'),
-                              Text('Class: ${book['class_name'] ?? 'N/A'}'),
+                              Text(
+                                'Subject: ${book['subject_name'] ?? 'N/A'}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                'Class: ${book['class_name'] ?? 'N/A'}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ],
                           ),
-                          trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                          trailing: downloadProgress.containsKey(index)
+                              ? SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                  child: CircularProgressIndicator(
+                                    value: downloadProgress[index],
+                                    strokeWidth: 3,
+                                  ),
+                                )
+                              : IconButton(
+                                  icon: Icon(Icons.download, color: Colors.blue),
+                                  onPressed: () {
+                                    if (book['book_url'] != null) {
+                                      downloadBook(
+                                        index,
+                                        book['book_url'],
+                                        book['book_name'] ?? 'book',
+                                      );
+                                    }
+                                  },
+                                ),
                           onTap: () {
                             if (book['book_url'] != null) {
                               openBook(book['book_url']);

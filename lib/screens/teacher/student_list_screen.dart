@@ -56,8 +56,14 @@ class _StudentListScreenState extends State<StudentListScreen> {
         title: Text(
           "${s["first_name"]} ${s["middle_name"] ?? ''} ${s["last_name"]}",
           style: TextStyle(fontWeight: FontWeight.bold),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
-        subtitle: Text("Roll: ${s["roll_number"] ?? '-'} | ID: ${s["unique_id"] ?? '-'}"),
+        subtitle: Text(
+          "Roll: ${s["roll_number"] ?? '-'} | ID: ${s["unique_id"] ?? '-'}",
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         trailing: PopupMenuButton<String>(
           icon: Icon(Icons.more_vert),
           onSelected: (value) async {
@@ -217,8 +223,18 @@ class _StudentListScreenState extends State<StudentListScreen> {
             style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold),
           ),
         ),
-        title: Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-        subtitle: Text("ID: ${s["unique_id"] ?? '-'}", style: TextStyle(fontSize: 12, color: Colors.grey)),
+        title: Text(
+          name,
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          "ID: ${s["unique_id"] ?? '-'}",
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         trailing: Icon(Icons.chevron_right, color: Colors.grey.shade300),
         onTap: () {
           Navigator.push(

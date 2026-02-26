@@ -110,7 +110,8 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
           side: BorderSide(color: color.withOpacity(0.1), width: 1),
         ),
         child: Container(
-          padding: EdgeInsets.all(20),
+          height: 120,
+          padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -128,19 +129,24 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: color.withOpacity(0.8),
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: 8),
+              SizedBox(height: 6),
               Text(
                 title,
                 textAlign: TextAlign.center,
                 style: TextStyle(
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: Colors.grey.shade700,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

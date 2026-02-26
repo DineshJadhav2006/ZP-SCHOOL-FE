@@ -214,23 +214,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _summaryItem(String title, int count, Color color) {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+    return Flexible(
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              "$count",
+              style: TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: color),
+            ),
           ),
-          child: Text(
-            "$count",
-            style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold, color: color),
+          SizedBox(height: 4),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 12),
           ),
-        ),
-        SizedBox(height: 4),
-        Text(title),
-      ],
+        ],
+      ),
     );
   }
 

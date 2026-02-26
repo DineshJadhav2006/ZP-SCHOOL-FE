@@ -14,6 +14,8 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
   List<dynamic> filteredBooks = [];
   bool isLoading = true;
   String? selectedClass;
+  String? errorMessage;
+  Map<int, double> downloadProgress = {};
 
   final List<String> classes = [
     "All", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"
@@ -26,7 +28,10 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
   }
 
   Future<void> loadAllBooks() async {
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
     try {
       List<dynamic> allBooks = [];
       for (String className in classes.skip(1)) {
@@ -40,7 +45,12 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
       });
     } catch (e) {
       print('Error loading books: $e');
-      setState(() => isLoading = false);
+      setState(() {
+        isLoading = false;
+        errorMessage = e.toString().contains('SocketException') || e.toString().contains('Failed host lookup')
+            ? 'No internet connection. Please check your network.'
+            : 'Failed to load books. Please try again.';
+      });
     }
   }
 
@@ -97,6 +107,36 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
     
     final uri = Uri.parse(fullUrl);
     await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> downloadBook(int index, String bookUrl, String bookName) async {
+    String fullUrl = bookUrl;
+    if (bookUrl.startsWith('/')) {
+      fullUrl = '${EnvConfig.apiBaseUrl}$bookUrl';
+    }
+
+    setState(() => downloadProgress[index] = 0.0);
+
+    final filePath = await BookService.downloadBook(
+      bookUrl: fullUrl,
+      bookName: bookName,
+      onProgress: (received, total) {
+        if (total != -1) {
+          setState(() => downloadProgress[index] = received / total);
+        }
+      },
+    );
+
+    setState(() => downloadProgress.remove(index));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(filePath != null ? 'Downloaded: $bookName' : 'Download failed'),
+          backgroundColor: filePath != null ? Colors.green : Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -163,7 +203,27 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : filteredBooks.isEmpty
+          : errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      SizedBox(height: 16),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(errorMessage!, style: TextStyle(fontSize: 16, color: Colors.grey), textAlign: TextAlign.center),
+                      ),
+                      SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: loadAllBooks,
+                        icon: Icon(Icons.refresh),
+                        label: Text('Retry'),
+                      ),
+                    ],
+                  ),
+                )
+              : filteredBooks.isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -191,18 +251,55 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                           title: Text(
                             book['book_name'] ?? 'Unknown',
                             style: TextStyle(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SizedBox(height: 4),
-                              Text('Subject: ${book['subject_name'] ?? 'N/A'}'),
-                              Text('Class: ${book['class_name'] ?? 'N/A'}'),
+                              Text(
+                                'Subject: ${book['subject_name'] ?? 'N/A'}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                'Class: ${book['class_name'] ?? 'N/A'}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ],
                           ),
-                          trailing: IconButton(
-                            icon: Icon(Icons.delete_outline, color: Colors.red),
-                            onPressed: () => deleteBook(book['id']),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (downloadProgress.containsKey(index))
+                                SizedBox(
+                                  width: 30,
+                                  height: 30,
+                                  child: CircularProgressIndicator(
+                                    value: downloadProgress[index],
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              else
+                                IconButton(
+                                  icon: Icon(Icons.download, color: Colors.blue),
+                                  onPressed: () {
+                                    if (book['book_url'] != null && book['book_url'].toString().isNotEmpty) {
+                                      downloadBook(
+                                        index,
+                                        book['book_url'],
+                                        book['book_name'] ?? 'book',
+                                      );
+                                    }
+                                  },
+                                ),
+                              IconButton(
+                                icon: Icon(Icons.delete_outline, color: Colors.red),
+                                onPressed: () => deleteBook(book['id']),
+                              ),
+                            ],
                           ),
                           onTap: () {
                             if (book['book_url'] != null) {

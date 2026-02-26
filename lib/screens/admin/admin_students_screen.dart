@@ -178,9 +178,13 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                           padding: const EdgeInsets.only(top: 4),
                                           child: Row(
                                             children: [
-                                              _miniTag("ID: ${student['unique_id'] ?? '-'}"),
+                                              Flexible(
+                                                child: _miniTag("ID: ${student['unique_id'] ?? '-'}"),
+                                              ),
                                               SizedBox(width: 8),
-                                              _miniTag("Class: ${student['standard'] ?? '-'}"),
+                                              Flexible(
+                                                child: _miniTag("Class: ${student['standard'] ?? '-'}"),
+                                              ),
                                             ],
                                           ),
                                         ),
@@ -282,6 +286,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
       child: Text(
         text,
         style: TextStyle(fontSize: 10, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
