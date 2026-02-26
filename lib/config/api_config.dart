@@ -25,6 +25,19 @@ class ApiConfig {
   // ============== ADMIN ENDPOINTS ==============
   static String adminUrl(String clientId, String adminId) =>
       '$baseUrl/admins/$clientId/admins/$adminId';
+  
+  static String adminsByClientUrl(String clientId) =>
+      '$baseUrl/admins/$clientId/admins';
+  
+  static String adminByIdUrl(String clientId, String adminId) =>
+      '$baseUrl/admins/$clientId/admins/$adminId';
+
+  // ============== USER ENDPOINTS ==============
+  static String userUrl(String userId) => '$baseUrl/users/$userId';
+
+  // ============== CLIENT/SCHOOL ENDPOINTS ==============
+  static String get clientsUrl => '$baseUrl/clients';
+  static String clientByIdUrl(String clientId) => '$baseUrl/clients/$clientId';
 
   // ============== ATTENDANCE ENDPOINTS ==============
   static String attendanceByClassUrl(String clientId, String date, String standard, String division) =>
@@ -53,6 +66,7 @@ class ApiConfig {
 
   // ============== STATISTICS ENDPOINTS ==============
   static String get statisticsUrl => '$baseUrl/users/statistics';
+  static String get allStatisticsUrl => '$baseUrl/users/all-statistics';
   
   static String attendanceStatisticsUrl(String date) =>
       '$baseUrl/attendance/statistics?date=$date';

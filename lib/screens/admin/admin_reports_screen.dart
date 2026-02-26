@@ -142,7 +142,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text("School Reports"),
+        title: Text("Reports"),
         backgroundColor: theme.primaryColor,
         elevation: 0,
       ),
