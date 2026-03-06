@@ -4,6 +4,8 @@ import '../../services/attendance_service.dart';
 import '../../services/auth_service.dart';
 import '../teacher/add_student_screen.dart';
 import 'edit_student_screen.dart';
+import '../teacher/student_marks_view_screen.dart';
+import 'admin_class_results_screen.dart';
 import 'package:intl/intl.dart';
 
 class AdminStudentsScreen extends StatefulWidget {
@@ -35,18 +37,40 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
   }
 
   Future<void> loadClassData(String className) async {
-    await loadStudents(className);
-    await loadTodayAttendance(className);
+    if (!mounted) return;
+    
+    try {
+      await Future.wait([
+        loadStudents(className),
+        loadTodayAttendance(className),
+      ]);
+    } catch (e) {
+      // Handle error silently
+    }
   }
 
   Future<void> loadStudents(String className) async {
+    if (!mounted) return;
     setState(() => isLoading = true);
-    var data = await StudentService.getStudents(className);
-    setState(() {
-      students = data;
-      totalStudents = data.length;
-      isLoading = false;
-    });
+    
+    try {
+      var data = await StudentService.getStudents(className);
+      if (mounted) {
+        setState(() {
+          students = data;
+          totalStudents = data.length;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          students = [];
+          totalStudents = 0;
+          isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> loadTodayAttendance(String className) async {
@@ -260,17 +284,17 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
             ),
           ),
           SizedBox(width: 8),
-          IconButton(
-            icon: Icon(Icons.person_add_outlined, color: theme.primaryColor),
-            onPressed: () async {
-              var result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => AddStudentScreen(standard: selectedClass!)),
-              );
-              if (result == true) loadClassData(selectedClass!);
-            },
-            tooltip: "Add Student",
-          ),
+              IconButton(
+                icon: Icon(Icons.person_add_outlined, color: theme.primaryColor),
+                onPressed: () async {
+                  var result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => AddStudentScreen(standard: selectedClass!)),
+                  );
+                  if (result == true) loadClassData(selectedClass!);
+                },
+                tooltip: "Add Student",
+              ),
         ],
       ),
     );
@@ -326,7 +350,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
           value: 'edit',
           child: Row(
             children: [
-              Icon(Icons.edit_outlined, color: Colors.blue, size: 20),
+              Icon(Icons.edit_outlined, color: Colors.green, size: 20),
               SizedBox(width: 12),
               Text('Edit Info'),
             ],

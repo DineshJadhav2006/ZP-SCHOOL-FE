@@ -3,6 +3,7 @@ import '../../services/student_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/attendance_service.dart';
 import '../../services/cache_service.dart';
+import '../../widgets/shimmer_loading.dart';
 import 'package:intl/intl.dart';
 import 'student_list_screen.dart';
 import 'attendance_screen.dart';
@@ -13,6 +14,8 @@ import 'books_screen.dart';
 import 'teacher_profile_screen.dart';
 import '../admin/notices_screen.dart';
 import '../login_screen.dart';
+import 'exams_screen.dart';
+import 'teacher_complaints_screen.dart';
 
 class ClassDashboardScreen extends StatefulWidget {
   final String className;
@@ -48,20 +51,29 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
   }
 
   void loadStudentCount() async {
-    // Show UI immediately with placeholder
-    setState(() {
-      isLoading = true;
-    });
+    if (!mounted) return;
     
-    // Load from API in background
-    int count = await StudentService.getStudentCount(widget.className);
-    await loadTodayAttendance();
+    setState(() => isLoading = true);
     
-    if (mounted) {
-      setState(() {
-        totalStudents = count;
-        isLoading = false;
-      });
+    try {
+      final results = await Future.wait([
+        StudentService.getStudentCount(widget.className),
+        loadTodayAttendance(),
+      ]);
+      
+      if (mounted) {
+        setState(() {
+          totalStudents = results[0] as int;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          totalStudents = 0;
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -102,53 +114,81 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
     final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
-      child: Card(
-        elevation: 0,
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: color.withOpacity(0.1), width: 1),
-        ),
-        child: Container(
-          height: 120,
-          padding: EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                color.withOpacity(0.05),
-                color.withOpacity(0.15),
+      child: ShimmerLoading(
+        isLoading: isLoading && value == "...",
+        child: Card(
+          elevation: 0,
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: color.withOpacity(0.1), width: 1),
+          ),
+          child: Container(
+            height: 120,
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  color.withOpacity(0.05),
+                  color.withOpacity(0.15),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                isLoading && value == "..."
+                    ? Container(
+                        width: 60,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      )
+                    : value == "..."
+                        ? Text(
+                            value,
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              color: color.withOpacity(0.8),
+                            ),
+                          )
+                        : CountUpAnimation(
+                            targetValue: int.tryParse(value) ?? 0,
+                            textStyle: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              color: color.withOpacity(0.8),
+                            ),
+                          ),
+                SizedBox(height: 6),
+                isLoading && value == "..."
+                    ? Container(
+                        width: 80,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      )
+                    : Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
               ],
             ),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: color.withOpacity(0.8),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: 6),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade700,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
           ),
         ),
       ),
@@ -482,6 +522,32 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
             onTap: () {
               Navigator.pop(context);
               showClassSelectionDialog();
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.assignment_turned_in, color: theme.primaryColor),
+            title: Text("Exams", style: TextStyle(fontWeight: FontWeight.w600)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ExamsScreen(className: widget.className),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.report_problem, color: Colors.orange),
+            title: Text("My Complaints", style: TextStyle(fontWeight: FontWeight.w600)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => TeacherComplaintsScreen(),
+                ),
+              );
             },
           ),
           ListTile(

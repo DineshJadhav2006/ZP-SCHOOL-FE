@@ -4,6 +4,8 @@ import '../teacher/add_student_screen.dart';
 import 'add_teacher_screen.dart';
 import 'admin_reports_screen.dart';
 import 'notices_screen.dart';
+import 'admin_complaints_screen.dart';
+import 'admin_class_results_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   final String adminName;
@@ -197,6 +199,32 @@ class AdminDashboardScreen extends StatelessWidget {
                 Colors.orange.shade800,
                 () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => NoticesScreen()));
+                },
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _actionCard(
+                Icons.report_problem,
+                "Complaints",
+                Colors.red.shade600,
+                () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => AdminComplaintsScreen()));
+                },
+              ),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: _actionCard(
+                Icons.assignment,
+                "Results",
+                Colors.purple.shade600,
+                () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => AdminClassResultsScreen()));
                 },
               ),
             ),

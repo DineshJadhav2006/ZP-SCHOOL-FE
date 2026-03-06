@@ -3,6 +3,7 @@ import '../../services/auth_service.dart';
 import '../../localization/language_service.dart';
 import '../login_screen.dart';
 import 'class_selection_screen.dart';
+import 'teacher_complaints_screen.dart';
 
 class TeacherHomeScreen extends StatefulWidget {
   @override
@@ -30,14 +31,34 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
         ],
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => ClassSelectionScreen()),
-            );
-          },
-          child: Text("Select Class"),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ClassSelectionScreen()),
+                );
+              },
+              child: Text("Select Class"),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => TeacherComplaintsScreen()),
+                );
+              },
+              icon: Icon(Icons.report_problem),
+              label: Text("My Complaints"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
         ),
       ),
     );

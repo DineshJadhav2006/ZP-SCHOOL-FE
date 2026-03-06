@@ -149,10 +149,13 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
       ),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          radius: 25,
-          backgroundColor: theme.primaryColor.withOpacity(0.1),
-          child: Icon(Icons.person, color: theme.primaryColor),
+        leading: Hero(
+          tag: 'teacher_avatar_${teacher['id']}',
+          child: CircleAvatar(
+            radius: 25,
+            backgroundColor: theme.primaryColor.withOpacity(0.1),
+            child: Icon(Icons.person, color: theme.primaryColor),
+          ),
         ),
         title: Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         subtitle: Column(
@@ -163,10 +166,14 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
             SizedBox(height: 4),
             Row(
               children: [
-                _miniTag("ID: ${teacher['unique_id'] ?? '-'}"),
+                Flexible(
+                  child: _miniTag("ID: ${teacher['unique_id'] ?? '-'}"),
+                ),
                 if (teacher['is_class_teacher'] == true) ...[
                   SizedBox(width: 8),
-                  _miniTag("Class: ${teacher['assigned_standard']}", isPrimary: true),
+                  Flexible(
+                    child: _miniTag("Class: ${teacher['assigned_standard']}", isPrimary: true),
+                  ),
                 ],
               ],
             ),

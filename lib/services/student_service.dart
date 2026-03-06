@@ -1,87 +1,119 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'auth_service.dart';
 import '../config/api_config.dart';
+import '../config/env_config.dart';
+import 'http_service.dart';
+import 'auth_service.dart';
 
 class StudentService {
+  static final Map<String, dynamic> _cache = {};
+  static final Map<String, DateTime> _cacheTimestamps = {};
+
+  static bool _isCacheValid(String key) {
+    if (!_cache.containsKey(key) || !_cacheTimestamps.containsKey(key)) {
+      return false;
+    }
+    return DateTime.now().difference(_cacheTimestamps[key]!).inMilliseconds < EnvConfig.cacheTimeout;
+  }
+
   static Future<Map<String, dynamic>?> getStudent() async {
-    String? token = await AuthService.getAccessToken();
     String? clientId = await AuthService.getClientId();
     String? studentId = await AuthService.getStudentId();
 
-    if (token == null || clientId == null || studentId == null) {
+    if (clientId == null || studentId == null) {
       return null;
     }
 
-    final url = ApiConfig.studentUrl(clientId, studentId);
+    final cacheKey = 'student_$studentId';
+    if (_isCacheValid(cacheKey)) {
+      return _cache[cacheKey];
+    }
 
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {"Authorization": "Bearer $token"},
-    );
+    try {
+      final url = ApiConfig.studentUrl(clientId, studentId);
+      final response = await HttpService.get(url);
 
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      return data["student"];
-    } else {
-      return null;
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        final student = data["student"];
+        _cache[cacheKey] = student;
+        _cacheTimestamps[cacheKey] = DateTime.now();
+        return student;
+      }
+      return _cache[cacheKey];
+    } catch (e) {
+      return _cache[cacheKey];
     }
   }
 
   static Future<int> getStudentCount(String standard) async {
-    String? token = await AuthService.getAccessToken();
-    String? clientId = await AuthService.getClientId();
+    final cacheKey = 'student_count_$standard';
+    if (_isCacheValid(cacheKey)) {
+      return _cache[cacheKey];
+    }
 
-    final url = ApiConfig.studentsListUrl(clientId!, standard);
+    try {
+      String? clientId = await AuthService.getClientId();
+      final url = ApiConfig.studentsListUrl(clientId!, standard);
+      final response = await HttpService.get(url);
 
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {"Authorization": "Bearer $token"},
-    );
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      return data["pagination"]["total"];
-    } else {
-      return 0;
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        final count = data["pagination"]["total"];
+        _cache[cacheKey] = count;
+        _cacheTimestamps[cacheKey] = DateTime.now();
+        return count;
+      }
+      return _cache[cacheKey] ?? 0;
+    } catch (e) {
+      return _cache[cacheKey] ?? 0;
     }
   }
 
   static Future<List<dynamic>> getStudents(String standard) async {
-    String? token = await AuthService.getAccessToken();
-    String? clientId = await AuthService.getClientId();
+    final cacheKey = 'students_$standard';
+    if (_isCacheValid(cacheKey)) {
+      return _cache[cacheKey];
+    }
 
-    final url = ApiConfig.studentsListUrl(clientId!, standard);
+    try {
+      String? clientId = await AuthService.getClientId();
+      final url = ApiConfig.studentsListUrl(clientId!, standard);
+      final response = await HttpService.get(url);
 
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {"Authorization": "Bearer $token"},
-    );
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      return data["students"];
-    } else {
-      return [];
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        final students = data["students"];
+        _cache[cacheKey] = students;
+        _cacheTimestamps[cacheKey] = DateTime.now();
+        return students;
+      }
+      return _cache[cacheKey] ?? [];
+    } catch (e) {
+      return _cache[cacheKey] ?? [];
     }
   }
 
   static Future<Map<String, dynamic>?> getStudentById(String studentId) async {
-    String? token = await AuthService.getAccessToken();
-    String? clientId = await AuthService.getClientId();
+    final cacheKey = 'student_by_id_$studentId';
+    if (_isCacheValid(cacheKey)) {
+      return _cache[cacheKey];
+    }
 
-    final url = ApiConfig.studentUrl(clientId!, studentId);
+    try {
+      String? clientId = await AuthService.getClientId();
+      final url = ApiConfig.studentUrl(clientId!, studentId);
+      final response = await HttpService.get(url);
 
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {"Authorization": "Bearer $token"},
-    );
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      return data["student"];
-    } else {
-      return null;
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        final student = data["student"];
+        _cache[cacheKey] = student;
+        _cacheTimestamps[cacheKey] = DateTime.now();
+        return student;
+      }
+      return _cache[cacheKey];
+    } catch (e) {
+      return _cache[cacheKey];
     }
   }
 
@@ -89,43 +121,43 @@ class StudentService {
     String studentId,
     Map<String, dynamic> body,
   ) async {
-    String? token = await AuthService.getAccessToken();
-    String? clientId = await AuthService.getClientId();
+    try {
+      String? clientId = await AuthService.getClientId();
+      final url = ApiConfig.studentUrl(clientId!, studentId);
+      final response = await HttpService.put(url, body: jsonEncode(body));
 
-    final url = ApiConfig.studentUrl(clientId!, studentId);
-
-    final response = await http.put(
-      Uri.parse(url),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: jsonEncode(body),
-    );
-
-    return response.statusCode == 200;
+      if (response.statusCode == 200) {
+        _cache.removeWhere((key, value) => key.contains('student'));
+        _cacheTimestamps.removeWhere((key, value) => key.contains('student'));
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
   }
 
   static Future<bool> deleteStudent(String studentId) async {
-    String? token = await AuthService.getAccessToken();
-    String? clientId = await AuthService.getClientId();
-
-    if (token == null || clientId == null) {
-      return false;
-    }
-
-    final url = ApiConfig.studentUrl(clientId, studentId);
-
     try {
-      final response = await http.delete(
-        Uri.parse(url),
-        headers: {"Authorization": "Bearer $token"},
-      );
+      String? clientId = await AuthService.getClientId();
+      if (clientId == null) return false;
 
-      return response.statusCode == 200;
+      final url = ApiConfig.studentUrl(clientId, studentId);
+      final response = await HttpService.delete(url);
+
+      if (response.statusCode == 200) {
+        _cache.removeWhere((key, value) => key.contains('student'));
+        _cacheTimestamps.removeWhere((key, value) => key.contains('student'));
+        return true;
+      }
+      return false;
     } catch (e) {
-      print("Error deleting student: $e");
       return false;
     }
+  }
+
+  static void clearCache() {
+    _cache.clear();
+    _cacheTimestamps.clear();
   }
 }
