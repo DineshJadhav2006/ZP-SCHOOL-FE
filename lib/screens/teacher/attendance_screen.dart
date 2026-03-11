@@ -200,6 +200,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> with AutomaticKeepA
       floatingActionButton: isAttendanceTaken
           ? null
           : FloatingActionButton.extended(
+              heroTag: "teacher_attendance_submit_fab",
               onPressed: saveAttendance,
               backgroundColor: theme.primaryColor,
               icon: Icon(Icons.check_circle_outline),

@@ -98,6 +98,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final primaryColor = theme.primaryColor;
     
     if (isLoading) {
       return Scaffold(
@@ -109,172 +110,307 @@ class _ResultsScreenState extends State<ResultsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       body: examMarks.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.assignment_outlined, size: 80, color: Colors.grey.shade400),
-                  SizedBox(height: 16),
-                  Text(
-                    'No results available',
-                    style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-                  ),
-                ],
-              ),
-            )
+          ? _buildEmptyState()
           : RefreshIndicator(
               onRefresh: loadResults,
-              child: SingleChildScrollView(
+              child: CustomScrollView(
                 physics: AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildGradeInfoCard(theme),
-                    SizedBox(height: 20),
-                    ...examMarks.entries.map((entry) {
-                      String examName = entry.key;
-                      List<Map<String, dynamic>> subjects = entry.value;
-                      
-                      int totalObtained = 0;
-                      int totalMax = 0;
-                      for (var subject in subjects) {
-                        totalObtained += (subject['marks_obtained'] as int? ?? 0);
-                        totalMax += (subject['total_marks'] as int? ?? 0);
-                      }
-                      double percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
-                      String grade = _getGrade(percentage);
-                      
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 16),
-                        child: _buildExamCard(theme, examName, grade, percentage, subjects),
-                      );
-                    }).toList(),
-                  ],
-                ),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildOverallSummary(theme),
+                          SizedBox(height: 24),
+                          _buildGradeInfoCard(theme),
+                          SizedBox(height: 24),
+                          Text(
+                            "Term Results",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade800,
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final entry = examMarks.entries.elementAt(index);
+                          String examName = entry.key;
+                          List<Map<String, dynamic>> subjects = entry.value;
+                          
+                          int totalObtained = 0;
+                          int totalMax = 0;
+                          for (var subject in subjects) {
+                            totalObtained += (subject['marks_obtained'] as int? ?? 0);
+                            totalMax += (subject['total_marks'] as int? ?? 0);
+                          }
+                          double percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
+                          String grade = _getGrade(percentage);
+                          
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: 16),
+                            child: _buildExamCard(theme, examName, grade, percentage, totalObtained, totalMax, subjects),
+                          );
+                        },
+                        childCount: examMarks.length,
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(child: SizedBox(height: 40)),
+                ],
               ),
             ),
+    );
+  }
+
+  Widget _buildOverallSummary(ThemeData theme) {
+    // Calculate overall average
+    double totalPerc = 0;
+    examMarks.forEach((key, subjects) {
+      int obtained = 0, max = 0;
+      for (var s in subjects) {
+        obtained += (s['marks_obtained'] as int? ?? 0);
+        max += (s['total_marks'] as int? ?? 0);
+      }
+      totalPerc += max > 0 ? (obtained / max) * 100 : 0;
+    });
+    double avgPerc = examMarks.isNotEmpty ? totalPerc / examMarks.length : 0;
+    String overallGrade = _getGrade(avgPerc);
+
+    return Container(
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: theme.primaryColor.withOpacity(0.3),
+            blurRadius: 15,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Overall Performance",
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "${avgPerc.toStringAsFixed(1)}%",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "Keep it up! You're doing great.",
+                  style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              overallGrade,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildGradeInfoCard(ThemeData theme) {
     return Container(
-      padding: EdgeInsets.all(14),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Grade System',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _gradeItem('A+', '90%+', Colors.green),
-              _gradeItem('A', '80-89%', Colors.lightGreen),
-              _gradeItem('B+', '70-79%', Colors.blue),
-              _gradeItem('B', '60-69%', Colors.lightBlue),
-            ],
-          ),
-          SizedBox(height: 8),
           Row(
             children: [
-              _gradeItem('C', '50-59%', Colors.orange),
+              Icon(Icons.info_outline, size: 18, color: theme.primaryColor),
               SizedBox(width: 8),
-              _gradeItem('D', '40-49%', Colors.deepOrange),
-              SizedBox(width: 8),
-              _gradeItem('E', '<40%', Colors.grey),
+              Text(
+                'Grade System',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+              ),
             ],
+          ),
+          SizedBox(height: 16),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _gradeBadge('A+', Colors.green, '91-100%'),
+                _gradeBadge('A', Colors.lightGreen, '81-90%'),
+                _gradeBadge('B+', Colors.blue, '71-80%'),
+                _gradeBadge('B', Colors.lightBlue, '61-70%'),
+                _gradeBadge('C', Colors.orange, '51-60%'),
+                _gradeBadge('D', Colors.deepOrange, '41-50%'),
+                _gradeBadge('E', Colors.red, '< 40%'),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _gradeItem(String grade, String range, Color color) {
-    return Column(
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(6),
+  Widget _gradeBadge(String grade, Color color, String range) {
+    return Container(
+      margin: EdgeInsets.only(right: 12),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            grade,
+            style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 16),
           ),
-          child: Center(
-            child: Text(
-              grade,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: color,
-                fontSize: 13,
-              ),
-            ),
+          SizedBox(height: 2),
+          Text(
+            range,
+            style: TextStyle(fontSize: 10, color: color.withOpacity(0.8), fontWeight: FontWeight.w500),
           ),
-        ),
-        SizedBox(height: 3),
-        Text(
-          range,
-          style: TextStyle(fontSize: 9, color: Colors.grey.shade600),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildExamCard(ThemeData theme, String title, String grade, double percentage, List<Map<String, dynamic>> subjects) {
+  Widget _buildExamCard(ThemeData theme, String title, String grade, double percentage, int obtained, int total, List<Map<String, dynamic>> subjects) {
+    Color gradeColor = _getGradeColor(grade);
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4)),
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 12, offset: Offset(0, 4)),
         ],
       ),
       child: Theme(
         data: theme.copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          tilePadding: EdgeInsets.all(20),
           title: Text(
             title,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: Colors.grey.shade800),
           ),
-          subtitle: Row(
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Grade: $grade",
-                style: TextStyle(color: _getGradeColor(grade), fontWeight: FontWeight.w600),
+              SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: LinearProgressIndicator(
+                        value: percentage / 100,
+                        backgroundColor: gradeColor.withOpacity(0.1),
+                        valueColor: AlwaysStoppedAnimation(gradeColor),
+                        minHeight: 8,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Container(
+                    width: 50,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      "${percentage.toStringAsFixed(1)}%",
+                      style: TextStyle(fontWeight: FontWeight.bold, color: gradeColor, fontSize: 13),
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: 12),
-              Text(
-                "${percentage.toStringAsFixed(1)}%",
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+              SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      "Grade: $grade",
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      "$obtained / $total Marks",
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
           leading: Container(
-            padding: EdgeInsets.all(8),
+            padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: theme.primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(Icons.assignment, color: theme.primaryColor, size: 24),
+            child: Icon(Icons.assignment_rounded, color: theme.primaryColor, size: 24),
           ),
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
               child: Column(
-                children: subjects.map((subject) {
-                  String name = subject['subject_name'] ?? '';
-                  int obtained = subject['marks_obtained'] ?? 0;
-                  int total = subject['total_marks'] ?? 0;
-                  return _subjectRow(name, "$obtained/$total", _getSubjectIcon(name), _getSubjectColor(name));
-                }).toList(),
+                children: [
+                  Divider(height: 1),
+                  SizedBox(height: 12),
+                  ...subjects.map((subject) {
+                    String name = subject['subject_name'] ?? '';
+                    int obtained = subject['marks_obtained'] ?? 0;
+                    int total = subject['total_marks'] ?? 0;
+                    return _subjectRow(name, obtained, total);
+                  }).toList(),
+                ],
               ),
             ),
           ],
@@ -283,26 +419,69 @@ class _ResultsScreenState extends State<ResultsScreen> {
     );
   }
 
-  Widget _subjectRow(String name, String marks, IconData icon, Color color) {
+  Widget _subjectRow(String name, int obtained, int total) {
+    double perc = total > 0 ? (obtained / total) * 100 : 0;
+    Color color = _getPercentageColor(perc);
+    
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(6),
+            padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: _getSubjectColor(name).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 18),
+            child: Icon(_getSubjectIcon(name), color: _getSubjectColor(name), size: 18),
           ),
-          SizedBox(width: 12),
+          SizedBox(width: 14),
           Expanded(
-            child: Text(name, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
+            child: Text(
+              name,
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Colors.grey.shade700),
+            ),
           ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                "$obtained/$total",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.grey.shade800),
+              ),
+              Text(
+                "${perc.toStringAsFixed(0)}%",
+                style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getPercentageColor(double percentage) {
+    if (percentage >= 75) return Colors.green.shade600;
+    if (percentage >= 60) return Colors.blue.shade600;
+    if (percentage >= 40) return Colors.orange.shade600;
+    return Colors.red.shade600;
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.assignment_outlined, size: 80, color: Colors.grey.shade200),
+          SizedBox(height: 20),
           Text(
-            marks,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.grey.shade800),
+            'No results published yet',
+            style: TextStyle(fontSize: 18, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Check back later for your performance report.',
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
           ),
         ],
       ),

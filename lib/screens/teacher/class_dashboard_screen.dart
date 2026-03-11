@@ -370,40 +370,135 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
       "1st", "2nd", "3rd", "4th", "5th", "6th", "7th"
     ];
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Switch Class"),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: classes.length,
-            itemBuilder: (context, index) {
-              final className = classes[index];
-              return ListTile(
-                title: Text(className),
-                trailing: widget.className == className
-                    ? Icon(Icons.check, color: Colors.blue)
-                    : null,
-                onTap: () {
-                  if (className != widget.className) {
-                    Navigator.pop(context);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ClassDashboardScreen(
-                          className: className,
-                          teacherName: widget.teacherName,
-                          designation: widget.designation,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.6,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              margin: EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(24),
+              child: Row(
+                children: [
+                  Icon(Icons.swap_horiz_rounded, color: Theme.of(context).primaryColor, size: 28),
+                  SizedBox(width: 12),
+                  Text(
+                    "Switch Class",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: GridView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 15,
+                  mainAxisSpacing: 15,
+                  childAspectRatio: 0.9,
+                ),
+                itemCount: classes.length,
+                itemBuilder: (context, index) {
+                  final className = classes[index];
+                  bool isCurrent = widget.className == className;
+                  
+                  return InkWell(
+                    onTap: () {
+                      if (!isCurrent) {
+                        Navigator.pop(context);
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ClassDashboardScreen(
+                              className: className,
+                              teacherName: widget.teacherName,
+                              designation: widget.designation,
+                            ),
+                          ),
+                        );
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isCurrent ? Theme.of(context).primaryColor : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isCurrent 
+                            ? Theme.of(context).primaryColor 
+                            : Colors.grey.shade200,
+                          width: 1.5,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isCurrent 
+                              ? Theme.of(context).primaryColor.withOpacity(0.3) 
+                              : Colors.black.withOpacity(0.03),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    );
-                  }
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.school_outlined,
+                            color: isCurrent ? Colors.white : Theme.of(context).primaryColor,
+                            size: 28,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            className,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: isCurrent ? Colors.white : Colors.grey.shade800,
+                            ),
+                          ),
+                          if (isCurrent)
+                            Padding(
+                              padding: EdgeInsets.only(top: 4),
+                              child: Text(
+                                "Current",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
                 },
-              );
-            },
-          ),
+              ),
+            ),
+            SizedBox(height: 20),
+          ],
         ),
       ),
     );

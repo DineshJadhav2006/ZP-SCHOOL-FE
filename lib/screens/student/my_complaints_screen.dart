@@ -227,6 +227,7 @@ class _MyComplaintsScreenState extends State<MyComplaintsScreen> {
                   ),
                 ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: "student_add_complaint_fab",
         onPressed: () async {
           bool? result = await Navigator.push(
             context,

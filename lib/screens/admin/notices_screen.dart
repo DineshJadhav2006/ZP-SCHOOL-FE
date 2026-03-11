@@ -213,6 +213,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
                   ),
                 ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "admin_notices_fab",
         onPressed: () async {
           var result = await Navigator.push(
             context,

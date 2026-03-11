@@ -121,22 +121,19 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
   }
 
   Future<void> saveMarks() async {
-    setState(() => isSaving = true);
-    
-    int savedCount = 0;
-    int totalToSave = 0;
+    List<StudentMarks> studentMarksList = [];
     
     for (var student in students) {
-      String studentId = student['id'] ?? '';
       String rollNo = student['roll_number']?.toString() ?? '';
       List<SubjectMarks> subjectMarks = [];
       
+      bool hasMarks = false;
       for (var subject in subjects) {
         String subjectName = subject['name'];
         int totalMarks = subject['totalMarks'];
         String marksText = controllers[rollNo]![subjectName]!.text.trim();
-        
         if (marksText.isNotEmpty) {
+          hasMarks = true;
           subjectMarks.add(SubjectMarks(
             subjectName: subjectName,
             marksObtained: int.parse(marksText),
@@ -145,34 +142,50 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
         }
       }
       
-      if (subjectMarks.isNotEmpty) {
-        totalToSave++;
-        bool success = await MarksService.saveMarks(
-          studentId: studentId,
-          examName: widget.examName,
+      if (hasMarks) {
+        studentMarksList.add(StudentMarks(
+          rollNumber: rollNo,
           subjects: subjectMarks,
-        );
-        if (success) savedCount++;
+        ));
       }
     }
     
-    setState(() => isSaving = false);
-    
-    if (totalToSave == 0) {
+    if (studentMarksList.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please enter marks for at least one student')),
       );
       return;
     }
     
-    if (savedCount == totalToSave) {
+    setState(() => isSaving = true);
+    
+    String? teacherId = await AuthService.getTeacherId();
+    print('Teacher ID: $teacherId');
+    
+    if (teacherId == null || teacherId.isEmpty) {
+      setState(() => isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Teacher ID not found. Please login again.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    
+    bool success = await MarksService.bulkSaveMarks(
+      teacherId: teacherId,
+      examName: widget.examName,
+      students: studentMarksList,
+    );
+    
+    setState(() => isSaving = false);
+    
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Marks saved successfully!'), backgroundColor: Colors.green),
       );
       Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Saved $savedCount/$totalToSave students'), backgroundColor: Colors.orange),
+        SnackBar(content: Text('Failed to save marks'), backgroundColor: Colors.red),
       );
     }
   }
@@ -533,6 +546,7 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
                 ),
       floatingActionButton: !isLoading && students.isNotEmpty
           ? FloatingActionButton.extended(
+              heroTag: "marks_entry_save_fab",
               onPressed: isSaving ? null : saveMarks,
               icon: isSaving ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : Icon(Icons.save),
               label: Text(isSaving ? 'Saving...' : 'Save Marks'),

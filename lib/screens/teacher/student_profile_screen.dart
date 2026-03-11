@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../utils/common_extensions.dart';
 import '../../services/student_service.dart';
 import 'edit_student_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
 
 class StudentProfileScreen extends StatefulWidget {
   final String studentId;
@@ -33,27 +35,36 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     });
   }
 
-  String formatDate(String? date) {
-    if (date == null || date.isEmpty) return "N/A";
+  String _formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return "-";
     try {
-      if (date.contains('T')) {
-        return date.split("T")[0];
+      if (dateStr.contains('T')) {
+        return DateFormat('dd MMM yyyy').format(DateTime.parse(dateStr));
       }
-      return date;
+      return dateStr;
     } catch (e) {
-      return date;
+      return dateStr;
     }
   }
 
   void _makePhoneCall(String? phoneNumber) async {
     if (phoneNumber == null || phoneNumber.isEmpty) return;
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: phoneNumber,
-    );
+    final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
     }
+  }
+
+  void _copyToClipboard(String text, String label) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("$label copied to clipboard"),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        backgroundColor: Colors.black87,
+      ),
+    );
   }
 
   @override
@@ -71,204 +82,169 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       );
     }
 
-    final theme = Theme.of(context);
-    final String gender = student!["gender"]?.toString().toLowerCase() ?? "male";
-    final Color primaryColor = gender == "female" ? Colors.pink : Colors.blue;
-    final String fullName = "${student!["first_name"]} ${student!["middle_name"] ?? ""} ${student!["last_name"]}".trim();
+    final String firstName = student!["first_name"] ?? "";
+    final String lastName = student!["last_name"] ?? "";
+    final String fullName = "$firstName ${student!["middle_name"] ?? ''} $lastName".trim();
+    final primaryColor = Colors.indigo;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      body: CustomScrollView(
-        slivers: [
-          // प्रीमियम हेडर विथ अवतार
-          SliverAppBar(
-            expandedHeight: 220,
-            pinned: true,
-            backgroundColor: primaryColor,
-            elevation: 0,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [primaryColor.darken(0.2), primaryColor.lighten(0.2)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+      appBar: AppBar(
+        title: Text(
+          "Student Profile",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: ListView(
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        physics: BouncingScrollPhysics(),
+        children: [
+          // Profile Header - Matches Admin Style Exactly
+          Center(
+            child: Column(
+              children: [
+                SizedBox(height: 30),
+                Container(
+                  padding: EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4)),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundColor: primaryColor.withOpacity(0.1),
+                    child: Text(
+                      firstName.isNotEmpty ? firstName[0].toUpperCase() : 'S',
+                      style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: primaryColor),
+                    ),
                   ),
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(height: 60),
-                    Container(
-                      padding: EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
-                        ],
-                      ),
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.grey.shade100,
-                        child: Text(
-                          student!["first_name"]?[0]?.toUpperCase() ?? "S",
-                          style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: primaryColor),
-                        ),
-                      ),
-                    ),
-                  ],
+                SizedBox(height: 16),
+                Text(
+                  fullName,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.black87),
                 ),
-              ),
+                SizedBox(height: 6),
+                Text(
+                  "Class ${student!['standard']} - ${student!['division'] ?? 'A'}",
+                  style: TextStyle(fontSize: 16, color: primaryColor, fontWeight: FontWeight.w600),
+                ),
+                SizedBox(height: 25),
+              ],
             ),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.edit_note, size: 28),
-                onPressed: () {
-                  Navigator.push(
+          ),
+
+          // Action Buttons - Matches Admin Style Exactly (Fixes Overflow)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _actionButton(
+                icon: Icons.call_outlined,
+                label: "Call Parent",
+                color: Colors.green,
+                onTap: () => _makePhoneCall(student!['mobile_number']),
+              ),
+              _actionButton(
+                icon: Icons.edit_outlined,
+                label: "Edit",
+                color: Colors.blue,
+                onTap: () async {
+                  await Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => EditStudentScreen(student: student!),
-                    ),
-                  ).then((_) => loadStudent());
+                    MaterialPageRoute(builder: (_) => EditStudentScreen(student: student!)),
+                  );
+                  loadStudent();
                 },
               ),
             ],
           ),
+          SizedBox(height: 30),
 
-          SliverToBoxAdapter(
-            child: Transform.translate(
-              offset: Offset(0, -20),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      SizedBox(height: 20),
-                      // नाव आणि रोल नंबर कार्ड
-                      _buildMainInfoCard(fullName, student!["unique_id"], student!["roll_number"], primaryColor),
-                      
-                      SizedBox(height: 16),
-                      // अकॅडमिक माहिती
-                      _buildSectionTitle("Academic Details", Icons.school_outlined, primaryColor),
-                      _buildDataSection([
-                        _buildInfoRow(Icons.class_outlined, "Standard", student!["standard"] ?? "N/A"),
-                        _buildInfoRow(Icons.grid_3x3, "Division", student!["division"] ?? "N/A"),
-                        _buildInfoRow(Icons.event_available, "Admission Date", formatDate(student!["admission_date"])),
-                        _buildInfoRow(Icons.category_outlined, "Category", student!["category"] ?? "N/A"),
-                      ]),
+          // Academic Information
+          _sectionTitle("Academic Information", Icons.school_outlined),
+          _infoCard([
+            _infoRow(Icons.fingerprint, "Student ID", student!['unique_id'] ?? '-', 
+              onTap: () => _copyToClipboard(student!['unique_id'] ?? "", "Student ID")),
+            _infoRow(Icons.tag, "Roll Number", student!['roll_number']?.toString() ?? '-'),
+            _infoRow(Icons.calendar_today_outlined, "Admission Date", _formatDate(student!['admission_date'])),
+            _infoRow(Icons.category_outlined, "Category", student!['category'] ?? 'General'),
+          ]),
 
-                      SizedBox(height: 16),
-                      // वैयक्तिक माहिती
-                      _buildSectionTitle("Personal Details", Icons.person_outline, primaryColor),
-                      _buildDataSection([
-                        _buildInfoRow(Icons.fingerprint, "Aadhar Number", student!["aadhar_number"] ?? "N/A"),
-                        _buildInfoRow(gender == "female" ? Icons.female : Icons.male, "Gender", gender.capitalize()),
-                        _buildInfoRow(Icons.cake_outlined, "Date of Birth", formatDate(student!["date_of_birth"])),
-                      ]),
+          SizedBox(height: 20),
+          // Personal Information
+          _sectionTitle("Personal Information", Icons.person_outline),
+          _infoCard([
+            _infoRow(Icons.credit_card_outlined, "Aadhar Number", student!['aadhar_number'] ?? '-', 
+              onTap: () => _copyToClipboard(student!['aadhar_number'] ?? "", "Aadhar Number")),
+            _infoRow(student!['gender']?.toString().toLowerCase() == 'female' ? Icons.female : Icons.male, 
+              "Gender", student!['gender']?.toString().capitalize() ?? 'Not Specified'),
+            _infoRow(Icons.cake_outlined, "Date of Birth", _formatDate(student!['date_of_birth'])),
+          ]),
 
-                      SizedBox(height: 16),
-                      // संपर्क आणि पालक
-                      _buildSectionTitle("Contact & Parent Details", Icons.contact_phone_outlined, primaryColor),
-                      _buildDataSection([
-                        _buildInfoRow(Icons.face, "Parent Name", student!["parent_name"] ?? "N/A"),
-                        _buildInfoRow(
-                          Icons.phone_android, 
-                          "Mobile Number", 
-                          student!["mobile_number"] ?? "N/A",
-                          trailing: IconButton(
-                            icon: Icon(Icons.call, color: Colors.green),
-                            onPressed: () => _makePhoneCall(student!["mobile_number"]),
-                          ),
-                        ),
-                        _buildInfoRow(Icons.location_on_outlined, "Address", student!["address"] ?? "N/A"),
-                      ]),
+          SizedBox(height: 20),
+          // Parent & Contact Details
+          _sectionTitle("Parent & Contact Details", Icons.contact_phone_outlined),
+          _infoCard([
+            _infoRow(Icons.face_outlined, "Parent Name", student!['parent_name'] ?? '-'),
+            _infoRow(Icons.phone_android_outlined, "Mobile", student!['mobile_number'] ?? '-', 
+              trailing: Icon(Icons.call, color: Colors.green, size: 18),
+              onTap: () => _makePhoneCall(student!['mobile_number'])),
+            _infoRow(Icons.location_on_outlined, "Address", student!['address'] ?? '-'),
+          ]),
 
-                      SizedBox(height: 40),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+          SizedBox(height: 40),
         ],
       ),
     );
   }
 
-  Widget _buildMainInfoCard(String name, String? id, dynamic roll, Color accent) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: Offset(0, 4)),
-        ],
-      ),
+  Widget _actionButton({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(15),
       child: Column(
         children: [
-          Text(
-            name,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.black87),
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 26),
           ),
           SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: accent.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  "ID: ${id ?? '-'}",
-                  style: TextStyle(fontWeight: FontWeight.bold, color: accent, fontSize: 13),
-                ),
-              ),
-              SizedBox(width: 10),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  "Roll: ${roll ?? '-'}",
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green.shade700, fontSize: 13),
-                ),
-              ),
-            ],
-          ),
+          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
         ],
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title, IconData icon, Color color) {
+  Widget _sectionTitle(String title, IconData icon) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+      padding: EdgeInsets.only(left: 4, bottom: 10),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: color),
+          Icon(icon, size: 20, color: Colors.indigo),
           SizedBox(width: 8),
-          Text(
-            title,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
-          ),
+          Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
         ],
       ),
     );
   }
 
-  Widget _buildDataSection(List<Widget> children) {
+  Widget _infoCard(List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -281,29 +257,32 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value, {Widget? trailing}) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, size: 18, color: Colors.grey.shade600),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
-                SizedBox(height: 2),
-                Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87)),
-              ],
+  Widget _infoRow(IconData icon, String label, String value, {Widget? trailing, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, size: 18, color: Colors.grey.shade600),
             ),
-          ),
-          if (trailing != null) trailing,
-        ],
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+                  SizedBox(height: 2),
+                  Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87)),
+                ],
+              ),
+            ),
+            if (trailing != null) trailing,
+          ],
+        ),
       ),
     );
   }

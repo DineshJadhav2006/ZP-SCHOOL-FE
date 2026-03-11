@@ -90,11 +90,9 @@ class _StudentListScreenState extends State<StudentListScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // हेडर सेक्शन - नाव आणि रोल नंबर
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // प्रोफाइल अवतार विथ जेंडर-बेस्ड मरिन (Female: Pink, Male: Blue)
                   Container(
                     width: 58,
                     height: 58,
@@ -195,8 +193,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
               SizedBox(height: 16),
               Divider(height: 1, thickness: 1, color: Colors.grey.shade100),
               SizedBox(height: 16),
-              
-              // इन्फो चिप्स - जेंडर आणि DOB (Simplified & Responsive)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -380,6 +376,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
           // Add new student functionality
           // तुम्ही तुमची add student स्क्रीन येथे ओपन करू शकता
         },
+        heroTag: "teacher_add_student_fab",
         child: Icon(Icons.add),
         backgroundColor: theme.primaryColor,
       ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../services/marks_service.dart';
 import 'student_marks_edit_screen.dart';
 import 'marks_entry_screen.dart';
+import 'student_profile_screen.dart';
+import '../../utils/common_extensions.dart';
 
 class MarksViewScreen extends StatefulWidget {
   final String className;
@@ -19,7 +21,11 @@ class MarksViewScreen extends StatefulWidget {
 class _MarksViewScreenState extends State<MarksViewScreen> {
   bool isLoading = true;
   Map<String, List<Map<String, dynamic>>> studentMarks = {};
+  List<Map<String, dynamic>> filteredStudents = [];
   List<String> subjects = [];
+  String searchQuery = "";
+  String sortBy = "Percentage"; 
+  bool isAscending = false;
 
   @override
   void initState() {
@@ -53,6 +59,7 @@ class _MarksViewScreenState extends State<MarksViewScreen> {
       }
       
       grouped[studentId]!.add({
+        'student_id': studentId,
         'first_name': firstName,
         'roll_number': rollNumber,
         'subject_name': subjectName,
@@ -64,206 +71,151 @@ class _MarksViewScreenState extends State<MarksViewScreen> {
     setState(() {
       studentMarks = grouped;
       subjects = subjectSet.toList()..sort();
+      _prepareFilteredList();
       isLoading = false;
     });
   }
 
+  void _prepareFilteredList() {
+    List<Map<String, dynamic>> list = [];
+    
+    studentMarks.forEach((id, marks) {
+      String name = marks.first['first_name'] ?? '';
+      String roll = marks.first['roll_number'] ?? '';
+      
+      int totalObtained = 0;
+      int totalMax = 0;
+      for (var mark in marks) {
+        totalObtained += (mark['marks_obtained'] as int?) ?? 0;
+        totalMax += (mark['total_marks'] as int?) ?? 0;
+      }
+      double percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
+
+      if (name.toLowerCase().contains(searchQuery.toLowerCase()) || 
+          roll.contains(searchQuery)) {
+        list.add({
+          'student_id': id,
+          'name': name,
+          'roll': roll,
+          'marks': marks,
+          'totalObtained': totalObtained,
+          'totalMax': totalMax,
+          'percentage': percentage,
+        });
+      }
+    });
+
+    _sortList(list);
+    filteredStudents = list;
+  }
+
+  void _sortList(List<Map<String, dynamic>> list) {
+    if (sortBy == "Roll Number") {
+      list.sort((a, b) {
+        int rollA = int.tryParse(a['roll']) ?? 0;
+        int rollB = int.tryParse(b['roll']) ?? 0;
+        return isAscending ? rollA.compareTo(rollB) : rollB.compareTo(rollA);
+      });
+    } else if (sortBy == "Percentage") {
+      list.sort((a, b) => isAscending 
+          ? a['percentage'].compareTo(b['percentage']) 
+          : b['percentage'].compareTo(a['percentage']));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final themeColor = Colors.indigo;
     
+    double classAvg = 0;
+    if (filteredStudents.isNotEmpty) {
+      classAvg = filteredStudents.map((s) => s['percentage'] as double).reduce((a, b) => a + b) / filteredStudents.length;
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: theme.primaryColor,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(widget.examName, style: TextStyle(fontSize: 16, color: Colors.white)),
-            Text('Class ${widget.className}', style: TextStyle(fontSize: 12, color: Colors.white70)),
-          ],
-        ),
-        iconTheme: IconThemeData(color: Colors.white),
-      ),
-      body: isLoading
+      body: isLoading 
           ? Center(child: CircularProgressIndicator())
-          : studentMarks.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.assignment_outlined, size: 80, color: Colors.grey.shade400),
-                      SizedBox(height: 16),
-                      Text(
-                        'No marks found',
-                        style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+          : CustomScrollView(
+              physics: BouncingScrollPhysics(),
+              slivers: [
+                SliverAppBar(
+                  expandedHeight: 220,
+                  pinned: true,
+                  backgroundColor: themeColor,
+                  elevation: 0,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [themeColor, themeColor.darken(0.2)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                       ),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  padding: EdgeInsets.all(12),
-                  itemCount: studentMarks.length,
-                  itemBuilder: (context, index) {
-                    String studentId = studentMarks.keys.elementAt(index);
-                    List<Map<String, dynamic>> marks = studentMarks[studentId]!;
-                    
-                    String studentName = marks.first['first_name'] ?? '';
-                    String rollNumber = marks.first['roll_number'] ?? '';
-                    
-                    int totalObtained = 0;
-                    int totalMax = 0;
-                    
-                    for (var mark in marks) {
-                      totalObtained += (mark['marks_obtained'] as int?) ?? 0;
-                      totalMax += (mark['total_marks'] as int?) ?? 0;
-                    }
-                    
-                    double percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
-                    
-                    return Card(
-                      margin: EdgeInsets.only(bottom: 12),
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ExpansionTile(
-                        tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        childrenPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        leading: CircleAvatar(
-                          backgroundColor: theme.primaryColor.withOpacity(0.1),
-                          child: Text(
-                            rollNumber,
-                            style: TextStyle(
-                              color: theme.primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        title: Text(
-                          studentName,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        subtitle: Padding(
-                          padding: EdgeInsets.only(top: 4),
-                          child: Row(
-                            children: [
-                              Text(
-                                'Total: $totalObtained/$totalMax',
-                                style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
-                              ),
-                              SizedBox(width: 12),
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: _getPercentageColor(percentage).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  '${percentage.toStringAsFixed(1)}%',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: _getPercentageColor(percentage),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Divider(),
-                          ...marks.map((mark) {
-                            String subject = mark['subject_name'] ?? '';
-                            int obtained = mark['marks_obtained'] ?? 0;
-                            int total = mark['total_marks'] ?? 0;
-                            double subPercentage = total > 0 ? (obtained / total) * 100 : 0;
-                            
-                            return Padding(
-                              padding: EdgeInsets.symmetric(vertical: 6),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 2,
-                                    child: Text(
-                                      subject,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      '$obtained/$total',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey.shade700,
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: _getPercentageColor(subPercentage).withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        '${subPercentage.toStringAsFixed(0)}%',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: _getPercentageColor(subPercentage),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                          SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton.icon(
-                              onPressed: () async {
-                                bool? result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => StudentMarksEditScreen(
-                                      studentId: studentId,
-                                      studentName: studentName,
-                                      rollNumber: rollNumber,
-                                      examName: widget.examName,
-                                    ),
-                                  ),
-                                );
-                                if (result == true) {
-                                  loadMarks();
-                                }
-                              },
-                              icon: Icon(Icons.edit, size: 18),
-                              label: Text('Edit'),
-                              style: TextButton.styleFrom(
-                                foregroundColor: theme.primaryColor,
-                              ),
-                            ),
+                          SizedBox(height: 60),
+                          Text(
+                            widget.examName,
+                            style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            "Class ${widget.className}",
+                            style: TextStyle(color: Colors.white70, fontSize: 16),
+                          ),
+                          SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildStatItem("Students", filteredStudents.length.toString(), Icons.people_outline),
+                              _buildStatItem("Class Avg", "${classAvg.toStringAsFixed(1)}%", Icons.analytics_outlined),
+                            ],
                           ),
                         ],
                       ),
-                    );
-                  },
+                    ),
+                  ),
+                  iconTheme: IconThemeData(color: Colors.white),
                 ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        _buildSearchBar(themeColor),
+                      ],
+                    ),
+                  ),
+                ),
+                filteredStudents.isEmpty
+                    ? SliverFillRemaining(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.search_off, size: 80, color: Colors.grey.shade300),
+                              Text("No students found", style: TextStyle(color: Colors.grey.shade500)),
+                            ],
+                          ),
+                        ),
+                      )
+                    : SliverPadding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) => _buildStudentCard(filteredStudents[index], themeColor),
+                            childCount: filteredStudents.length,
+                          ),
+                        ),
+                      ),
+                SliverToBoxAdapter(child: SizedBox(height: 80)),
+              ],
+            ),
       floatingActionButton: !isLoading && studentMarks.isEmpty
           ? FloatingActionButton.extended(
+              heroTag: "marks_view_add_fab",
               onPressed: () async {
                 bool? result = await Navigator.push(
                   context,
@@ -274,22 +226,168 @@ class _MarksViewScreenState extends State<MarksViewScreen> {
                     ),
                   ),
                 );
-                if (result == true) {
-                  loadMarks();
-                }
+                if (result == true) loadMarks();
               },
               icon: Icon(Icons.add),
               label: Text('Add Marks'),
-              backgroundColor: theme.primaryColor,
+              backgroundColor: themeColor,
             )
           : null,
     );
   }
 
+  Widget _buildStatItem(String label, String value, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.white70, size: 20),
+        SizedBox(height: 4),
+        Text(value, style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+        Text(label, style: TextStyle(color: Colors.white70, fontSize: 12)),
+      ],
+    );
+  }
+
+  Widget _buildSearchBar(Color themeColor) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+      ),
+      child: TextField(
+        onChanged: (v) => setState(() {
+          searchQuery = v;
+          _prepareFilteredList();
+        }),
+        decoration: InputDecoration(
+          hintText: "Search student by name or roll...",
+          prefixIcon: Icon(Icons.search, color: themeColor),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildStudentCard(Map<String, dynamic> student, Color themeColor) {
+    final double percentage = student['percentage'];
+    final color = _getPercentageColor(percentage);
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 4))],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => StudentProfileScreen(studentId: student['student_id'])),
+            );
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: ExpansionTile(
+            tilePadding: EdgeInsets.all(16),
+            childrenPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            leading: CircleAvatar(
+              backgroundColor: themeColor.withOpacity(0.1),
+              child: Text(student['roll'], style: TextStyle(color: themeColor, fontWeight: FontWeight.bold)),
+            ),
+            title: Text(student['name'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: LinearProgressIndicator(
+                          value: percentage / 100,
+                          backgroundColor: color.withOpacity(0.1),
+                          valueColor: AlwaysStoppedAnimation(color),
+                          minHeight: 8,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Text("${percentage.toStringAsFixed(1)}%", style: TextStyle(fontWeight: FontWeight.bold, color: color)),
+                  ],
+                ),
+              ],
+            ),
+            children: [
+              Divider(),
+              ... (student['marks'] as List).map((mark) => _buildSubjectRow(mark)).toList(),
+              SizedBox(height: 16),
+              _buildActionButton(student, themeColor),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubjectRow(Map<String, dynamic> mark) {
+    double subPerc = (mark['total_marks'] > 0) ? (mark['marks_obtained'] / mark['total_marks']) * 100 : 0;
+    Color subColor = _getPercentageColor(subPerc);
+
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Expanded(child: Text(mark['subject_name'], style: TextStyle(fontWeight: FontWeight.w600))),
+          Text("${mark['marks_obtained']}/${mark['total_marks']}", style: TextStyle(color: Colors.grey.shade700)),
+          SizedBox(width: 12),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(color: subColor.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+            child: Text("${subPerc.toStringAsFixed(0)}%", style: TextStyle(color: subColor, fontWeight: FontWeight.bold, fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton(Map<String, dynamic> student, Color themeColor) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: ElevatedButton.icon(
+        onPressed: () async {
+          bool? result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => StudentMarksEditScreen(
+                studentId: student['student_id'],
+                studentName: student['name'],
+                rollNumber: student['roll'],
+                examName: widget.examName,
+              ),
+            ),
+          );
+          if (result == true) loadMarks();
+        },
+        icon: Icon(Icons.edit_outlined, size: 18),
+        label: Text("Edit Marks"),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: themeColor,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      ),
+    );
+  }
+
   Color _getPercentageColor(double percentage) {
-    if (percentage >= 75) return Colors.green;
-    if (percentage >= 60) return Colors.blue;
-    if (percentage >= 40) return Colors.orange;
-    return Colors.red;
+    if (percentage >= 75) return Colors.green.shade600;
+    if (percentage >= 60) return Colors.blue.shade600;
+    if (percentage >= 40) return Colors.orange.shade600;
+    return Colors.red.shade600;
   }
 }

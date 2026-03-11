@@ -292,6 +292,7 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: "teacher_post_homework_fab",
         onPressed: () async {
           bool? result = await Navigator.push(
             context,
