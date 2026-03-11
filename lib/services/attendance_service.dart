@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../models/attendance.dart';
 import 'auth_service.dart';
+import 'http_service.dart';
 
 class AttendanceService {
 
@@ -13,17 +14,9 @@ class AttendanceService {
     required String date,
   }) async {
 
-    final token = await AuthService.getAccessToken();
-
     final url = ApiConfig.attendanceByClassUrl(clientId, date, standard, division);
 
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token"
-      },
-    );
+    final response = await HttpService.get(url);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -34,14 +27,20 @@ class AttendanceService {
               .toList();
 
       return {
-        "total": data['total'],
-        "present": data['present'],
-        "absent": data['absent'],
-        "late": data['late'],
+        "total": data['total'] ?? 0,
+        "present": data['present'] ?? 0,
+        "absent": data['absent'] ?? 0,
+        "late": data['late'] ?? 0,
         "list": list
       };
     } else {
-      throw Exception("Failed to fetch attendance");
+      return {
+        "total": 0,
+        "present": 0,
+        "absent": 0,
+        "late": 0,
+        "list": <Attendance>[]
+      };
     }
   }
 

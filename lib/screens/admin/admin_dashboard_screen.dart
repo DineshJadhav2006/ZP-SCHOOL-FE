@@ -279,36 +279,120 @@ class AdminDashboardScreen extends StatelessWidget {
 
   void _showClassSelectorForStudent(BuildContext context) {
     final List<String> classes = [
-      "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"
+      "1st", "2nd", "3rd", "4th", "5th", "6th", "7th"
     ];
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Select Class"),
-        content: Container(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: classes.length,
-            itemBuilder: (context, index) {
-              String className = classes[index];
-              return ListTile(
-                leading: Icon(Icons.class_, color: Colors.blue),
-                title: Text(className),
-                onTap: () async {
-                  Navigator.pop(context);
-                  var result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => AddStudentScreen(standard: className),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              spreadRadius: 5,
+            ),
+          ],
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 50,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            SizedBox(height: 24),
+            Text(
+              "Select Class",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Choose a class to add a new student",
+              style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 14,
+              ),
+            ),
+            SizedBox(height: 24),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: classes.length,
+                itemBuilder: (context, index) {
+                  String className = classes[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: InkWell(
+                      onTap: () async {
+                        Navigator.pop(context);
+                        var result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AddStudentScreen(standard: className),
+                          ),
+                        );
+                        if (result == true) onRefresh();
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.indigo.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.indigo.shade100,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.class_rounded,
+                                color: Colors.indigo.shade700,
+                                size: 24,
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Text(
+                              className,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.indigo.shade900,
+                              ),
+                            ),
+                            Spacer(),
+                            Icon(Icons.arrow_forward_ios_rounded, color: Colors.indigo.shade300, size: 18),
+                          ],
+                        ),
+                      ),
                     ),
                   );
-                  if (result == true) onRefresh();
                 },
-              );
-            },
-          ),
+              ),
+            ),
+            SizedBox(height: 16),
+          ],
         ),
       ),
     );

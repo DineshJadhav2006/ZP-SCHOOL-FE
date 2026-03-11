@@ -168,7 +168,9 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       validator: (v) {
                         if (v!.isEmpty) return "Required";
-                        if (v.length != 10) return "Must be 10 digits";
+                        // Remove +91 prefix if present for validation
+                        String cleanNumber = v.replaceAll(RegExp(r'^(\+91|91)'), '');
+                        if (cleanNumber.length != 10) return "Must be 10 digits (excluding +91)";
                         return null;
                       },
                     ),
@@ -190,7 +192,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                     DropdownButtonFormField<String>(
                       value: _selectedStandard,
                       decoration: InputDecoration(labelText: "Standard *"),
-                      items: ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"]
+                      items: ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th"]
                           .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                           .toList(),
                       onChanged: (v) => setState(() => _selectedStandard = v),
@@ -199,12 +201,11 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                     SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       value: _selectedDivision,
-                      decoration: InputDecoration(labelText: "Division *"),
+                      decoration: InputDecoration(labelText: "Division"),
                       items: ["A", "B", "C", "D"]
                           .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                           .toList(),
                       onChanged: (v) => setState(() => _selectedDivision = v),
-                      validator: (v) => v == null ? "Required" : null,
                     ),
                     SizedBox(height: 12),
                     TextFormField(

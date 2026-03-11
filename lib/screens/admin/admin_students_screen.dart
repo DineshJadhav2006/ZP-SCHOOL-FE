@@ -6,7 +6,10 @@ import '../teacher/add_student_screen.dart';
 import 'edit_student_screen.dart';
 import '../teacher/student_marks_view_screen.dart';
 import 'admin_class_results_screen.dart';
+import '../teacher/student_profile_screen.dart'; // Import added
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../utils/common_extensions.dart';
 
 class AdminStudentsScreen extends StatefulWidget {
   final int totalStudents;
@@ -27,7 +30,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
   int todayAbsent = 0;
 
   final List<String> classes = [
-    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"
+    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th"
   ];
 
   @override
@@ -169,53 +172,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                               sliver: SliverList(
                                 delegate: SliverChildBuilderDelegate(
                                   (context, index) {
-                                    var student = students[index];
-                                    String name = "${student['first_name']} ${student['last_name']}".trim();
-                                    return Container(
-                                      margin: EdgeInsets.only(bottom: 12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(16),
-                                        boxShadow: [
-                                          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 4)),
-                                        ],
-                                      ),
-                                      child: ListTile(
-                                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                        leading: CircleAvatar(
-                                          radius: 25,
-                                          backgroundColor: theme.primaryColor.withOpacity(0.1),
-                                          child: Text(
-                                            student['roll_number']?.toString() ?? '?',
-                                            style: TextStyle(
-                                              color: theme.primaryColor,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ),
-                                        title: Text(
-                                          name,
-                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                        ),
-                                        subtitle: Padding(
-                                          padding: const EdgeInsets.only(top: 4),
-                                          child: Row(
-                                            children: [
-                                              Flexible(
-                                                child: _miniTag("ID: ${student['unique_id'] ?? '-'}"),
-                                              ),
-                                              SizedBox(width: 8),
-                                              Flexible(
-                                                child: _miniTag("Class: ${student['standard'] ?? '-'}"),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        trailing: _buildStudentActionMenu(student),
-                                        onTap: () => _showStudentDetails(student),
-                                      ),
-                                    );
+                                    return _buildStudentCard(students[index], theme);
                                   },
                                   childCount: students.length,
                                 ),
@@ -230,88 +187,623 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     );
   }
 
-  Widget _buildHeader(ThemeData theme) {
+  Widget _buildStudentCard(Map<String, dynamic> student, ThemeData theme) {
+    String firstName = student["first_name"] ?? "";
+    String lastName = student["last_name"] ?? "";
+    String fullName = "$firstName ${student["middle_name"] ?? ''} $lastName".trim();
+    String rollNumber = student["roll_number"]?.toString() ?? '-';
+    String uniqueId = student["unique_id"] ?? '-';
+    String gender = student["gender"] ?? 'Not specified';
+    
+    String dob = student["date_of_birth"] ?? 'N/A';
+    if (dob.contains('T')) {
+      dob = dob.split('T')[0];
+    }
+    
+    return Card(
+      margin: EdgeInsets.only(bottom: 12),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200, width: 1.2),
+      ),
+      child: InkWell(
+        onTap: () => _showStudentDetails(student),
+        onLongPress: () => _showStudentActions(student),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: gender.toLowerCase() == 'female' 
+                            ? [Colors.pink.shade100, Colors.pink.shade50] 
+                            : [Colors.blue.shade100, Colors.blue.shade50],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 8,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        firstName.isNotEmpty ? firstName[0].toUpperCase() : '?',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: gender.toLowerCase() == 'female' 
+                              ? Colors.pink.shade700 
+                              : Colors.blue.shade700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          fullName,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.4,
+                            color: Colors.black87,
+                            height: 1.2,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 6),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Text(
+                            'ID: $uniqueId',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey.shade700,
+                              fontFamily: 'monospace',
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.indigo.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.indigo.shade100),
+                        ),
+                        child: Text(
+                          rollNumber == '-' || rollNumber.isEmpty ? 'Roll -' : 'Roll #$rollNumber',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.indigo.shade800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              Divider(height: 1, thickness: 1, color: Colors.grey.shade100),
+              SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        _buildInfoChip(
+                          icon: Icons.person, 
+                          label: gender,
+                          color: Colors.orange.shade800,
+                          bgColor: Colors.orange.shade50,
+                        ),
+                        SizedBox(width: 10),
+                        _buildInfoChip(
+                          icon: Icons.cake, 
+                          label: dob,
+                          color: Colors.teal.shade800,
+                          bgColor: Colors.teal.shade50,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: Colors.grey.shade300,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip({
+    required IconData icon, 
+    required String label, 
+    required Color color, 
+    required Color bgColor
+  }) {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: color),
+          SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12, 
+                color: color,
+                fontWeight: FontWeight.w700,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showStudentDetails(Map<String, dynamic> student) {
+    String firstName = student["first_name"] ?? "";
+    String lastName = student["last_name"] ?? "";
+    String fullName = "$firstName ${student["middle_name"] ?? ''} $lastName".trim();
+    final primaryColor = Colors.indigo;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 1.0,
+        maxChildSize: 1.0,
+        minChildSize: 0.9,
+        builder: (_, controller) => Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+          ),
+          child: Column(
+            children: [
+              // Custom App Bar for Full Screen
+              Container(
+                padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top, left: 8, right: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_back),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    Text(
+                      "Student Profile",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  controller: controller,
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    // Profile Header
+                    Center(
+                      child: Column(
+                        children: [
+                          SizedBox(height: 20),
+                          Container(
+                            padding: EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4)),
+                              ],
+                            ),
+                            child: CircleAvatar(
+                              radius: 50,
+                              backgroundColor: primaryColor.withOpacity(0.1),
+                              child: Text(
+                                firstName.isNotEmpty ? firstName[0].toUpperCase() : 'S',
+                                style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: primaryColor),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            fullName,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.black87),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            "Class ${student['standard'] ?? selectedClass} - ${student['division'] ?? 'A'}",
+                            style: TextStyle(fontSize: 16, color: primaryColor, fontWeight: FontWeight.w500),
+                          ),
+                          SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+
+                    // Action Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _actionButton(
+                          icon: Icons.call_outlined,
+                          label: "Call Parent",
+                          color: Colors.green,
+                          onTap: () => _makePhoneCall(student['mobile_number']),
+                        ),
+                        _actionButton(
+                          icon: Icons.edit_outlined,
+                          label: "Edit",
+                          color: Colors.blue,
+                          onTap: () async {
+                            Navigator.pop(context);
+                            var result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => EditStudentScreen(student: student)),
+                            );
+                            if (result == true) loadClassData(selectedClass!);
+                          },
+                        ),
+                        _actionButton(
+                          icon: Icons.delete_outline,
+                          label: "Delete",
+                          color: Colors.red,
+                          onTap: () {
+                            Navigator.pop(context);
+                            _confirmDelete(student);
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 30),
+
+                    // Academic Information
+                    _sectionTitle("Academic Information", Icons.school_outlined),
+                    _infoCard([
+                      _infoRow(Icons.fingerprint, "Student ID", student['unique_id'] ?? '-'),
+                      _infoRow(Icons.tag, "Roll Number", student['roll_number']?.toString() ?? '-'),
+                      _infoRow(Icons.calendar_today_outlined, "Admission Date", _formatDateInternal(student['admission_date'])),
+                      _infoRow(Icons.category_outlined, "Category", student['category'] ?? 'General'),
+                    ]),
+
+                    SizedBox(height: 20),
+                    // Personal Information
+                    _sectionTitle("Personal Information", Icons.person_outline),
+                    _infoCard([
+                      _infoRow(Icons.credit_card_outlined, "Aadhar Number", student['aadhar_number'] ?? '-'),
+                      _infoRow(student['gender']?.toString().toLowerCase() == 'female' ? Icons.female : Icons.male, 
+                        "Gender", student['gender']?.toString().capitalize() ?? 'Not Specified'),
+                      _infoRow(Icons.cake_outlined, "Date of Birth", _formatDateInternal(student['date_of_birth'])),
+                    ]),
+
+                    SizedBox(height: 20),
+                    // Parent & Contact Details
+                    _sectionTitle("Parent & Contact Details", Icons.contact_phone_outlined),
+                    _infoCard([
+                      _infoRow(Icons.face_outlined, "Parent Name", student['parent_name'] ?? '-'),
+                      _infoRow(Icons.phone_android_outlined, "Mobile", student['mobile_number'] ?? '-', 
+                        trailing: Icon(Icons.call, color: Colors.green, size: 18),
+                        onTap: () => _makePhoneCall(student['mobile_number'])),
+                      _infoRow(Icons.location_on_outlined, "Address", student['address'] ?? '-'),
+                    ]),
+
+                    SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _actionButton({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(15),
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 26),
+          ),
+          SizedBox(height: 8),
+          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionTitle(String title, IconData icon) {
+    return Padding(
+      padding: EdgeInsets.only(left: 4, bottom: 10),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.indigo),
+          SizedBox(width: 8),
+          Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoCard(List<Widget> children) {
+    return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 2)),
+        ],
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _infoRow(IconData icon, String label, String value, {Widget? trailing, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, size: 18, color: Colors.grey.shade600),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+                  SizedBox(height: 2),
+                  Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87)),
+                ],
+              ),
+            ),
+            if (trailing != null) trailing,
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDateInternal(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return "N/A";
+    try {
+      if (dateStr.contains('T')) {
+        return DateFormat('dd MMM yyyy').format(DateTime.parse(dateStr));
+      }
+      return dateStr;
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  void _makePhoneCall(String? phoneNumber) async {
+    if (phoneNumber == null || phoneNumber.isEmpty) return;
+    final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    }
+  }
+
+  void _showStudentActions(Map<String, dynamic> student) {
+    String name = "${student['first_name']} ${student['last_name']}";
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  name,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.person, color: Colors.blue),
+                title: Text("View Profile"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showStudentDetails(student);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.edit, color: Colors.orange),
+                title: Text("Edit Student"),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EditStudentScreen(student: student),
+                    ),
+                  ).then((value) {
+                    if (value == true) loadClassData(selectedClass!);
+                  });
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.delete, color: Colors.red),
+                title: Text("Delete Student"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmDelete(student);
+                },
+              ),
+              SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHeader(ThemeData theme) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: theme.primaryColor.withOpacity(0.1),
+              color: theme.primaryColor.withOpacity(0.08),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.school, color: theme.primaryColor, size: 24),
+            child: Icon(Icons.school_rounded, color: theme.primaryColor, size: 24),
           ),
-          SizedBox(width: 16),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   "Student Directory",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18, 
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.6,
+                    color: Colors.black,
+                  ),
                 ),
-                Text(
-                  "Managing Class $selectedClass",
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                SizedBox(height: 2),
+                Row(
+                  children: [
+                    Text(
+                      "Class $selectedClass",
+                      style: TextStyle(
+                        color: Colors.grey.shade600, 
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: _showClassSelector,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: theme.primaryColor.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "Change",
+                              style: TextStyle(
+                                color: theme.primaryColor,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Icon(Icons.unfold_more_rounded, color: theme.primaryColor, size: 12),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _showClassSelector,
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  border: Border.all(color: theme.primaryColor.withOpacity(0.3)),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Text("Change", style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold, fontSize: 13)),
-                    Icon(Icons.unfold_more, color: theme.primaryColor, size: 16),
-                  ],
-                ),
+          IconButton(
+            onPressed: () async {
+              var result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => AddStudentScreen(standard: selectedClass!)),
+              );
+              if (result == true) loadClassData(selectedClass!);
+            },
+            icon: Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.indigo.shade50,
+                shape: BoxShape.circle,
               ),
+              child: Icon(Icons.person_add_rounded, color: Colors.indigo.shade700, size: 20),
             ),
+            tooltip: "Add Student",
           ),
-          SizedBox(width: 8),
-              IconButton(
-                icon: Icon(Icons.person_add_outlined, color: theme.primaryColor),
-                onPressed: () async {
-                  var result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => AddStudentScreen(standard: selectedClass!)),
-                  );
-                  if (result == true) loadClassData(selectedClass!);
-                },
-                tooltip: "Add Student",
-              ),
         ],
-      ),
-    );
-  }
-
-  Widget _miniTag(String text) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 10, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -329,45 +821,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStudentActionMenu(Map<String, dynamic> student) {
-    return PopupMenuButton<String>(
-      onSelected: (value) async {
-        if (value == 'edit') {
-          var result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => EditStudentScreen(student: student)),
-          );
-          if (result == true) loadClassData(selectedClass!);
-        } else if (value == 'delete') {
-          _confirmDelete(student);
-        }
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: 'edit',
-          child: Row(
-            children: [
-              Icon(Icons.edit_outlined, color: Colors.green, size: 20),
-              SizedBox(width: 12),
-              Text('Edit Info'),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: 'delete',
-          child: Row(
-            children: [
-              Icon(Icons.delete_outline, color: Colors.red, size: 20),
-              SizedBox(width: 12),
-              Text('Delete Student', style: TextStyle(color: Colors.red)),
-            ],
-          ),
-        ),
-      ],
-      icon: Icon(Icons.more_vert, color: Colors.grey.shade400),
     );
   }
 
@@ -454,100 +907,116 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
   }
 
   void _showClassSelector() {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Select Class"),
-        content: Container(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: classes.length,
-            itemBuilder: (context, index) {
-              String className = classes[index];
-              bool isSelected = className == selectedClass;
-              return ListTile(
-                leading: Icon(
-                  Icons.class_,
-                  color: isSelected ? Colors.blue : Colors.grey,
-                ),
-                title: Text(
-                  className,
-                  style: TextStyle(
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected ? Colors.blue : Colors.black,
-                  ),
-                ),
-                trailing: isSelected
-                    ? Icon(Icons.check_circle, color: Colors.blue)
-                    : null,
-                onTap: () {
-                  Navigator.pop(context);
-                  setState(() => selectedClass = className);
-                  loadClassData(className);
-                },
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showStudentDetails(Map<String, dynamic> student) {
-    String name =
-        "${student['first_name']} ${student['middle_name'] ?? ''} ${student['last_name']}"
-            .trim();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(name),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _detailRow("Roll No", student['roll_number']?.toString() ?? '-'),
-              _detailRow("Unique ID", student['unique_id'] ?? '-'),
-              _detailRow("Class", student['standard'] ?? '-'),
-              _detailRow("Gender", student['gender'] ?? '-'),
-              _detailRow("Date of Birth", formatDate(student['date_of_birth'])),
-              _detailRow("Mobile", student['mobile_number'] ?? '-'),
-              _detailRow("Parent Name", student['parent_name'] ?? '-'),
-              _detailRow("Category", student['category'] ?? '-'),
-              _detailRow("Aadhar", student['aadhar_number'] ?? '-'),
-              _detailRow("Address", student['address'] ?? '-'),
-              _detailRow(
-                  "Admission Date", formatDate(student['admission_date'])),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Close"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _detailRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              "$label:",
-              style: TextStyle(fontWeight: FontWeight.bold),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              spreadRadius: 5,
             ),
-          ),
-          Expanded(child: Text(value)),
-        ],
+          ],
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 50,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            SizedBox(height: 24),
+            Text(
+              "Select Class",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Choose a class to manage students",
+              style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 14,
+              ),
+            ),
+            SizedBox(height: 24),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: classes.length,
+                itemBuilder: (context, index) {
+                  String className = classes[index];
+                  bool isSelected = className == selectedClass;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                        setState(() => selectedClass = className);
+                        loadClassData(className);
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: AnimatedContainer(
+                        duration: Duration(milliseconds: 200),
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.blue.shade50 : Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected ? Colors.blue.shade200 : Colors.grey.shade200,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: isSelected ? Colors.blue.shade100 : Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.class_rounded,
+                                color: isSelected ? Colors.blue.shade700 : Colors.grey.shade400,
+                                size: 24,
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Text(
+                              className,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                color: isSelected ? Colors.blue.shade900 : Colors.black87,
+                              ),
+                            ),
+                            Spacer(),
+                            if (isSelected)
+                              Icon(Icons.check_circle_rounded, color: Colors.blue.shade700, size: 28),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

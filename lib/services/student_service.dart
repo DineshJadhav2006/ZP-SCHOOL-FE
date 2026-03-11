@@ -54,6 +54,7 @@ class StudentService {
     try {
       String? clientId = await AuthService.getClientId();
       final url = ApiConfig.studentsListUrl(clientId!, standard);
+      
       final response = await HttpService.get(url);
 
       if (response.statusCode == 200) {
@@ -72,25 +73,42 @@ class StudentService {
   static Future<List<dynamic>> getStudents(String standard) async {
     final cacheKey = 'students_$standard';
     if (_isCacheValid(cacheKey)) {
+      print("Returning cached students for $standard: ${(_cache[cacheKey] as List).length}");
       return _cache[cacheKey];
     }
 
-    try {
-      String? clientId = await AuthService.getClientId();
-      final url = ApiConfig.studentsListUrl(clientId!, standard);
-      final response = await HttpService.get(url);
-
-      if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
-        final students = data["students"];
-        _cache[cacheKey] = students;
-        _cacheTimestamps[cacheKey] = DateTime.now();
-        return students;
+    for (int attempt = 1; attempt <= EnvConfig.maxRetries; attempt++) {
+      try {
+        String? clientId = await AuthService.getClientId();
+        final url = ApiConfig.studentsListUrl(clientId!, standard);
+        print("Fetching students (attempt $attempt): $url");
+        
+        final response = await HttpService.get(url);
+        print("Students API response status: ${response.statusCode}");
+        
+        if (response.statusCode == 200) {
+          var data = jsonDecode(response.body);
+          print("API response data keys: ${data.keys}");
+          
+          final students = data["students"];
+          print("Students from API: ${students?.length ?? 'null'}");
+          
+          _cache[cacheKey] = students ?? [];
+          _cacheTimestamps[cacheKey] = DateTime.now();
+          return students ?? [];
+        }
+      } catch (e) {
+        print("Attempt $attempt failed: $e");
+        if (attempt == EnvConfig.maxRetries) {
+          print("All attempts failed, returning cached: ${(_cache[cacheKey] as List?)?.length ?? 0}");
+          return _cache[cacheKey] ?? [];
+        }
+        // Wait before retry
+        await Future.delayed(Duration(milliseconds: 1000 * attempt));
       }
-      return _cache[cacheKey] ?? [];
-    } catch (e) {
-      return _cache[cacheKey] ?? [];
     }
+    
+    return _cache[cacheKey] ?? [];
   }
 
   static Future<Map<String, dynamic>?> getStudentById(String studentId) async {

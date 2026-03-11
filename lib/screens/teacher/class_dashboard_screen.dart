@@ -56,18 +56,21 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
     setState(() => isLoading = true);
     
     try {
-      final results = await Future.wait([
-        StudentService.getStudentCount(widget.className),
-        loadTodayAttendance(),
-      ]);
+      // Load student count and attendance separately
+      final studentCount = await StudentService.getStudentCount(widget.className);
+      await loadTodayAttendance();
+      
+      print("API Data - Students: $studentCount, Present: $todayPresent, Absent: $todayAbsent");
       
       if (mounted) {
         setState(() {
-          totalStudents = results[0] as int;
+          totalStudents = studentCount;
           isLoading = false;
         });
+        print("UI Updated - Students: $totalStudents, Present: $todayPresent, Absent: $todayAbsent");
       }
     } catch (e) {
+      print("Error: $e");
       if (mounted) {
         setState(() {
           totalStudents = 0;
@@ -80,25 +83,36 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
   Future<void> loadTodayAttendance() async {
     try {
       String? clientId = await AuthService.getClientId();
+      if (clientId == null) {
+        setState(() {
+          todayPresent = 0;
+          todayAbsent = 0;
+        });
+        return;
+      }
+      
       String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
       
       var result = await AttendanceService.getAttendance(
-        clientId: clientId!,
+        clientId: clientId,
         standard: widget.className,
         division: "A",
         date: today,
       );
       
-      setState(() {
-        todayPresent = result['present'] ?? 0;
-        todayAbsent = result['absent'] ?? 0;
-      });
+      if (mounted) {
+        setState(() {
+          todayPresent = result['present'] ?? 0;
+          todayAbsent = result['absent'] ?? 0;
+        });
+      }
     } catch (e) {
-      print("Error loading attendance: $e");
-      setState(() {
-        todayPresent = 0;
-        todayAbsent = 0;
-      });
+      if (mounted) {
+        setState(() {
+          todayPresent = 0;
+          todayAbsent = 0;
+        });
+      }
     }
   }
 
@@ -112,10 +126,11 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
 
   Widget infoBox(String title, String value, Color color, Future<void> Function() onTap) {
     final theme = Theme.of(context);
+    
     return GestureDetector(
       onTap: onTap,
       child: ShimmerLoading(
-        isLoading: isLoading && value == "...",
+        isLoading: isLoading,
         child: Card(
           elevation: 0,
           color: Colors.white,
@@ -140,7 +155,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                isLoading && value == "..."
+                isLoading
                     ? Container(
                         width: 60,
                         height: 32,
@@ -149,25 +164,16 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
                           borderRadius: BorderRadius.circular(4),
                         ),
                       )
-                    : value == "..."
-                        ? Text(
-                            value,
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: color.withOpacity(0.8),
-                            ),
-                          )
-                        : CountUpAnimation(
-                            targetValue: int.tryParse(value) ?? 0,
-                            textStyle: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: color.withOpacity(0.8),
-                            ),
-                          ),
+                    : Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: color.withOpacity(0.8),
+                        ),
+                      ),
                 SizedBox(height: 6),
-                isLoading && value == "..."
+                isLoading
                     ? Container(
                         width: 80,
                         height: 12,
@@ -267,7 +273,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
             children: [
               infoBox(
                 "Total Students",
-                isLoading ? "..." : totalStudents.toString(),
+                totalStudents.toString(),
                 Colors.blue,
                 () async {
                   await Navigator.push(
@@ -281,7 +287,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
               ),
               infoBox(
                 "Today Present",
-                isLoading ? "..." : todayPresent.toString(),
+                todayPresent.toString(),
                 Colors.green,
                 () async {
                   await Navigator.push(
@@ -302,7 +308,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
               ),
               infoBox(
                 "Today Absent",
-                isLoading ? "..." : todayAbsent.toString(),
+                todayAbsent.toString(),
                 Colors.red,
                 () async {
                   await Navigator.push(

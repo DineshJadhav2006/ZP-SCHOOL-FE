@@ -26,13 +26,20 @@ class _StudentListScreenState extends State<StudentListScreen> {
   }
 
   void loadStudents() async {
+    setState(() => isLoading = true);
+    
+    print("Loading students for class: ${widget.standard}");
     var data = await StudentService.getStudents(widget.standard);
+    print("Students loaded: ${data.length}");
+    print("First student: ${data.isNotEmpty ? data[0] : 'No students'}");
 
     setState(() {
       students = data;
       filteredStudents = data;
       isLoading = false;
     });
+    
+    print("UI updated - students: ${students.length}, filtered: ${filteredStudents.length}");
   }
 
   void searchStudent(String value) {
@@ -45,72 +52,288 @@ class _StudentListScreenState extends State<StudentListScreen> {
     });
   }
 
-  Widget studentCard(Map<String, dynamic> s) {
+  // स्टुडंट कार्ड - एनहॅन्स्ड डिटेल्स आणि इंटरॅक्टिव्हिटी
+  Widget _buildStudentCard(Map<String, dynamic> student) {
+    String firstName = student["first_name"] ?? "";
+    String lastName = student["last_name"] ?? "";
+    String fullName = "$firstName ${student["middle_name"] ?? ''} $lastName".trim();
+    String rollNumber = student["roll_number"]?.toString() ?? '-';
+    String uniqueId = student["unique_id"] ?? '-';
+    String gender = student["gender"] ?? 'Not specified';
+    
+    // DOB फॉरमॅटिंग - फकत तारीख दाखवा (T00:00:00.000Z काढा)
+    String dob = student["date_of_birth"] ?? 'N/A';
+    if (dob.contains('T')) {
+      dob = dob.split('T')[0];
+    }
+    
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.blue.shade100,
-          child: Icon(Icons.person, color: Colors.blue),
-        ),
-        title: Text(
-          "${s["first_name"]} ${s["middle_name"] ?? ''} ${s["last_name"]}",
-          style: TextStyle(fontWeight: FontWeight.bold),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(
-          "Roll: ${s["roll_number"] ?? '-'} | ID: ${s["unique_id"] ?? '-'}",
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: PopupMenuButton<String>(
-          icon: Icon(Icons.more_vert),
-          onSelected: (value) async {
-            if (value == 'edit') {
-              var result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => EditStudentScreen(student: s),
-                ),
-              );
-              if (result == true) loadStudents();
-            } else if (value == 'delete') {
-              _confirmDelete(s);
-            }
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'edit',
-              child: Row(
-                children: [
-                  Icon(Icons.edit, color: Colors.blue, size: 20),
-                  SizedBox(width: 12),
-                  Text('Edit'),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Row(
-                children: [
-                  Icon(Icons.delete, color: Colors.red, size: 20),
-                  SizedBox(width: 12),
-                  Text('Delete'),
-                ],
-              ),
-            ),
-          ],
-        ),
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200, width: 1.2),
+      ),
+      child: InkWell(
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => StudentProfileScreen(studentId: s["id"]),
+              builder: (_) => StudentProfileScreen(studentId: student["id"]),
             ),
           );
         },
+        onLongPress: () => _showStudentActions(student),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // हेडर सेक्शन - नाव आणि रोल नंबर
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // प्रोफाइल अवतार विथ जेंडर-बेस्ड मरिन (Female: Pink, Male: Blue)
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: gender.toLowerCase() == 'female' 
+                            ? [Colors.pink.shade100, Colors.pink.shade50] 
+                            : [Colors.blue.shade100, Colors.blue.shade50],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 8,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        firstName.isNotEmpty ? firstName[0].toUpperCase() : '?',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: gender.toLowerCase() == 'female' 
+                              ? Colors.pink.shade700 
+                              : Colors.blue.shade700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          fullName,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.4,
+                            color: Colors.black87,
+                            height: 1.2,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 6),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Text(
+                            'ID: $uniqueId',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey.shade700,
+                              fontFamily: 'monospace',
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.indigo.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.indigo.shade100),
+                        ),
+                        child: Text(
+                          rollNumber == '-' || rollNumber.isEmpty ? 'Roll -' : 'Roll #$rollNumber',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.indigo.shade800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              
+              SizedBox(height: 16),
+              Divider(height: 1, thickness: 1, color: Colors.grey.shade100),
+              SizedBox(height: 16),
+              
+              // इन्फो चिप्स - जेंडर आणि DOB (Simplified & Responsive)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        _buildInfoChip(
+                          icon: Icons.person, 
+                          label: gender,
+                          color: Colors.orange.shade800,
+                          bgColor: Colors.orange.shade50,
+                        ),
+                        SizedBox(width: 10),
+                        _buildInfoChip(
+                          icon: Icons.cake, 
+                          label: dob,
+                          color: Colors.teal.shade800,
+                          bgColor: Colors.teal.shade50,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: Colors.grey.shade300,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  // हेल्पर्स फॉर न्यू कार्ड डिझाइन
+  Widget _buildInfoChip({
+    required IconData icon, 
+    required String label, 
+    required Color color, 
+    required Color bgColor
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: color),
+          SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12, 
+                color: color,
+                fontWeight: FontWeight.w700,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showStudentActions(Map<String, dynamic> student) {
+    String name = "${student['first_name']} ${student['last_name']}";
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  name,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.person, color: Colors.blue),
+                title: Text("View Profile"),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => StudentProfileScreen(studentId: student["id"]),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.edit, color: Colors.orange),
+                title: Text("Edit Student"),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EditStudentScreen(student: student),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.delete, color: Colors.red),
+                title: Text("Delete Student"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmDelete(student);
+                },
+              ),
+              SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -120,9 +343,15 @@ class _StudentListScreenState extends State<StudentListScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text("Class ${widget.standard}"),
+        title: Text("Class ${widget.standard} - Students"),
         backgroundColor: theme.primaryColor,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: loadStudents,
+          ),
+        ],
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -136,16 +365,24 @@ class _StudentListScreenState extends State<StudentListScreen> {
                     child: filteredStudents.isEmpty
                         ? _buildEmptyState()
                         : ListView.builder(
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: EdgeInsets.all(12),
                             itemCount: filteredStudents.length,
                             itemBuilder: (context, index) {
-                              return _studentListItem(filteredStudents[index], theme);
+                              return _buildStudentCard(filteredStudents[index]);
                             },
                           ),
                   ),
                 ],
               ),
             ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Add new student functionality
+          // तुम्ही तुमची add student स्क्रीन येथे ओपन करू शकता
+        },
+        child: Icon(Icons.add),
+        backgroundColor: theme.primaryColor,
+      ),
     );
   }
 
@@ -198,52 +435,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
           SizedBox(height: 16),
           Text("No students match your search", style: TextStyle(color: Colors.grey.shade500)),
         ],
-      ),
-    );
-  }
-
-  Widget _studentListItem(Map<String, dynamic> s, ThemeData theme) {
-    String name = "${s["first_name"]} ${s["last_name"]}".trim();
-    return Container(
-      margin: EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: Offset(0, 2)),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: CircleAvatar(
-          radius: 22,
-          backgroundColor: theme.primaryColor.withOpacity(0.1),
-          child: Text(
-            s['roll_number']?.toString() ?? '?',
-            style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold),
-          ),
-        ),
-        title: Text(
-          name,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(
-          "ID: ${s["unique_id"] ?? '-'}",
-          style: TextStyle(fontSize: 12, color: Colors.grey),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Icon(Icons.chevron_right, color: Colors.grey.shade300),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => StudentProfileScreen(studentId: s["id"]),
-            ),
-          );
-        },
       ),
     );
   }

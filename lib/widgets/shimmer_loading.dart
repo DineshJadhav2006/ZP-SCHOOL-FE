@@ -107,6 +107,7 @@ class _CountUpAnimationState extends State<CountUpAnimation>
   @override
   void initState() {
     super.initState();
+    print("CountUpAnimation init - targetValue: ${widget.targetValue}");
     _controller = AnimationController(duration: widget.duration, vsync: this);
     _animation = IntTween(begin: 0, end: widget.targetValue).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
@@ -118,6 +119,7 @@ class _CountUpAnimationState extends State<CountUpAnimation>
   void didUpdateWidget(CountUpAnimation oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.targetValue != widget.targetValue) {
+      print("CountUpAnimation update - old: ${oldWidget.targetValue}, new: ${widget.targetValue}");
       _animation = IntTween(
         begin: _animation.value,
         end: widget.targetValue,

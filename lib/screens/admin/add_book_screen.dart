@@ -17,7 +17,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
   bool isUploading = false;
 
   final List<String> classes = [
-    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"
+    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th"
   ];
 
   Future<void> pickFile() async {

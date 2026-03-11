@@ -3,6 +3,8 @@ import '../../services/teacher_service.dart';
 import 'add_teacher_screen.dart';
 import 'edit_teacher_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../utils/common_extensions.dart';
 
 class AdminTeachersScreen extends StatefulWidget {
   final int totalTeachers;
@@ -246,57 +248,245 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
     String name =
         "${teacher['first_name']} ${teacher['middle_name'] ?? ''} ${teacher['last_name']}"
             .trim();
-    showDialog(
+    final theme = Theme.of(context);
+    final primaryColor = Colors.indigo;
+
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(name),
-        content: SingleChildScrollView(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 1.0,
+        maxChildSize: 1.0,
+        minChildSize: 0.9,
+        builder: (_, controller) => Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+          ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _detailRow("ID", teacher['unique_id'] ?? '-'),
-              _detailRow("Mobile", teacher['mobile_number'] ?? '-'),
-              _detailRow("Gender", teacher['gender'] ?? '-'),
-              _detailRow("Designation", teacher['designation'] ?? '-'),
-              _detailRow("Qualification", teacher['qualification'] ?? '-'),
-              _detailRow("Experience", "${teacher['experience_years'] ?? 0} years"),
-              _detailRow("Joining Date", formatDate(teacher['joining_date'])),
-              if (teacher['is_class_teacher'] == true)
-                _detailRow(
-                  "Class Teacher",
-                  "${teacher['assigned_standard']} - ${teacher['assigned_division']}",
+              // Custom App Bar for Full Screen
+              Container(
+                padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top, left: 8, right: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
                 ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_back),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    Text(
+                      "Teacher Profile",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  controller: controller,
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    // Profile Header
+                    Center(
+                      child: Column(
+                        children: [
+                          Hero(
+                            tag: 'teacher_avatar_${teacher['id']}',
+                            child: Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4)),
+                                ],
+                              ),
+                              child: CircleAvatar(
+                                radius: 50,
+                                backgroundColor: primaryColor.withOpacity(0.1),
+                                child: Text(
+                                  teacher['first_name']?[0].toUpperCase() ?? "T",
+                                  style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: primaryColor),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            name,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.black87),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            teacher['designation'] ?? 'Staff',
+                            style: TextStyle(fontSize: 16, color: primaryColor, fontWeight: FontWeight.w500),
+                          ),
+                          SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+
+                    // Action Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _actionButton(
+                          icon: Icons.call_outlined,
+                          label: "Call",
+                          color: Colors.green,
+                          onTap: () => _makePhoneCall(teacher['mobile_number']),
+                        ),
+                        _actionButton(
+                          icon: Icons.edit_outlined,
+                          label: "Edit",
+                          color: Colors.blue,
+                          onTap: () async {
+                            Navigator.pop(context);
+                            var result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => EditTeacherScreen(teacher: teacher)),
+                            );
+                            if (result == true) loadTeachers();
+                          },
+                        ),
+                        _actionButton(
+                          icon: Icons.delete_outline,
+                          label: "Delete",
+                          color: Colors.red,
+                          onTap: () {
+                            Navigator.pop(context);
+                            _confirmDelete(teacher);
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 30),
+
+                    // Info Sections
+                    _sectionTitle("Professional Information", Icons.work_outline),
+                    _infoCard([
+                      _infoRow(Icons.fingerprint, "Staff ID", teacher['unique_id'] ?? '-'),
+                      _infoRow(Icons.workspace_premium_outlined, "Qualification", teacher['qualification'] ?? '-'),
+                      _infoRow(Icons.history_edu_outlined, "Experience", "${teacher['experience_years'] ?? 0} Years"),
+                      _infoRow(Icons.calendar_today_outlined, "Joining Date", formatDate(teacher['joining_date'])),
+                    ]),
+
+                    SizedBox(height: 20),
+                    _sectionTitle("Personal Information", Icons.person_outline),
+                    _infoCard([
+                      _infoRow(Icons.phone_android_outlined, "Mobile", teacher['mobile_number'] ?? '-', 
+                        trailing: Icon(Icons.call, color: Colors.green, size: 18),
+                        onTap: () => _makePhoneCall(teacher['mobile_number'])),
+                      _infoRow(teacher['gender']?.toString().toLowerCase() == 'female' ? Icons.female : Icons.male, 
+                        "Gender", teacher['gender']?.toString().capitalize() ?? '-'),
+                    ]),
+
+                    if (teacher['is_class_teacher'] == true) ...[
+                      SizedBox(height: 20),
+                      _sectionTitle("Class Responsibility", Icons.class_outlined),
+                      _infoCard([
+                        _infoRow(Icons.school_outlined, "Class Teacher", "${teacher['assigned_standard']} - ${teacher['assigned_division']}"),
+                      ]),
+                    ],
+                    SizedBox(height: 40),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Close"),
+      ),
+    );
+  }
+
+  Widget _actionButton({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(15),
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 26),
           ),
+          SizedBox(height: 8),
+          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
         ],
       ),
     );
   }
 
-  Widget _detailRow(String label, String value) {
+  Widget _sectionTitle(String title, IconData icon) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.only(left: 4, bottom: 10),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              "$label:",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(child: Text(value)),
+          Icon(icon, size: 20, color: Colors.indigo),
+          SizedBox(width: 8),
+          Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
         ],
       ),
     );
+  }
+
+  Widget _infoCard(List<Widget> children) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 2)),
+        ],
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _infoRow(IconData icon, String label, String value, {Widget? trailing, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, size: 18, color: Colors.grey.shade600),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+                  SizedBox(height: 2),
+                  Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87)),
+                ],
+              ),
+            ),
+            if (trailing != null) trailing,
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _makePhoneCall(String? phoneNumber) async {
+    if (phoneNumber == null || phoneNumber.isEmpty) return;
+    final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    }
   }
 
   void _confirmDelete(Map<String, dynamic> teacher) {

@@ -20,7 +20,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
   String selectedDivision = "A";
 
   final List<String> classes = [
-    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"
+    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th"
   ];
 
   @override
@@ -487,40 +487,118 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
   }
 
   void _showClassSelector() {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Select Class"),
-        content: Container(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: classes.length,
-            itemBuilder: (context, index) {
-              String className = classes[index];
-              bool isSelected = className == selectedClass;
-              return ListTile(
-                leading: Icon(
-                  Icons.class_,
-                  color: isSelected ? Colors.purple : Colors.grey,
-                ),
-                title: Text(
-                  className,
-                  style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected ? Colors.purple : Colors.black,
-                  ),
-                ),
-                trailing: isSelected ? Icon(Icons.check_circle, color: Colors.purple) : null,
-                onTap: () {
-                  Navigator.pop(context);
-                  setState(() => selectedClass = className);
-                  loadStatistics();
-                  loadLast7DaysData();
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              spreadRadius: 5,
+            ),
+          ],
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 50,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            SizedBox(height: 24),
+            Text(
+              "Select Class",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "View attendance reports by class",
+              style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 14,
+              ),
+            ),
+            SizedBox(height: 24),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: classes.length,
+                itemBuilder: (context, index) {
+                  String className = classes[index];
+                  bool isSelected = className == selectedClass;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                        setState(() {
+                          selectedClass = className;
+                          loadStatistics();
+                          loadLast7DaysData();
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: AnimatedContainer(
+                        duration: Duration(milliseconds: 200),
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.purple.shade50 : Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected ? Colors.purple.shade200 : Colors.grey.shade200,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: isSelected ? Colors.purple.shade100 : Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.class_rounded,
+                                color: isSelected ? Colors.purple.shade700 : Colors.grey.shade400,
+                                size: 24,
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Text(
+                              className,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                color: isSelected ? Colors.purple.shade900 : Colors.black87,
+                              ),
+                            ),
+                            Spacer(),
+                            if (isSelected)
+                              Icon(Icons.check_circle_rounded, color: Colors.purple.shade700, size: 28),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
                 },
-              );
-            },
-          ),
+              ),
+            ),
+            SizedBox(height: 16),
+          ],
         ),
       ),
     );

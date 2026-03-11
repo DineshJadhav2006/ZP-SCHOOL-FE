@@ -31,7 +31,7 @@ class _EditTeacherScreenState extends State<EditTeacherScreen> {
   late String assignedDivision;
 
   final List<String> classes = [
-    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"
+    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th"
   ];
 
   @override

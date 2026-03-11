@@ -18,7 +18,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
   Map<int, double> downloadProgress = {};
 
   final List<String> classes = [
-    "All", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"
+    "All", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th"
   ];
 
   @override

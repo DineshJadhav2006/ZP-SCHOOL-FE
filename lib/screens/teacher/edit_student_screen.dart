@@ -19,12 +19,13 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
   late TextEditingController division;
   late TextEditingController category;
   late TextEditingController address;
+  late TextEditingController rollNumber;
 
   String? gender;
   String? standard;
 
   final List<String> standards = [
-    "1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th"
+    "1st","2nd","3rd","4th","5th","6th","7th"
   ];
 
   final List<String> genders = ["male", "female"];
@@ -41,6 +42,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     division = TextEditingController(text: widget.student["division"]);
     category = TextEditingController(text: widget.student["category"]);
     address = TextEditingController(text: widget.student["address"]);
+    rollNumber = TextEditingController(text: widget.student["roll_number"]?.toString() ?? "");
 
     gender = widget.student["gender"];
     standard = widget.student["standard"];
@@ -77,7 +79,11 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     );
   }
 
+  final _formKey = GlobalKey<FormState>();
+
   void updateStudent() async {
+    if (!_formKey.currentState!.validate()) return;
+
     Map<String, dynamic> body = {
       "first_name": firstName.text,
       "middle_name": middleName.text,
@@ -87,6 +93,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
       "gender": gender,
       "standard": standard,
       "division": division.text,
+      "roll_number": rollNumber.text.isEmpty ? null : rollNumber.text,
       "address": address.text,
       "category": category.text,
     };
@@ -119,8 +126,10 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
-        child: Column(
-          children: [
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
             _buildFormSection(
               "Personal Details",
               [
@@ -136,6 +145,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
               [
                 _buildDropdownField("Standard", standard, standards, (val) => setState(() => standard = val), Icons.school_outlined),
                 _buildTextField("Division", division, Icons.meeting_room_outlined),
+                _buildTextField("Roll Number", rollNumber, Icons.numbers_outlined),
                 _buildTextField("Category", category, Icons.category_outlined),
               ],
             ),
@@ -164,6 +174,7 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
             SizedBox(height: 40),
           ],
         ),
+      ),
       ),
     );
   }
@@ -196,10 +207,18 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
+      keyboardType: label == "Mobile Number" ? TextInputType.phone : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),
       ),
+      validator: label == "Mobile Number" ? (v) {
+        if (v == null || v.isEmpty) return "Required";
+        // Remove +91 prefix if present for validation
+        String cleanNumber = v.replaceAll(RegExp(r'^(\+91|91)'), '');
+        if (cleanNumber.length != 10) return "Must be 10 digits (excluding +91)";
+        return null;
+      } : null,
     );
   }
 
