@@ -148,9 +148,32 @@ class _HomeScreenState extends State<HomeScreen> {
   // ================= DAY BUILDER =================
   Widget _dayBuilder(DateTime day, DateTime today) {
     DateTime key = DateTime(day.year, day.month, day.day);
+    DateTime todayDate = DateTime(today.year, today.month, today.day);
+    String? status = attendanceMap[key];
+
+    // Status available → Show color circle regardless of day type
+    if (status != null) {
+      Color bgColor = Colors.grey;
+      if (status == "Present") bgColor = Colors.green;
+      if (status == "Absent") bgColor = Colors.red;
+      if (status == "Late") bgColor = Colors.orange;
+
+      return Container(
+        margin: EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: bgColor,
+          shape: BoxShape.circle,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          '${day.day}',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      );
+    }
 
     // Future disabled
-    if (day.isAfter(today)) {
+    if (key.isAfter(todayDate)) {
       return Center(
         child: Text('${day.day}', style: TextStyle(color: Colors.grey)),
       );
@@ -163,25 +186,10 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    String? status = attendanceMap[key];
-
-    Color? bgColor;
-    if (status == "Present") bgColor = Colors.green;
-    if (status == "Absent") bgColor = Colors.red;
-    if (status == "Late") bgColor = Colors.orange;
-
-    return Container(
-      margin: EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        shape: BoxShape.circle,
-      ),
-      alignment: Alignment.center,
+    return Center(
       child: Text(
         '${day.day}',
-        style: TextStyle(
-          color: bgColor != null ? Colors.white : Colors.black,
-        ),
+        style: TextStyle(color: Colors.black),
       ),
     );
   }
