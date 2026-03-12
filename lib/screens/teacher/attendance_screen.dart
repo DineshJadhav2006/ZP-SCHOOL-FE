@@ -150,7 +150,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> with AutomaticKeepA
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 4)),
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: Offset(0, 4)),
                         ],
                       ),
                       child: Padding(
@@ -161,7 +161,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> with AutomaticKeepA
                               width: 48,
                               height: 48,
                               decoration: BoxDecoration(
-                                color: theme.primaryColor.withOpacity(0.1),
+                                color: theme.primaryColor.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Center(
@@ -229,7 +229,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> with AutomaticKeepA
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: isPresent ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+        color: isPresent ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -278,7 +278,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> with AutomaticKeepA
           color: isSelected ? color : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: isSelected ? color : Colors.grey.shade300, width: 1.5),
-          boxShadow: isSelected ? [BoxShadow(color: color.withOpacity(0.3), blurRadius: 8, offset: Offset(0, 4))] : [],
+          boxShadow: isSelected ? [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 8, offset: Offset(0, 4))] : [],
         ),
         child: Icon(
           icon,

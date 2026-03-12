@@ -252,7 +252,7 @@ class _MarksViewScreenState extends State<MarksViewScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
       ),
       child: TextField(
         onChanged: (v) => setState(() {
@@ -279,7 +279,7 @@ class _MarksViewScreenState extends State<MarksViewScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Material(
         color: Colors.transparent,
@@ -295,7 +295,7 @@ class _MarksViewScreenState extends State<MarksViewScreen> {
             tilePadding: EdgeInsets.all(16),
             childrenPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             leading: CircleAvatar(
-              backgroundColor: themeColor.withOpacity(0.1),
+              backgroundColor: themeColor.withValues(alpha: 0.1),
               child: Text(student['roll'], style: TextStyle(color: themeColor, fontWeight: FontWeight.bold)),
             ),
             title: Text(student['name'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
@@ -310,7 +310,7 @@ class _MarksViewScreenState extends State<MarksViewScreen> {
                         borderRadius: BorderRadius.circular(10),
                         child: LinearProgressIndicator(
                           value: percentage / 100,
-                          backgroundColor: color.withOpacity(0.1),
+                          backgroundColor: color.withValues(alpha: 0.1),
                           valueColor: AlwaysStoppedAnimation(color),
                           minHeight: 8,
                         ),
@@ -347,7 +347,7 @@ class _MarksViewScreenState extends State<MarksViewScreen> {
           SizedBox(width: 12),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(color: subColor.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+            decoration: BoxDecoration(color: subColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
             child: Text("${subPerc.toStringAsFixed(0)}%", style: TextStyle(color: subColor, fontWeight: FontWeight.bold, fontSize: 12)),
           ),
         ],

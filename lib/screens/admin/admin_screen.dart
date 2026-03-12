@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../services/auth_service.dart';
 import '../../services/teacher_service.dart';
 import '../login_screen.dart';
@@ -73,7 +74,7 @@ class _AdminScreenState extends State<AdminScreen>
         isLoading = false;
       });
     } catch (e) {
-      print("Error loading admin data: $e");
+      debugPrint("Error loading admin data: $e");
       setState(() => isLoading = false);
     }
   }

@@ -126,17 +126,17 @@ class _ClassSelectionScreenState extends State<ClassSelectionScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 5)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: Offset(0, 5)),
         ],
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(4),
-            decoration: BoxDecoration(color: theme.primaryColor.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: theme.primaryColor.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: CircleAvatar(
               radius: 28,
-              backgroundColor: theme.primaryColor.withOpacity(0.1),
+              backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
               child: Icon(Icons.person, color: theme.primaryColor, size: 30),
             ),
           ),
@@ -188,7 +188,7 @@ class _ClassSelectionScreenState extends State<ClassSelectionScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: theme.primaryColor.withOpacity(0.06), blurRadius: 12, offset: Offset(0, 8)),
+            BoxShadow(color: theme.primaryColor.withValues(alpha: 0.06), blurRadius: 12, offset: Offset(0, 8)),
           ],
         ),
         child: Column(
@@ -197,7 +197,7 @@ class _ClassSelectionScreenState extends State<ClassSelectionScreen> {
             Container(
               padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: theme.primaryColor.withOpacity(0.08),
+                color: theme.primaryColor.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.class_rounded, color: theme.primaryColor, size: 28),

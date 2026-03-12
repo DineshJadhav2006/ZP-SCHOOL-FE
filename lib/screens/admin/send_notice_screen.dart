@@ -189,7 +189,7 @@ class _SendNoticeScreenState extends State<SendNoticeScreen> {
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           elevation: 4,
-                          shadowColor: theme.primaryColor.withOpacity(0.3),
+                          shadowColor: theme.primaryColor.withValues(alpha: 0.3),
                         ),
                       ),
                     ),

@@ -151,7 +151,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
               decoration: BoxDecoration(
                 color: Colors.indigo.shade50,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.indigo.withOpacity(0.3)),
+                border: Border.all(color: Colors.indigo.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,7 +290,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: theme.primaryColor.withOpacity(0.3),
+                            color: theme.primaryColor.withValues(alpha: 0.3),
                             blurRadius: 12,
                             offset: Offset(0, 6),
                           ),
@@ -336,7 +336,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: Offset(0, 4)),
         ],
       ),
       child: Column(

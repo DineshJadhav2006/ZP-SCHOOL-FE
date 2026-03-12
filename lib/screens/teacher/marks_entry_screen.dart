@@ -160,7 +160,7 @@ class _MarksEntryScreenState extends State<MarksEntryScreen> {
     setState(() => isSaving = true);
     
     String? teacherId = await AuthService.getTeacherId();
-    print('Teacher ID: $teacherId');
+    debugPrint('Teacher ID: $teacherId');
     
     if (teacherId == null || teacherId.isEmpty) {
       setState(() => isSaving = false);

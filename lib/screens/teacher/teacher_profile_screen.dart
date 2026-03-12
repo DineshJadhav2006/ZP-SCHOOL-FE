@@ -43,7 +43,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.2),
+          backgroundColor: color.withValues(alpha: 0.2),
           child: Icon(icon, color: color, size: 22),
         ),
         title: Text(
@@ -102,13 +102,13 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.8)],
+          colors: [theme.primaryColor, theme.primaryColor.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.only(bottomLeft: Radius.circular(40), bottomRight: Radius.circular(40)),
         boxShadow: [
-          BoxShadow(color: theme.primaryColor.withOpacity(0.3), blurRadius: 20, offset: Offset(0, 10)),
+          BoxShadow(color: theme.primaryColor.withValues(alpha: 0.3), blurRadius: 20, offset: Offset(0, 10)),
         ],
       ),
       child: SafeArea(
@@ -123,7 +123,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               ),
               child: CircleAvatar(
                 radius: 55,
-                backgroundColor: theme.primaryColor.withOpacity(0.1),
+                backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
                 child: Icon(Icons.person, size: 50, color: theme.primaryColor),
               ),
             ),
@@ -142,7 +142,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -184,13 +184,13 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: Offset(0, 4)),
         ],
       ),
       child: ListTile(
         leading: Container(
           padding: EdgeInsets.all(8),
-          decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
           child: Icon(icon, color: color, size: 20),
         ),
         title: Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
@@ -239,7 +239,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.white,
             foregroundColor: Colors.red,
-            side: BorderSide(color: Colors.red.withOpacity(0.2)),
+            side: BorderSide(color: Colors.red.withValues(alpha: 0.2)),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             elevation: 0,
           ),

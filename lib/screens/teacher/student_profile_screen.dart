@@ -123,7 +123,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   ),
                   child: CircleAvatar(
                     radius: 50,
-                    backgroundColor: primaryColor.withOpacity(0.1),
+                    backgroundColor: primaryColor.withValues(alpha: 0.1),
                     child: Text(
                       firstName.isNotEmpty ? firstName[0].toUpperCase() : 'S',
                       style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: primaryColor),
@@ -219,7 +219,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
           Container(
             padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 26),
@@ -250,7 +250,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 2)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: Offset(0, 2)),
         ],
       ),
       child: Column(children: children),

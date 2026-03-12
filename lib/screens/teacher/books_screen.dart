@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../services/book_service.dart';
 import '../../config/env_config.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -36,7 +37,7 @@ class _BooksScreenState extends State<BooksScreen> {
         isLoading = false;
       });
     } catch (e) {
-      print('Error loading books: $e');
+      debugPrint('Error loading books: $e');
       setState(() {
         isLoading = false;
         errorMessage = e.toString().contains('SocketException') || e.toString().contains('Failed host lookup')

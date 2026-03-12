@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../services/notice_service.dart';
 import 'send_notice_screen.dart';
 import 'package:intl/intl.dart';
@@ -63,7 +64,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
       DateTime dt = DateTime.parse(dateStr).toLocal();
       return DateFormat('dd MMM yyyy, hh:mm a').format(dt);
     } catch (e) {
-      print("Error parsing date: $dateStr, error: $e");
+      debugPrint("Error parsing date: $dateStr, error: $e");
       return dateStr;
     }
   }
@@ -140,7 +141,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
-                            BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 4)),
+                            BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: Offset(0, 4)),
                           ],
                         ),
                         child: ClipRRect(
@@ -168,7 +169,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
                                       Container(
                                         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: theme.primaryColor.withOpacity(0.1),
+                                          color: theme.primaryColor.withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(20),
                                         ),
                                         child: Text(

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:flutter/foundation.dart';
 import '../config/api_config.dart';
 
 class AuthService {
@@ -152,7 +153,7 @@ class AuthService {
             .catchError((_) => null);
       }
     } catch (e) {
-      print("Error during logout API call: $e");
+      debugPrint("Error during logout API call: $e");
     } finally {
       // Always clear local storage
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -220,7 +221,7 @@ class AuthService {
         return data["student"];
       }
     } catch (e) {
-      print("Error fetching student data: $e");
+      debugPrint("Error fetching student data: $e");
     }
 
     return null;

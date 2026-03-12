@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import '../config/api_config.dart';
 import '../config/env_config.dart';
 import 'http_service.dart';
@@ -73,7 +74,7 @@ class StudentService {
   static Future<List<dynamic>> getStudents(String standard) async {
     final cacheKey = 'students_$standard';
     if (_isCacheValid(cacheKey)) {
-      print("Returning cached students for $standard: ${(_cache[cacheKey] as List).length}");
+      debugPrint("Returning cached students for $standard: ${(_cache[cacheKey] as List).length}");
       return _cache[cacheKey];
     }
 
@@ -81,26 +82,26 @@ class StudentService {
       try {
         String? clientId = await AuthService.getClientId();
         final url = ApiConfig.studentsListUrl(clientId!, standard);
-        print("Fetching students (attempt $attempt): $url");
+        debugPrint("Fetching students (attempt $attempt): $url");
         
         final response = await HttpService.get(url);
-        print("Students API response status: ${response.statusCode}");
+        debugPrint("Students API response status: ${response.statusCode}");
         
         if (response.statusCode == 200) {
           var data = jsonDecode(response.body);
-          print("API response data keys: ${data.keys}");
+          debugPrint("API response data keys: ${data.keys}");
           
           final students = data["students"];
-          print("Students from API: ${students?.length ?? 'null'}");
+          debugPrint("Students from API: ${students?.length ?? 'null'}");
           
           _cache[cacheKey] = students ?? [];
           _cacheTimestamps[cacheKey] = DateTime.now();
           return students ?? [];
         }
       } catch (e) {
-        print("Attempt $attempt failed: $e");
+        debugPrint("Attempt $attempt failed: $e");
         if (attempt == EnvConfig.maxRetries) {
-          print("All attempts failed, returning cached: ${(_cache[cacheKey] as List?)?.length ?? 0}");
+          debugPrint("All attempts failed, returning cached: ${(_cache[cacheKey] as List?)?.length ?? 0}");
           return _cache[cacheKey] ?? [];
         }
         // Wait before retry

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../services/auth_service.dart';
 import '../services/teacher_service.dart';
 import 'admin/admin_screen.dart';
@@ -58,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
             }
           }
         } catch (e) {
-          print("Error fetching admin details: $e");
+          debugPrint("Error fetching admin details: $e");
           // Fallback: save the login ID as admin name
           String adminIdentifier = idController.text.trim();
           if (adminIdentifier.contains("@")) {
@@ -181,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 end: Alignment.bottomCenter,
                 colors: [
                   theme.primaryColor,
-                  theme.primaryColor.withOpacity(0.8),
+                  theme.primaryColor.withValues(alpha: 0.8),
                 ],
               ),
               borderRadius: BorderRadius.only(
@@ -257,7 +258,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                                  color: theme.primaryColor.withOpacity(0.7),
+                                  color: theme.primaryColor.withValues(alpha: 0.7),
                                 ),
                                 onPressed: () {
                                   setState(() {

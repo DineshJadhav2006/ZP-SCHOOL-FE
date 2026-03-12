@@ -137,7 +137,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: Offset(0, 2)),
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: Offset(0, 2)),
                     ],
                   ),
                   child: ListTile(
@@ -145,7 +145,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                     leading: Container(
                       padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
+                        color: statusColor.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -200,7 +200,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
   Widget _actionButton(IconData icon, Color color, VoidCallback onTap) {
     return Container(
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
       ),
       child: IconButton(

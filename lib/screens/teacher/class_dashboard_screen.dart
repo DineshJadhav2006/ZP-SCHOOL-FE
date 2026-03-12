@@ -1,8 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../services/student_service.dart';
-import '../../services/auth_service.dart';
 import '../../services/attendance_service.dart';
-import '../../services/cache_service.dart';
+import '../../services/auth_service.dart';
 import '../../widgets/shimmer_loading.dart';
 import 'package:intl/intl.dart';
 import 'student_list_screen.dart';
@@ -60,17 +60,17 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
       final studentCount = await StudentService.getStudentCount(widget.className);
       await loadTodayAttendance();
       
-      print("API Data - Students: $studentCount, Present: $todayPresent, Absent: $todayAbsent");
+      debugPrint("API Data - Students: $studentCount, Present: $todayPresent, Absent: $todayAbsent");
       
       if (mounted) {
         setState(() {
           totalStudents = studentCount;
           isLoading = false;
         });
-        print("UI Updated - Students: $totalStudents, Present: $todayPresent, Absent: $todayAbsent");
+        debugPrint("UI Updated - Students: $totalStudents, Present: $todayPresent, Absent: $todayAbsent");
       }
     } catch (e) {
-      print("Error: $e");
+      debugPrint("Error: $e");
       if (mounted) {
         setState(() {
           totalStudents = 0;
@@ -136,7 +136,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
           color: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: color.withOpacity(0.1), width: 1),
+            side: BorderSide(color: color.withValues(alpha: 0.1), width: 1),
           ),
           child: Container(
             height: 120,
@@ -169,7 +169,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
-                          color: color.withOpacity(0.8),
+                          color: color.withValues(alpha: 0.8),
                         ),
                       ),
                 SizedBox(height: 6),
@@ -233,7 +233,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: theme.primaryColor.withOpacity(0.1),
+                  color: theme.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
@@ -454,8 +454,8 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
                         boxShadow: [
                           BoxShadow(
                             color: isCurrent 
-                              ? Theme.of(context).primaryColor.withOpacity(0.3) 
-                              : Colors.black.withOpacity(0.03),
+                              ? Theme.of(context).primaryColor.withValues(alpha: 0.3) 
+                              : Colors.black.withValues(alpha: 0.03),
                             blurRadius: 10,
                             offset: Offset(0, 4),
                           ),
@@ -552,7 +552,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: Offset(0, -4)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: Offset(0, -4)),
           ],
         ),
         child: BottomNavigationBar(
@@ -601,7 +601,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
           UserAccountsDrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.9)],
+                colors: [theme.primaryColor, theme.primaryColor.withValues(alpha: 0.9)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -610,7 +610,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
               padding: EdgeInsets.all(4),
               decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
               child: CircleAvatar(
-                backgroundColor: theme.primaryColor.withOpacity(0.1),
+                backgroundColor: theme.primaryColor.withValues(alpha: 0.1),
                 child: Icon(Icons.person, size: 40, color: theme.primaryColor),
               ),
             ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_service.dart';
@@ -68,7 +69,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with AutomaticKeepA
       
       setState(() => isLoading = false);
     } catch (e) {
-      print("Error loading super admin data: $e");
+      debugPrint("Error loading super admin data: $e");
       setState(() {
         superAdminName = 'Super Admin';
         totalSchools = 0;

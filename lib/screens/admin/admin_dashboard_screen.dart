@@ -128,7 +128,7 @@ class AdminDashboardScreen extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: color.withOpacity(0.08), blurRadius: 15, offset: Offset(0, 8)),
+            BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 15, offset: Offset(0, 8)),
           ],
         ),
         child: Column(
@@ -136,7 +136,7 @@ class AdminDashboardScreen extends StatelessWidget {
           children: [
             Container(
               padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
               child: Icon(icon, color: color, size: 24),
             ),
             SizedBox(height: 20),
@@ -243,7 +243,7 @@ class AdminDashboardScreen extends StatelessWidget {
           color: color,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: color.withOpacity(0.3), blurRadius: 12, offset: Offset(0, 6)),
+            BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 12, offset: Offset(0, 6)),
           ],
         ),
         child: Stack(
@@ -251,7 +251,7 @@ class AdminDashboardScreen extends StatelessWidget {
             Positioned(
               right: -10,
               bottom: -10,
-              child: Icon(icon, size: 80, color: Colors.white.withOpacity(0.15)),
+              child: Icon(icon, size: 80, color: Colors.white.withValues(alpha: 0.15)),
             ),
             Padding(
               padding: EdgeInsets.all(16),
@@ -261,7 +261,7 @@ class AdminDashboardScreen extends StatelessWidget {
                 children: [
                   Container(
                     padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
+                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
                     child: Icon(icon, color: Colors.white, size: 22),
                   ),
                   Text(
@@ -292,7 +292,7 @@ class AdminDashboardScreen extends StatelessWidget {
           borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               spreadRadius: 5,
             ),

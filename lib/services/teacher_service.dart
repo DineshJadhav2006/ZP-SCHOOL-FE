@@ -1,5 +1,6 @@
-import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'auth_service.dart';
 import '../config/api_config.dart';
 
@@ -50,7 +51,7 @@ class TeacherService {
         return data["teachers"] ?? [];
       }
     } catch (e) {
-      print("Error fetching teachers: $e");
+      debugPrint("Error fetching teachers: $e");
     }
 
     return [];
@@ -79,7 +80,7 @@ class TeacherService {
 
       return response.statusCode == 200;
     } catch (e) {
-      print("Error updating teacher: $e");
+      debugPrint("Error updating teacher: $e");
       return false;
     }
   }
@@ -103,7 +104,7 @@ class TeacherService {
 
       return response.statusCode == 200;
     } catch (e) {
-      print("Error deleting teacher: $e");
+      debugPrint("Error deleting teacher: $e");
       return false;
     }
   }
@@ -131,7 +132,7 @@ class TeacherService {
         return data;
       }
     } catch (e) {
-      print("Error fetching admin: $e");
+      debugPrint("Error fetching admin: $e");
     }
 
     return null;
@@ -158,7 +159,7 @@ class TeacherService {
         return data["data"];
       }
     } catch (e) {
-      print("Error fetching statistics: $e");
+      debugPrint("Error fetching statistics: $e");
     }
 
     return null;

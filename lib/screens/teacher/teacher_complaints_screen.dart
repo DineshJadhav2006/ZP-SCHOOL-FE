@@ -10,6 +10,8 @@ class TeacherComplaintsScreen extends StatefulWidget {
 class _TeacherComplaintsScreenState extends State<TeacherComplaintsScreen> {
   bool isLoading = true;
   List<dynamic> complaints = [];
+  List<dynamic> allComplaints = [];
+  String selectedFilter = 'all';
 
   @override
   void initState() {
@@ -21,9 +23,18 @@ class _TeacherComplaintsScreenState extends State<TeacherComplaintsScreen> {
     setState(() => isLoading = true);
     final data = await ComplaintService.getTeacherComplaints();
     setState(() {
-      complaints = data['data'] ?? [];
+      allComplaints = data['data'] ?? [];
+      _applyFilter();
       isLoading = false;
     });
+  }
+
+  void _applyFilter() {
+    if (selectedFilter == 'all') {
+      complaints = allComplaints;
+    } else {
+      complaints = allComplaints.where((c) => c['status'] == selectedFilter).toList();
+    }
   }
 
   Color _getStatusColor(String status) {
@@ -97,25 +108,54 @@ class _TeacherComplaintsScreenState extends State<TeacherComplaintsScreen> {
         title: Text('My Complaints', style: TextStyle(color: Colors.white)),
         iconTheme: IconThemeData(color: Colors.white),
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : complaints.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.inbox_outlined, size: 80, color: Colors.grey.shade400),
-                      SizedBox(height: 16),
-                      Text(
-                        'No complaints found',
-                        style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-                      ),
-                    ],
+      body: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: Colors.white,
+            child: Row(
+              children: [
+                Icon(Icons.filter_list, size: 20, color: Colors.grey.shade600),
+                SizedBox(width: 8),
+                Text('Filter:', style: TextStyle(fontWeight: FontWeight.bold)),
+                SizedBox(width: 12),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildFilterChip('All', 'all', theme),
+                        SizedBox(width: 8),
+                        _buildFilterChip('Pending', 'pending', theme),
+                        SizedBox(width: 8),
+                        _buildFilterChip('Resolved', 'resolved', theme),
+                      ],
+                    ),
                   ),
-                )
-              : RefreshIndicator(
-                  onRefresh: loadComplaints,
-                  child: ListView.builder(
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : complaints.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.inbox_outlined, size: 80, color: Colors.grey.shade400),
+                            SizedBox(height: 16),
+                            Text(
+                              'No complaints found',
+                              style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+                            ),
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: loadComplaints,
+                        child: ListView.builder(
                     padding: EdgeInsets.all(16),
                     itemCount: complaints.length,
                     itemBuilder: (context, index) {
@@ -184,7 +224,7 @@ class _TeacherComplaintsScreenState extends State<TeacherComplaintsScreen> {
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: _getStatusColor(status).withOpacity(0.1),
+                                  color: _getStatusColor(status).withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -284,8 +324,45 @@ class _TeacherComplaintsScreenState extends State<TeacherComplaintsScreen> {
                         ),
                       );
                     },
-                  ),
-                ),
+                        ),
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String value, ThemeData theme) {
+    bool isSelected = selectedFilter == value;
+    Color chipColor;
+    
+    if (value == 'pending') {
+      chipColor = Colors.orange;
+    } else if (value == 'resolved') {
+      chipColor = Colors.green;
+    } else {
+      chipColor = theme.primaryColor;
+    }
+    
+    return FilterChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          color: isSelected ? Colors.white : chipColor,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      selected: isSelected,
+      onSelected: (selected) {
+        setState(() {
+          selectedFilter = value;
+          _applyFilter();
+        });
+      },
+      backgroundColor: Colors.white,
+      selectedColor: chipColor,
+      checkmarkColor: Colors.white,
+      side: BorderSide(color: chipColor),
     );
   }
 

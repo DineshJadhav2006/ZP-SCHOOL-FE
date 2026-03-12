@@ -4,12 +4,17 @@ import '../config/env_config.dart';
 import 'auth_service.dart';
 
 class ComplaintService {
-  static Future<Map<String, dynamic>> getMyComplaints() async {
+  static Future<Map<String, dynamic>> getMyComplaints({String? status}) async {
     try {
       String? token = await AuthService.getAccessToken();
       
+      String url = '${EnvConfig.apiBaseUrl}/complaints/my-complaints';
+      if (status != null) {
+        url += '?status=$status';
+      }
+      
       final response = await http.get(
-        Uri.parse('${EnvConfig.apiBaseUrl}/complaints/my-complaints'),
+        Uri.parse(url),
         headers: {
           'Authorization': 'Bearer $token',
         },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../services/student_service.dart';
 import 'student_profile_screen.dart';
 import 'edit_student_screen.dart';
@@ -28,10 +29,10 @@ class _StudentListScreenState extends State<StudentListScreen> {
   void loadStudents() async {
     setState(() => isLoading = true);
     
-    print("Loading students for class: ${widget.standard}");
+    debugPrint("Loading students for class: ${widget.standard}");
     var data = await StudentService.getStudents(widget.standard);
-    print("Students loaded: ${data.length}");
-    print("First student: ${data.isNotEmpty ? data[0] : 'No students'}");
+    debugPrint("Students loaded: ${data.length}");
+    debugPrint("First student: ${data.isNotEmpty ? data[0] : 'No students'}");
 
     setState(() {
       students = data;
@@ -39,7 +40,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
       isLoading = false;
     });
     
-    print("UI updated - students: ${students.length}, filtered: ${filteredStudents.length}");
+    debugPrint("UI updated - students: ${students.length}, filtered: ${filteredStudents.length}");
   }
 
   void searchStudent(String value) {
@@ -107,7 +108,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withValues(alpha: 0.04),
                           blurRadius: 8,
                           offset: Offset(0, 3),
                         ),

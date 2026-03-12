@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../services/student_service.dart';
 import '../../services/homework_service.dart';
@@ -76,7 +77,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
         setState(() => isLoading = false);
       }
     } catch (e) {
-      print("Error loading student: $e");
+      debugPrint("Error loading student: $e");
       setState(() => isLoading = false);
     }
   }
@@ -91,7 +92,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
         isHomeworkLoading = false;
       });
     } catch (e) {
-      print("Homework error: $e");
+      debugPrint("Homework error: $e");
       setState(() => isHomeworkLoading = false);
     }
   }

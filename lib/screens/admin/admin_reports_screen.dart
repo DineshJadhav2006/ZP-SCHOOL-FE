@@ -189,7 +189,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: Offset(0, 8)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: Offset(0, 8)),
         ],
       ),
       child: Column(
@@ -198,7 +198,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
             children: [
               Container(
                 padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(color: theme.primaryColor.withOpacity(0.1), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: theme.primaryColor.withValues(alpha: 0.1), shape: BoxShape.circle),
                 child: Icon(Icons.calendar_today, color: theme.primaryColor, size: 20),
               ),
               SizedBox(width: 16),
@@ -238,7 +238,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: theme.primaryColor.withOpacity(0.1),
+                      color: theme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -282,7 +282,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: color.withOpacity(0.06), blurRadius: 10, offset: Offset(0, 4)),
+          BoxShadow(color: color.withValues(alpha: 0.06), blurRadius: 10, offset: Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -290,7 +290,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
         children: [
           Container(
             padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, color: color, size: 24),
           ),
           SizedBox(height: 12),
@@ -309,7 +309,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: Offset(0, 8)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: Offset(0, 8)),
         ],
       ),
       child: Column(
@@ -372,7 +372,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
       child: Container(
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -497,7 +497,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               spreadRadius: 5,
             ),
