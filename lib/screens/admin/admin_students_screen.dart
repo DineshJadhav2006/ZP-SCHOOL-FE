@@ -512,6 +512,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                     _infoCard([
                       _infoRow(Icons.fingerprint, "Student ID", student['unique_id'] ?? '-'),
                       _infoRow(Icons.tag, "Roll Number", student['roll_number']?.toString() ?? '-'),
+                      _infoRow(Icons.badge_outlined, "Student ID (Custom)", student['student_id'] ?? '-'),
+                      _infoRow(Icons.app_registration_outlined, "General Register No", student['general_register_no'] ?? '-'),
                       _infoRow(Icons.calendar_today_outlined, "Admission Date", _formatDateInternal(student['admission_date'])),
                       _infoRow(Icons.category_outlined, "Category", student['category'] ?? 'General'),
                     ]),

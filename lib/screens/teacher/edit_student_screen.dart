@@ -20,6 +20,9 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
   late TextEditingController category;
   late TextEditingController address;
   late TextEditingController rollNumber;
+  late TextEditingController studentId;
+  late TextEditingController generalRegisterNo;
+  late TextEditingController mothersName;
 
   String? gender;
   String? standard;
@@ -43,6 +46,9 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     category = TextEditingController(text: widget.student["category"]);
     address = TextEditingController(text: widget.student["address"]);
     rollNumber = TextEditingController(text: widget.student["roll_number"]?.toString() ?? "");
+    studentId = TextEditingController(text: widget.student["student_id"] ?? "");
+    generalRegisterNo = TextEditingController(text: widget.student["general_register_no"] ?? "");
+    mothersName = TextEditingController(text: widget.student["mothers_name"] ?? "");
 
     gender = widget.student["gender"];
     standard = widget.student["standard"];
@@ -94,6 +100,9 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
       "standard": standard,
       "division": division.text,
       "roll_number": rollNumber.text.isEmpty ? null : rollNumber.text,
+      if (studentId.text.isNotEmpty) "student_id": studentId.text,
+      if (generalRegisterNo.text.isNotEmpty) "general_register_no": generalRegisterNo.text,
+      if (mothersName.text.isNotEmpty) "mothers_name": mothersName.text,
       "address": address.text,
       "category": category.text,
     };
@@ -146,6 +155,9 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                 _buildDropdownField("Standard", standard, standards, (val) => setState(() => standard = val), Icons.school_outlined),
                 _buildTextField("Division", division, Icons.meeting_room_outlined),
                 _buildTextField("Roll Number", rollNumber, Icons.numbers_outlined),
+                _buildTextField("Student ID", studentId, Icons.badge_outlined),
+                _buildTextField("General Register No", generalRegisterNo, Icons.app_registration_outlined),
+                _buildTextField("Mother's Name", mothersName, Icons.woman_outlined),
                 _buildTextField("Category", category, Icons.category_outlined),
               ],
             ),

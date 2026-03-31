@@ -23,6 +23,9 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
   late TextEditingController _aadharController;
   late TextEditingController _addressController;
   late TextEditingController _rollNumberController;
+  late TextEditingController _studentIdController;
+  late TextEditingController _generalRegisterNoController;
+  late TextEditingController _mothersNameController;
   String? _selectedGender;
   String? _selectedStandard;
   String? _selectedDivision;
@@ -41,6 +44,9 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
     _aadharController = TextEditingController(text: widget.student['aadhar_number']);
     _addressController = TextEditingController(text: widget.student['address']);
     _rollNumberController = TextEditingController(text: widget.student['roll_number']?.toString() ?? '');
+    _studentIdController = TextEditingController(text: widget.student['student_id'] ?? '');
+    _generalRegisterNoController = TextEditingController(text: widget.student['general_register_no'] ?? '');
+    _mothersNameController = TextEditingController(text: widget.student['mothers_name'] ?? '');
     _selectedGender = widget.student['gender'];
     _selectedStandard = widget.student['standard'];
     _selectedDivision = widget.student['division'];
@@ -89,6 +95,9 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
       "division": _selectedDivision,
       "address": _addressController.text.trim(),
       "category": _selectedCategory,
+      if (_studentIdController.text.trim().isNotEmpty) "student_id": _studentIdController.text.trim(),
+      if (_generalRegisterNoController.text.trim().isNotEmpty) "general_register_no": _generalRegisterNoController.text.trim(),
+      if (_mothersNameController.text.trim().isNotEmpty) "mothers_name": _mothersNameController.text.trim(),
     };
 
     bool success = await StudentService.updateStudent(widget.student['id'], data);
@@ -180,6 +189,21 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
                       decoration: InputDecoration(labelText: "Roll Number"),
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    ),
+                    SizedBox(height: 12),
+                    TextFormField(
+                      controller: _studentIdController,
+                      decoration: InputDecoration(labelText: "Student ID"),
+                    ),
+                    SizedBox(height: 12),
+                    TextFormField(
+                      controller: _generalRegisterNoController,
+                      decoration: InputDecoration(labelText: "General Register No"),
+                    ),
+                    SizedBox(height: 12),
+                    TextFormField(
+                      controller: _mothersNameController,
+                      decoration: InputDecoration(labelText: "Mother's Name"),
                     ),
                     SizedBox(height: 12),
                     TextFormField(

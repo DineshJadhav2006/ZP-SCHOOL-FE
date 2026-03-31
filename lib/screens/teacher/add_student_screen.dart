@@ -26,6 +26,9 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   TextEditingController rollNumber = TextEditingController();
   TextEditingController address = TextEditingController();
   TextEditingController password = TextEditingController(text: "student123");
+  TextEditingController studentId = TextEditingController();
+  TextEditingController generalRegisterNo = TextEditingController();
+  TextEditingController mothersName = TextEditingController();
 
   String? gender;
   String? division;
@@ -97,6 +100,9 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       "address": address.text,
       "category": category,
       "date_of_birth": dateOfBirth?.toIso8601String().split('T')[0],
+      if (studentId.text.isNotEmpty) "student_id": studentId.text,
+      if (generalRegisterNo.text.isNotEmpty) "general_register_no": generalRegisterNo.text,
+      if (mothersName.text.isNotEmpty) "mothers_name": mothersName.text,
     };
 
     final response = await http.post(
@@ -238,6 +244,9 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                     _sectionHeader(Icons.school, "Academic Details"),
                     _buildFormCard([
                       _buildTextField(rollNumber, "Roll Number *", Icons.numbers, keyboardType: TextInputType.number),
+                      _buildTextField(studentId, "Student ID", Icons.badge_outlined),
+                      _buildTextField(generalRegisterNo, "General Register No", Icons.app_registration_outlined),
+                      _buildTextField(mothersName, "Mother's Name", Icons.woman_outlined),
                       _buildDropdownField(
                         value: division,
                         label: "Division",
