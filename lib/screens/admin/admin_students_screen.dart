@@ -510,10 +510,10 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                     // Academic Information
                     _sectionTitle("Academic Information", Icons.school_outlined),
                     _infoCard([
-                      _infoRow(Icons.fingerprint, "Student ID", student['unique_id'] ?? '-'),
+                      _infoRow(Icons.fingerprint, "Unique ID", student['unique_id'] ?? '-'),
+                      _infoRow(Icons.badge_outlined, "Student ID", student['student_id']?.toString() ?? '-'),
+                      _infoRow(Icons.numbers_outlined, "G.R. Number", student['general_register_no']?.toString() ?? '-'),
                       _infoRow(Icons.tag, "Roll Number", student['roll_number']?.toString() ?? '-'),
-                      _infoRow(Icons.badge_outlined, "Student ID (Custom)", student['student_id'] ?? '-'),
-                      _infoRow(Icons.app_registration_outlined, "General Register No", student['general_register_no'] ?? '-'),
                       _infoRow(Icons.calendar_today_outlined, "Admission Date", _formatDateInternal(student['admission_date'])),
                       _infoRow(Icons.category_outlined, "Category", student['category'] ?? 'General'),
                     ]),
@@ -532,7 +532,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                     // Parent & Contact Details
                     _sectionTitle("Parent & Contact Details", Icons.contact_phone_outlined),
                     _infoCard([
-                      _infoRow(Icons.face_outlined, "Parent Name", student['parent_name'] ?? '-'),
+                      _infoRow(Icons.face_outlined, "Father/Parent Name", student['parent_name'] ?? '-'),
+                      _infoRow(Icons.person_outline, "Mother's Name", student['mothers_name'] ?? '-'),
                       _infoRow(Icons.phone_android_outlined, "Mobile", student['mobile_number'] ?? '-', 
                         trailing: Icon(Icons.call, color: Colors.green, size: 18),
                         onTap: () => _makePhoneCall(student['mobile_number'])),

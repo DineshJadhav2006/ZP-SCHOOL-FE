@@ -86,8 +86,10 @@ class ProfileScreen extends StatelessWidget {
                         _buildSectionHeader("Academic Hub"),
                         _buildInfoGrid([
                           _premiumTile("Unique ID", studentData?['unique_id'] ?? "-", Icons.fingerprint_rounded, Colors.indigo),
-                          _premiumTile("Roll Number", studentData?['roll_number'] ?? "-", Icons.format_list_numbered_rounded, Colors.blue),
-                          _premiumTile("Admission Date", formatDate(studentData?['admission_date']), Icons.calendar_month_rounded, Colors.amber.shade700),
+                          _premiumTile("Student ID", studentData?['student_id']?.toString() ?? "-", Icons.badge_rounded, Colors.teal),
+                          _premiumTile("G.R. Number", studentData?['general_register_no']?.toString() ?? "-", Icons.numbers_rounded, Colors.deepOrange),
+                          _premiumTile("Roll Number", studentData?['roll_number']?.toString() ?? "-", Icons.format_list_numbered_rounded, Colors.blue),
+                          _premiumTile("Admission Date", formatDate(studentData?['admission_date']), Icons.calendar_month_rounded, Colors.amber.shade700, isLast: true),
                         ]),
                         SizedBox(height: 25),
                         _buildSectionHeader("Personal Details"),
@@ -101,7 +103,8 @@ class ProfileScreen extends StatelessWidget {
                         _buildSectionHeader("Contact Info"),
                         _buildInfoGrid([
                           _premiumTile("Mobile", studentData?['mobile_number'] ?? "-", Icons.phone_android_rounded, Colors.green),
-                          _premiumTile("Guardian", studentData?['parent_name'] ?? "-", Icons.family_restroom_rounded, Colors.brown),
+                          _premiumTile("Father/Guardian", studentData?['parent_name'] ?? "-", Icons.family_restroom_rounded, Colors.brown),
+                          _premiumTile("Mother's Name", studentData?['mothers_name'] ?? "-", Icons.person_rounded, Colors.pinkAccent),
                           _premiumTile("Residential Address", studentData?['address'] ?? "-", Icons.map_rounded, Colors.redAccent, isLast: true),
                         ]),
                         SizedBox(height: 40),
