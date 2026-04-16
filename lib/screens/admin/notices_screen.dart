@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../services/notice_service.dart';
 import 'send_notice_screen.dart';
 import 'package:intl/intl.dart';
+import '../../localization/language_service.dart';
 
 class NoticesScreen extends StatefulWidget {
   @override
@@ -70,11 +72,11 @@ class _NoticesScreenState extends State<NoticesScreen> {
   }
 
   String getRoleText(String? role, String? className) {
-    if (role == "all") return "Everyone";
-    if (role == "teacher") return "Teachers";
+    if (role == "all") return LanguageService.text("everyone");
+    if (role == "teacher") return LanguageService.text("teachers");
     if (role == "student") {
-      if (className != null) return "Students - $className";
-      return "All Students";
+      if (className != null) return "${LanguageService.text("students")} - $className";
+      return LanguageService.text("all_students");
     }
     return role ?? "-";
   }
@@ -85,7 +87,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text("School Notices"),
+        title: Text(LanguageService.text("school_notices")),
         backgroundColor: theme.primaryColor,
         actions: [
           IconButton(
@@ -102,7 +104,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
                 loadNotices();
               }
             },
-            tooltip: "Filter by Date",
+            tooltip: LanguageService.text("filter_by_date"),
           ),
           if (selectedDate != null)
             IconButton(
@@ -111,7 +113,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
                 setState(() => selectedDate = null);
                 loadNotices();
               },
-              tooltip: "Clear Filter",
+              tooltip: LanguageService.text("clear_filter"),
             ),
         ],
       ),
@@ -124,93 +126,106 @@ class _NoticesScreenState extends State<NoticesScreen> {
                     children: [
                       Icon(Icons.notifications_none, size: 80, color: Colors.grey.shade300),
                       SizedBox(height: 16),
-                      Text("No notices found", style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
+                      Text(LanguageService.text("no_notices_found"), style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
                     ],
                   ),
                 )
               : RefreshIndicator(
                   onRefresh: loadNotices,
-                  child: ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                    itemCount: notices.length,
-                    itemBuilder: (context, index) {
-                      var notice = notices[index];
-                      return Container(
-                        margin: EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: Offset(0, 4)),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: InkWell(
-                            onTap: () => _showNoticeDetails(notice),
-                            child: Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          notice['title'] ?? '-',
-                                          style: TextStyle(
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.grey.shade800,
+                  child: AnimationLimiter(
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      itemCount: notices.length,
+                      itemBuilder: (context, index) {
+                        var notice = notices[index];
+                        return AnimationConfiguration.staggeredList(
+                          position: index,
+                          duration: const Duration(milliseconds: 500),
+                          child: SlideAnimation(
+                            verticalOffset: 50.0,
+                            child: FadeInAnimation(
+                              child: Container(
+                                margin: EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.grey.shade200),
+                                  boxShadow: [
+                                    BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: Offset(0, 4)),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: InkWell(
+                                    onTap: () => _showNoticeDetails(notice),
+                                    child: Padding(
+                                      padding: EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  notice['title'] ?? '-',
+                                                  style: TextStyle(
+                                                    fontSize: 17,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey.shade800,
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: theme.primaryColor.withOpacity(0.1),
+                                                  borderRadius: BorderRadius.circular(20),
+                                                ),
+                                                child: Text(
+                                                  getRoleText(notice['role'], notice['class_name']),
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    color: theme.primaryColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(width: 4),
+                                              _buildActionMenu(notice),
+                                            ],
                                           ),
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: theme.primaryColor.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: Text(
-                                          getRoleText(notice['role'], notice['class_name']),
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: theme.primaryColor,
-                                            fontWeight: FontWeight.bold,
+                                          SizedBox(height: 8),
+                                          Text(
+                                            notice['description'] ?? '-',
+                                            style: TextStyle(color: Colors.grey.shade600, height: 1.4),
+                                            maxLines: 3,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                        ),
+                                          SizedBox(height: 16),
+                                          Row(
+                                            children: [
+                                              _metaInfo(Icons.event_outlined, formatDate(notice['notice_date'])),
+                                              SizedBox(width: 16),
+                                              _metaInfo(Icons.history_rounded, formatDateTime(notice['created_at']).split(',').last.trim()),
+                                              Spacer(),
+                                              _metaInfo(Icons.person_outline_rounded, 
+                                                "${notice['creator']?['first_name'] ?? ''}".trim(),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
-                                      SizedBox(width: 4),
-                                      _buildActionMenu(notice),
-                                    ],
+                                    ),
                                   ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    notice['description'] ?? '-',
-                                    style: TextStyle(color: Colors.grey.shade600, height: 1.4),
-                                    maxLines: 3,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  SizedBox(height: 16),
-                                  Row(
-                                    children: [
-                                      _metaInfo(Icons.event, formatDate(notice['notice_date'])),
-                                      SizedBox(width: 16),
-                                      _metaInfo(Icons.history, formatDateTime(notice['created_at']).split(',').last.trim()),
-                                      Spacer(),
-                                      _metaInfo(Icons.person_outline, 
-                                        "${notice['creator']?['first_name'] ?? ''}".trim(),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
       floatingActionButton: FloatingActionButton(
@@ -257,7 +272,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
             children: [
               Icon(Icons.edit_outlined, size: 18, color: Colors.blue),
               SizedBox(width: 8),
-              Text("Edit"),
+              Text(LanguageService.text("edit")),
             ],
           ),
         ),
@@ -267,7 +282,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
             children: [
               Icon(Icons.delete_outline, size: 18, color: Colors.red),
               SizedBox(width: 8),
-              Text("Delete", style: TextStyle(color: Colors.red)),
+              Text(LanguageService.text("delete"), style: TextStyle(color: Colors.red)),
             ],
           ),
         ),
@@ -290,20 +305,20 @@ class _NoticesScreenState extends State<NoticesScreen> {
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 16),
-              _detailRow("Date", formatDate(notice['notice_date'])),
-              _detailRow("Sent To", getRoleText(notice['role'], notice['class_name'])),
+              _detailRow(LanguageService.text("date"), formatDate(notice['notice_date'])),
+              _detailRow(LanguageService.text("sent_to"), getRoleText(notice['role'], notice['class_name'])),
               _detailRow(
-                "Created By",
+                LanguageService.text("created_by"),
                 "${notice['creator']?['first_name'] ?? ''} ${notice['creator']?['last_name'] ?? ''}".trim(),
               ),
-              _detailRow("Created At", formatDateTime(notice['created_at'])),
+              _detailRow(LanguageService.text("created_at"), formatDateTime(notice['created_at'])),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Close"),
+            child: Text(LanguageService.text("close")),
           ),
         ],
       ),
@@ -348,12 +363,12 @@ class _NoticesScreenState extends State<NoticesScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Delete Notice"),
-        content: Text("Are you sure you want to delete this notice?"),
+        title: Text(LanguageService.text("delete_notice")),
+        content: Text(LanguageService.text("are_you_sure_delete_notice")),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
+            child: Text(LanguageService.text("cancel")),
           ),
           TextButton(
             onPressed: () async {
@@ -363,16 +378,16 @@ class _NoticesScreenState extends State<NoticesScreen> {
               if (success) {
                 await loadNotices();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Notice deleted successfully")),
+                  SnackBar(content: Text(LanguageService.text("notice_deleted_success"))),
                 );
               } else {
                 setState(() => isLoading = false);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Failed to delete notice")),
+                  SnackBar(content: Text(LanguageService.text("notice_deleted_failed"))),
                 );
               }
             },
-            child: Text("Delete", style: TextStyle(color: Colors.red)),
+            child: Text(LanguageService.text("delete"), style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

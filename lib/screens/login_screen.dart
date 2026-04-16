@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../services/auth_service.dart';
 import '../services/teacher_service.dart';
 import 'admin/admin_screen.dart';
@@ -155,20 +156,6 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.transparent,
         foregroundColor: theme.primaryColor,
         elevation: 0,
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              setState(() {
-                LanguageService.changeLanguage(value);
-              });
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(value: "en", child: Text("English")),
-              PopupMenuItem(value: "mr", child: Text("मराठी")),
-            ],
-            icon: Icon(Icons.language, color: theme.primaryColor),
-          ),
-        ],
       ),
       extendBodyBehindAppBar: true,
       body: Stack(
@@ -200,50 +187,80 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   // Logo or Icon
                   Container(
-                    padding: EdgeInsets.all(20),
+                    padding: EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 10,
-                          offset: Offset(0, 5),
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 15,
+                          offset: Offset(0, 8),
                         ),
                       ],
+                      border: Border.all(color: Colors.white, width: 4),
                     ),
                     child: Icon(
-                      Icons.school,
-                      size: 60,
+                      Icons.school_rounded,
+                      size: 64,
                       color: theme.primaryColor,
                     ),
-                  ),
+                  ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack).fadeIn(),
                   
                   SizedBox(height: 30),
                   
                   // Login Card
                   Card(
-                    elevation: 8,
-                    shadowColor: Colors.black26,
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
+                    elevation: 0,
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      side: BorderSide(color: Colors.grey.shade200, width: 1.5),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(30.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.primaryColor.withOpacity(0.05),
+                            blurRadius: 20,
+                            offset: Offset(0, 10),
+                          ),
+                        ],
+                      ),
                       child: Column(
                         children: [
                           Text(
                             LanguageService.text("school_login"),
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w900,
                               color: theme.primaryColor,
+                              letterSpacing: -0.5,
                             ),
                           ),
                           
-                          SizedBox(height: 30),
+                          SizedBox(height: 35),
                           
                           TextField(
                             controller: idController,
                             decoration: InputDecoration(
                               labelText: LanguageService.text("unique_id"),
-                              prefixIcon: Icon(Icons.person_outline),
+                              prefixIcon: Icon(Icons.person_rounded),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(color: theme.primaryColor, width: 2),
+                              ),
                             ),
                           ),
                           
@@ -254,10 +271,24 @@ class _LoginScreenState extends State<LoginScreen> {
                             obscureText: _obscurePassword,
                             decoration: InputDecoration(
                               labelText: LanguageService.text("password"),
-                              prefixIcon: Icon(Icons.lock_outline),
+                              prefixIcon: Icon(Icons.lock_rounded),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(color: theme.primaryColor, width: 2),
+                              ),
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                  _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
                                   color: theme.primaryColor.withValues(alpha: 0.7),
                                 ),
                                 onPressed: () {
@@ -269,28 +300,38 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           
-                          SizedBox(height: 30),
+                          SizedBox(height: 35),
                           
                           isLoading
                               ? CircularProgressIndicator()
                               : SizedBox(
                                   width: double.infinity,
-                                  height: 55,
+                                  height: 56,
                                   child: ElevatedButton(
                                     onPressed: loginUser,
                                     style: ElevatedButton.styleFrom(
-                                      textStyle: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
+                                      backgroundColor: theme.primaryColor,
+                                      foregroundColor: Colors.white,
+                                      elevation: 4,
+                                      shadowColor: theme.primaryColor.withOpacity(0.4),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
                                       ),
                                     ),
-                                    child: Text(LanguageService.text("login")),
+                                    child: Text(
+                                      LanguageService.text("login"),
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
                                   ),
                                 ),
                         ],
                       ),
                     ),
-                  ),
+                  ).animate().slideY(begin: 0.1, duration: 500.ms).fadeIn(duration: 500.ms),
                   
                   SizedBox(height: 20),
                   

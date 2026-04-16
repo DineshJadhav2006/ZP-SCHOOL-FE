@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/student_service.dart';
 
 class EditStudentScreen extends StatefulWidget {
@@ -128,65 +129,88 @@ class _EditStudentScreenState extends State<EditStudentScreen> {
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: Text("Edit Student Details"),
-        backgroundColor: Colors.white,
-        foregroundColor: theme.primaryColor,
+        backgroundColor: theme.primaryColor,
+        foregroundColor: Colors.white,
         elevation: 0,
         shape: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       ),
       body: SingleChildScrollView(
+        physics: BouncingScrollPhysics(),
         padding: EdgeInsets.all(20),
         child: Form(
           key: _formKey,
-          child: Column(
-            children: [
-            _buildFormSection(
-              "Personal Details",
-              [
-                _buildTextField("First Name", firstName, Icons.person_outline),
-                _buildTextField("Middle Name", middleName, Icons.person_outline),
-                _buildTextField("Last Name", lastName, Icons.person_outline),
-                _buildDropdownField("Gender", gender, genders, (val) => setState(() => gender = val), Icons.wc_outlined),
-              ],
-            ),
-            SizedBox(height: 24),
-            _buildFormSection(
-              "Academic Information",
-              [
-                _buildDropdownField("Standard", standard, standards, (val) => setState(() => standard = val), Icons.school_outlined),
-                _buildTextField("Division", division, Icons.meeting_room_outlined),
-                _buildTextField("Roll Number", rollNumber, Icons.numbers_outlined),
-                _buildTextField("Student ID", studentId, Icons.badge_outlined),
-                _buildTextField("General Register No", generalRegisterNo, Icons.app_registration_outlined),
-                _buildTextField("Mother's Name", mothersName, Icons.woman_outlined),
-                _buildTextField("Category", category, Icons.category_outlined),
-              ],
-            ),
-            SizedBox(height: 24),
-            _buildFormSection(
-              "Parent & Contact",
-              [
-                _buildTextField("Parent Name", parentName, Icons.family_restroom_outlined),
-                _buildTextField("Mobile Number", mobile, Icons.phone_android_outlined),
-                _buildTextField("Address", address, Icons.location_on_outlined, maxLines: 2),
-              ],
-            ),
-            SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: updateStudent,
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 4,
-                ),
-                child: Text("Update Student", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          child: Theme(
+            data: theme.copyWith(
+              inputDecorationTheme: InputDecorationTheme(
+                filled: true,
+                fillColor: Colors.grey.shade50,
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: theme.primaryColor, width: 2)),
               ),
             ),
-            SizedBox(height: 40),
-          ],
+            child: Column(
+              children: [
+              _buildFormSection(
+                "Personal Details",
+                [
+                  _buildTextField("First Name", firstName, Icons.person_outline),
+                  _buildTextField("Middle Name", middleName, Icons.person_outline),
+                  _buildTextField("Last Name", lastName, Icons.person_outline),
+                  _buildDropdownField("Gender", gender, genders, (val) => setState(() => gender = val), Icons.wc_outlined),
+                ],
+              ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
+              SizedBox(height: 24),
+              _buildFormSection(
+                "Academic Information",
+                [
+                  _buildDropdownField("Standard", standard, standards, (val) => setState(() => standard = val), Icons.school_outlined),
+                  _buildTextField("Division", division, Icons.meeting_room_outlined),
+                  _buildTextField("Roll Number", rollNumber, Icons.numbers_outlined),
+                  _buildTextField("Student ID", studentId, Icons.badge_outlined),
+                  _buildTextField("General Register No", generalRegisterNo, Icons.app_registration_outlined),
+                  _buildTextField("Mother's Name", mothersName, Icons.woman_outlined),
+                  _buildTextField("Category", category, Icons.category_outlined),
+                ],
+              ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideY(begin: 0.1),
+              SizedBox(height: 24),
+              _buildFormSection(
+                "Parent & Contact",
+                [
+                  _buildTextField("Parent Name", parentName, Icons.family_restroom_outlined),
+                  _buildTextField("Mobile Number", mobile, Icons.phone_android_outlined),
+                  _buildTextField("Address", address, Icons.location_on_outlined, maxLines: 2),
+                ],
+              ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.1),
+              SizedBox(height: 40),
+              Container(
+                width: double.infinity,
+                height: 55,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.primaryColor.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: updateStudent,
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
+                  ),
+                  child: Text("Update Student", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ).animate().fadeIn(delay: 300.ms, duration: 500.ms).scale(),
+              SizedBox(height: 40),
+            ],
+          ),
+          ),
         ),
-      ),
       ),
     );
   }

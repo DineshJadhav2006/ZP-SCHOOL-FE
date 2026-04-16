@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -214,110 +215,124 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _sectionHeader(Icons.person, "Basic Information"),
-                    _buildFormCard([
-                      _buildTextField(firstName, "First Name *", Icons.person_outline),
-                      _buildTextField(middleName, "Middle Name", Icons.person_outline),
-                      _buildTextField(lastName, "Last Name *", Icons.person_outline),
-                      _buildDropdownField(
-                        value: gender,
-                        label: "Gender *",
-                        items: ["male", "female"],
-                        icon: Icons.wc,
-                        onChanged: (v) => setState(() => gender = v),
+              : SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
+                  padding: EdgeInsets.all(20),
+                  child: Form(
+                    key: _formKey,
+                    child: Theme(
+                      data: theme.copyWith(
+                        inputDecorationTheme: InputDecorationTheme(
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: theme.primaryColor, width: 2)),
+                        ),
                       ),
-                      _buildDatePicker(
-                        label: "Date of Birth *",
-                        value: dateOfBirth,
-                        onTap: selectDateOfBirth,
-                      ),
-                    ]),
-                    
-                    SizedBox(height: 24),
-                    _sectionHeader(Icons.school, "Academic Details"),
-                    _buildFormCard([
-                      _buildTextField(rollNumber, "Roll Number *", Icons.numbers, keyboardType: TextInputType.number),
-                      _buildTextField(studentId, "Student ID", Icons.badge_outlined),
-                      _buildTextField(generalRegisterNo, "General Register No", Icons.app_registration_outlined),
-                      _buildTextField(mothersName, "Mother's Name", Icons.woman_outlined),
-                      _buildDropdownField(
-                        value: division,
-                        label: "Division",
-                        items: ["A", "B", "C", "D"],
-                        icon: Icons.grid_view,
-                        onChanged: (v) => setState(() => division = v),
-                      ),
-                      _buildDatePicker(
-                        label: "Admission Date *",
-                        value: admissionDate,
-                        onTap: selectAdmissionDate,
-                      ),
-                      _buildDropdownField(
-                        value: category,
-                        label: "Category",
-                        items: ["General", "OBC", "SC", "ST", "Other"],
-                        icon: Icons.category,
-                        onChanged: (v) => setState(() => category = v),
-                      ),
-                    ]),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _sectionHeader(Icons.person, "Basic Information"),
+                          _buildFormCard([
+                            _buildTextField(firstName, "First Name *", Icons.person_outline),
+                            _buildTextField(middleName, "Middle Name", Icons.person_outline),
+                            _buildTextField(lastName, "Last Name *", Icons.person_outline),
+                            _buildDropdownField(
+                              value: gender,
+                              label: "Gender *",
+                              items: ["male", "female"],
+                              icon: Icons.wc,
+                              onChanged: (v) => setState(() => gender = v),
+                            ),
+                            _buildDatePicker(
+                              label: "Date of Birth *",
+                              value: dateOfBirth,
+                              onTap: selectDateOfBirth,
+                            ),
+                          ]).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
+                          
+                          SizedBox(height: 24),
+                          _sectionHeader(Icons.school, "Academic Details"),
+                          _buildFormCard([
+                            _buildTextField(rollNumber, "Roll Number *", Icons.numbers, keyboardType: TextInputType.number),
+                            _buildTextField(studentId, "Student ID", Icons.badge_outlined),
+                            _buildTextField(generalRegisterNo, "General Register No", Icons.app_registration_outlined),
+                            _buildTextField(mothersName, "Mother's Name", Icons.woman_outlined),
+                            _buildDropdownField(
+                              value: division,
+                              label: "Division",
+                              items: ["A", "B", "C", "D"],
+                              icon: Icons.grid_view,
+                              onChanged: (v) => setState(() => division = v),
+                            ),
+                            _buildDatePicker(
+                              label: "Admission Date *",
+                              value: admissionDate,
+                              onTap: selectAdmissionDate,
+                            ),
+                            _buildDropdownField(
+                              value: category,
+                              label: "Category",
+                              items: ["General", "OBC", "SC", "ST", "Other"],
+                              icon: Icons.category,
+                              onChanged: (v) => setState(() => category = v),
+                            ),
+                          ]).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideY(begin: 0.1),
 
-                    SizedBox(height: 24),
-                    _sectionHeader(Icons.contact_phone, "Contact & Other"),
-                    _buildFormCard([
-                      _buildTextField(
-                        mobileNumber, 
-                        "Mobile Number *", 
-                        Icons.phone_android, 
-                        prefixText: "+91 ",
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
-                      ),
-                      _buildTextField(parentName, "Parent Name *", Icons.family_restroom),
-                      _buildTextField(
-                        aadharNumber, 
-                        "Aadhar Number", 
-                        Icons.credit_card,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(12)],
-                      ),
-                      _buildTextField(password, "Login Password *", Icons.lock_outline),
-                      _buildTextField(address, "Address", Icons.home_outlined, maxLines: 2),
-                    ]),
+                          SizedBox(height: 24),
+                          _sectionHeader(Icons.contact_phone, "Contact & Other"),
+                          _buildFormCard([
+                            _buildTextField(
+                              mobileNumber, 
+                              "Mobile Number *", 
+                              Icons.phone_android, 
+                              prefixText: "+91 ",
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
+                            ),
+                            _buildTextField(parentName, "Parent Name *", Icons.family_restroom),
+                            _buildTextField(
+                              aadharNumber, 
+                              "Aadhar Number", 
+                              Icons.credit_card,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(12)],
+                            ),
+                            _buildTextField(password, "Login Password *", Icons.lock_outline),
+                            _buildTextField(address, "Address", Icons.home_outlined, maxLines: 2),
+                          ]).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.1),
 
-                    SizedBox(height: 40),
-                    Container(
-                      width: double.infinity,
-                      height: 55,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.primaryColor.withValues(alpha: 0.3),
-                            blurRadius: 12,
-                            offset: Offset(0, 6),
-                          ),
+                          SizedBox(height: 40),
+                          Container(
+                            width: double.infinity,
+                            height: 55,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: theme.primaryColor.withOpacity(0.3),
+                                  blurRadius: 12,
+                                  offset: Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: addStudent,
+                              style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                elevation: 0,
+                              ),
+                              child: Text("Register Student", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            ),
+                          ).animate().fadeIn(delay: 300.ms, duration: 500.ms).scale(),
+                          SizedBox(height: 40),
                         ],
                       ),
-                      child: ElevatedButton(
-                        onPressed: addStudent,
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: Text("Register Student", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      ),
                     ),
-                    SizedBox(height: 40),
-                  ],
+                  ),
                 ),
-              ),
-            ),
     );
   }
 

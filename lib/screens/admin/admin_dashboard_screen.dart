@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../teacher/add_student_screen.dart';
 import 'add_teacher_screen.dart';
@@ -6,6 +7,7 @@ import 'admin_reports_screen.dart';
 import 'notices_screen.dart';
 import 'admin_complaints_screen.dart';
 import 'admin_class_results_screen.dart';
+import '../../localization/language_service.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   final String adminName;
@@ -24,10 +26,10 @@ class AdminDashboardScreen extends StatelessWidget {
 
   String greeting() {
     int hour = DateTime.now().hour;
-    if (hour < 12) return "Good Morning";
-    if (hour < 17) return "Good Afternoon";
-    if (hour < 20) return "Good Evening";
-    return "Good Night";
+    if (hour < 12) return LanguageService.text("good_morning");
+    if (hour < 17) return LanguageService.text("good_afternoon");
+    if (hour < 20) return LanguageService.text("good_evening");
+    return LanguageService.text("good_night");
   }
 
   @override
@@ -43,15 +45,15 @@ class AdminDashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildWelcomeHeader(theme),
+            _buildWelcomeHeader(theme).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1),
             SizedBox(height: 30),
-            _buildSectionHeader("School Overview"),
+            _buildSectionHeader(LanguageService.text("school_overview")).animate().fadeIn(delay: 100.ms).slideX(begin: -0.1),
             SizedBox(height: 16),
-            _buildStatsGrid(theme),
+            _buildStatsGrid(theme).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
             SizedBox(height: 32),
-            _buildSectionHeader("Quick Actions"),
+            _buildSectionHeader(LanguageService.text("quick_actions")).animate().fadeIn(delay: 300.ms).slideX(begin: -0.1),
             SizedBox(height: 16),
-            _buildActionGrid(context, theme),
+            _buildActionGrid(context, theme).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
             SizedBox(height: 30),
           ],
         ),
@@ -98,7 +100,7 @@ class AdminDashboardScreen extends StatelessWidget {
       children: [
         Expanded(
           child: _statCard(
-            "Total Students",
+            LanguageService.text("total_students"),
             totalStudents.toString(),
             Colors.blue,
             Icons.people_alt_rounded,
@@ -108,7 +110,7 @@ class AdminDashboardScreen extends StatelessWidget {
         SizedBox(width: 16),
         Expanded(
           child: _statCard(
-            "Total Teachers",
+            LanguageService.text("total_teachers"),
             totalTeachers.toString(),
             Colors.green,
             Icons.school_rounded,
@@ -156,7 +158,7 @@ class AdminDashboardScreen extends StatelessWidget {
             Expanded(
               child: _actionCard(
                 Icons.person_add_rounded,
-                "Add Student",
+                LanguageService.text("add_student"),
                 Colors.indigo,
                 () => _showClassSelectorForStudent(context),
               ),
@@ -165,7 +167,7 @@ class AdminDashboardScreen extends StatelessWidget {
             Expanded(
               child: _actionCard(
                 Icons.group_add_rounded,
-                "Add Teacher",
+                LanguageService.text("add_teacher"),
                 Colors.teal,
                 () async {
                   var result = await Navigator.push(
@@ -184,7 +186,7 @@ class AdminDashboardScreen extends StatelessWidget {
             Expanded(
               child: _actionCard(
                 Icons.analytics_rounded,
-                "Reports",
+                LanguageService.text("reports"),
                 Colors.amber.shade700,
                 () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => AdminReportsScreen()));
@@ -195,7 +197,7 @@ class AdminDashboardScreen extends StatelessWidget {
             Expanded(
               child: _actionCard(
                 Icons.campaign_rounded,
-                "Notices",
+                LanguageService.text("notices"),
                 Colors.orange.shade800,
                 () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => NoticesScreen()));
@@ -210,7 +212,7 @@ class AdminDashboardScreen extends StatelessWidget {
             Expanded(
               child: _actionCard(
                 Icons.report_problem,
-                "Complaints",
+                LanguageService.text("complaints"),
                 Colors.red.shade600,
                 () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => AdminComplaintsScreen()));
@@ -221,7 +223,7 @@ class AdminDashboardScreen extends StatelessWidget {
             Expanded(
               child: _actionCard(
                 Icons.assignment,
-                "Results",
+                LanguageService.text("results"),
                 Colors.purple.shade600,
                 () {
                   Navigator.push(context, MaterialPageRoute(builder: (_) => AdminClassResultsScreen()));
@@ -312,7 +314,7 @@ class AdminDashboardScreen extends StatelessWidget {
             ),
             SizedBox(height: 24),
             Text(
-              "Select Class",
+              LanguageService.text("select_class"),
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
@@ -321,7 +323,7 @@ class AdminDashboardScreen extends StatelessWidget {
             ),
             SizedBox(height: 8),
             Text(
-              "Choose a class to add a new student",
+              LanguageService.text("choose_class_add_student"),
               style: TextStyle(
                 color: Colors.grey.shade500,
                 fontSize: 14,

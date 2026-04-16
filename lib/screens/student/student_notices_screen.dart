@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../services/notice_service.dart';
 import '../../services/auth_service.dart';
 import 'package:intl/intl.dart';
@@ -145,70 +146,82 @@ class _StudentNoticesScreenState extends State<StudentNoticesScreen> {
                 )
               : RefreshIndicator(
                   onRefresh: loadNotices,
-                  child: ListView.builder(
-                    padding: EdgeInsets.all(16),
-                    itemCount: notices.length,
-                    itemBuilder: (context, index) {
-                      var notice = notices[index];
-                      return Container(
-                        margin: EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4)),
-                          ],
-                          border: Border.all(color: Colors.grey.shade100, width: 1),
-                        ),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          onTap: () => _showNoticeDetails(notice),
-                          child: Padding(
-                            padding: EdgeInsets.all(18),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        notice['title'] ?? '-',
-                                        style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.grey.shade800,
+                  child: AnimationLimiter(
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.all(16),
+                      itemCount: notices.length,
+                      itemBuilder: (context, index) {
+                        var notice = notices[index];
+                        return AnimationConfiguration.staggeredList(
+                          position: index,
+                          duration: const Duration(milliseconds: 500),
+                          child: SlideAnimation(
+                            verticalOffset: 50.0,
+                            child: FadeInAnimation(
+                              child: Container(
+                                margin: EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: Offset(0, 4)),
+                                  ],
+                                  border: Border.all(color: Colors.grey.shade100, width: 1),
+                                ),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(16),
+                                  onTap: () => _showNoticeDetails(notice),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(18),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                notice['title'] ?? '-',
+                                                style: TextStyle(
+                                                  fontSize: 17,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey.shade800,
+                                                ),
+                                              ),
+                                            ),
+                                            Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300),
+                                          ],
                                         ),
-                                      ),
+                                        SizedBox(height: 10),
+                                        Text(
+                                          notice['description'] ?? '-',
+                                          style: TextStyle(color: Colors.grey.shade600, height: 1.4, fontSize: 14),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        SizedBox(height: 18),
+                                        Row(
+                                          children: [
+                                            _metaInfo(Icons.event_note_rounded, formatDate(notice['notice_date'])),
+                                            SizedBox(width: 16),
+                                            _metaInfo(Icons.history_rounded, formatDateTime(notice['created_at']).split(',').last.trim()),
+                                            Spacer(),
+                                            _metaInfo(Icons.person_pin_circle_rounded, 
+                                              "${notice['creator']?['first_name'] ?? ''}".trim(),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                    Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300),
-                                  ],
+                                  ),
                                 ),
-                                SizedBox(height: 10),
-                                Text(
-                                  notice['description'] ?? '-',
-                                  style: TextStyle(color: Colors.grey.shade600, height: 1.4, fontSize: 14),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(height: 18),
-                                Row(
-                                  children: [
-                                    _metaInfo(Icons.event_note_rounded, formatDate(notice['notice_date'])),
-                                    SizedBox(width: 16),
-                                    _metaInfo(Icons.history_rounded, formatDateTime(notice['created_at']).split(',').last.trim()),
-                                    Spacer(),
-                                    _metaInfo(Icons.person_pin_circle_rounded, 
-                                      "${notice['creator']?['first_name'] ?? ''}".trim(),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
     );

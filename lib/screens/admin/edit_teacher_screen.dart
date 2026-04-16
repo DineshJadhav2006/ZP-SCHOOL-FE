@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/teacher_service.dart';
 import 'package:intl/intl.dart';
+import '../../localization/language_service.dart';
 
 class EditTeacherScreen extends StatefulWidget {
   final Map<String, dynamic> teacher;
@@ -91,12 +93,12 @@ class _EditTeacherScreenState extends State<EditTeacherScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Teacher updated successfully")),
+        SnackBar(content: Text(LanguageService.text("teacher_updated_success"))),
       );
       Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to update teacher"), backgroundColor: Colors.red),
+        SnackBar(content: Text(LanguageService.text("teacher_updated_failed")), backgroundColor: Colors.red),
       );
     }
   }
@@ -107,9 +109,9 @@ class _EditTeacherScreenState extends State<EditTeacherScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text("Edit Teacher Profile"),
-        backgroundColor: Colors.white,
-        foregroundColor: theme.primaryColor,
+        title: Text(LanguageService.text("edit_teacher_profile")),
+        backgroundColor: theme.primaryColor,
+        foregroundColor: Colors.white,
         elevation: 0,
         shape: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       ),
@@ -117,61 +119,84 @@ class _EditTeacherScreenState extends State<EditTeacherScreen> {
           ? Center(child: CircularProgressIndicator())
           : Form(
               key: _formKey,
-              child: ListView(
-                padding: EdgeInsets.all(20),
-                children: [
-                  _buildFormSection(
-                    "Personal Information",
-                    [
-                      _buildTextField("First Name *", firstNameController, Icons.person_outline),
-                      _buildTextField("Middle Name", middleNameController, Icons.person_outline),
-                      _buildTextField("Last Name *", lastNameController, Icons.person_outline),
-                      _buildDropdownField("Gender", gender, ["male", "female"], (v) => setState(() => gender = v!), Icons.wc_outlined),
-                    ],
+              child: Theme(
+                data: theme.copyWith(
+                  inputDecorationTheme: InputDecorationTheme(
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: theme.primaryColor, width: 2)),
                   ),
-                  SizedBox(height: 24),
-                  _buildFormSection(
-                    "Professional Details",
-                    [
-                      _buildTextField("Designation *", designationController, Icons.work_outline),
-                      _buildTextField("Qualification *", qualificationController, Icons.school_outlined),
-                      _buildTextField("Experience (Years)", null, Icons.history_edu_outlined, initialValue: experienceYears.toString(), onChanged: (v) => experienceYears = int.tryParse(v) ?? 0),
-                      _buildDatePicker("Date of Birth", dateOfBirth, (date) => setState(() => dateOfBirth = date)),
-                    ],
-                  ),
-                  SizedBox(height: 24),
-                  _buildFormSection(
-                    "Contact & Class Assignment",
-                    [
-                      _buildTextField("Mobile Number *", mobileController, Icons.phone_android_outlined, maxLength: 10, keyboardType: TextInputType.number),
-                      SwitchListTile(
-                        title: Text("Is Class Teacher?", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                        value: isClassTeacher,
-                        activeColor: theme.primaryColor,
-                        onChanged: (v) => setState(() => isClassTeacher = v),
-                      ),
-                      if (isClassTeacher) ...[
-                        _buildDropdownField("Assigned Class", assignedStandard, classes, (v) => setState(() => assignedStandard = v), Icons.class_outlined),
-                        SizedBox(height: 16),
-                        _buildTextField("Division", null, Icons.meeting_room_outlined, initialValue: assignedDivision, onChanged: (v) => assignedDivision = v),
+                ),
+                child: ListView(
+                  physics: BouncingScrollPhysics(),
+                  padding: EdgeInsets.all(20),
+                  children: [
+                    _buildFormSection(
+                      LanguageService.text("personal_details"),
+                      [
+                        _buildTextField(LanguageService.text("first_name"), firstNameController, Icons.person_outline),
+                        _buildTextField(LanguageService.text("middle_name"), middleNameController, Icons.person_outline),
+                        _buildTextField(LanguageService.text("last_name"), lastNameController, Icons.person_outline),
+                        _buildDropdownField(LanguageService.text("gender_required").replaceAll(" *", ""), gender, [LanguageService.text("male"), LanguageService.text("female")], (v) => setState(() => gender = v!), Icons.wc_outlined),
                       ],
-                    ],
-                  ),
-                  SizedBox(height: 40),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      onPressed: updateTeacher,
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 4,
+                    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
+                    SizedBox(height: 24),
+                    _buildFormSection(
+                      LanguageService.text("professional_details"),
+                      [
+                        _buildTextField(LanguageService.text("designation_required"), designationController, Icons.work_outline),
+                        _buildTextField(LanguageService.text("qualification_required"), qualificationController, Icons.school_outlined),
+                        _buildTextField(LanguageService.text("experience_years"), null, Icons.history_edu_outlined, initialValue: experienceYears.toString(), onChanged: (v) => experienceYears = int.tryParse(v) ?? 0),
+                        _buildDatePicker(LanguageService.text("date_of_birth"), dateOfBirth, (date) => setState(() => dateOfBirth = date)),
+                      ],
+                    ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideY(begin: 0.1),
+                    SizedBox(height: 24),
+                    _buildFormSection(
+                      LanguageService.text("contact_class_assignment"),
+                      [
+                        _buildTextField(LanguageService.text("mobile_number_required"), mobileController, Icons.phone_android_outlined, maxLength: 10, keyboardType: TextInputType.number),
+                        SwitchListTile(
+                          title: Text(LanguageService.text("is_class_teacher"), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                          value: isClassTeacher,
+                          activeColor: theme.primaryColor,
+                          onChanged: (v) => setState(() => isClassTeacher = v),
+                        ),
+                        if (isClassTeacher) ...[
+                          _buildDropdownField(LanguageService.text("assigned_class"), assignedStandard, classes, (v) => setState(() => assignedStandard = v), Icons.class_outlined),
+                          SizedBox(height: 16),
+                          _buildTextField(LanguageService.text("division"), null, Icons.meeting_room_outlined, initialValue: assignedDivision, onChanged: (v) => assignedDivision = v),
+                        ],
+                      ],
+                    ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.1),
+                    SizedBox(height: 40),
+                    Container(
+                      width: double.infinity,
+                      height: 55,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.primaryColor.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: Offset(0, 6),
+                          ),
+                        ],
                       ),
-                      child: Text("Update Teacher", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                  SizedBox(height: 40),
-                ],
+                      child: ElevatedButton(
+                        onPressed: updateTeacher,
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          elevation: 0,
+                        ),
+                        child: Text(LanguageService.text("update_teacher"), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ).animate().fadeIn(delay: 300.ms, duration: 500.ms).scale(),
+                    SizedBox(height: 40),
+                  ],
+                ),
               ),
             ),
     );
@@ -213,7 +238,7 @@ class _EditTeacherScreenState extends State<EditTeacherScreen> {
         prefixIcon: Icon(icon),
         counterText: "",
       ),
-      validator: (v) => (label.contains("*") && (v == null || v.isEmpty)) ? "Required" : null,
+      validator: (v) => (label.contains("*") && (v == null || v.isEmpty)) ? LanguageService.text("required") : null,
     );
   }
 
@@ -247,7 +272,7 @@ class _EditTeacherScreenState extends State<EditTeacherScreen> {
           prefixIcon: Icon(Icons.calendar_today_outlined),
         ),
         child: Text(
-          date != null ? DateFormat('dd/MM/yyyy').format(date) : "Select Date",
+          date != null ? DateFormat('dd/MM/yyyy').format(date) : LanguageService.text("select_date"),
           style: TextStyle(color: date != null ? Colors.grey.shade800 : Colors.grey.shade500, fontWeight: date != null ? FontWeight.w500 : FontWeight.normal),
         ),
       ),

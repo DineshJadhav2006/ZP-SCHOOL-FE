@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/student_service.dart';
 import '../../services/attendance_service.dart';
 import '../../services/auth_service.dart';
@@ -16,6 +17,7 @@ import '../admin/notices_screen.dart';
 import '../login_screen.dart';
 import 'exams_screen.dart';
 import 'teacher_complaints_screen.dart';
+import '../../localization/language_service.dart';
 
 class ClassDashboardScreen extends StatefulWidget {
   final String className;
@@ -118,87 +120,89 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
 
   String greeting() {
     int hour = DateTime.now().hour;
-    if (hour < 12) return "Good Morning";
-    if (hour < 17) return "Good Afternoon";
-    if (hour < 20) return "Good Evening";
-    return "Good Night";
+    if (hour < 12) return LanguageService.text("good_morning");
+    if (hour < 17) return LanguageService.text("good_afternoon");
+    if (hour < 20) return LanguageService.text("good_evening");
+    return LanguageService.text("good_night");
   }
 
-  Widget infoBox(String title, String value, Color color, Future<void> Function() onTap) {
-    final theme = Theme.of(context);
-    
+  Widget infoBox(String title, String value, Color color, IconData icon, Future<void> Function() onTap) {
     return GestureDetector(
       onTap: onTap,
       child: ShimmerLoading(
         isLoading: isLoading,
-        child: Card(
-          elevation: 0,
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: color.withValues(alpha: 0.1), width: 1),
+        child: Container(
+          height: 120,
+          padding: EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.08),
+                blurRadius: 15,
+                offset: Offset(0, 8),
+              )
+            ],
           ),
-          child: Container(
-            height: 120,
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  color.withOpacity(0.05),
-                  color.withOpacity(0.15),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                isLoading
-                    ? Container(
-                        width: 60,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      )
-                    : Text(
-                        value,
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: color.withValues(alpha: 0.8),
-                        ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              isLoading
+                  ? Container(
+                      width: 60,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                SizedBox(height: 6),
-                isLoading
-                    ? Container(
-                        width: 80,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(4),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+                          child: Icon(icon, color: color, size: 28),
                         ),
-                      )
-                    : Text(
-                        title,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade700,
+                        SizedBox(width: 12),
+                        Text(
+                          value,
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            color: color.withOpacity(0.9),
+                            letterSpacing: -0.5,
+                          ),
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                      ],
+                    ),
+              SizedBox(height: 8),
+              isLoading
+                  ? Container(
+                      width: 80,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(4),
                       ),
-              ],
-            ),
+                    )
+                  : Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey.shade600,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+            ],
           ),
         ),
       ),
-    );
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, duration: 400.ms);
   }
 
   // ================= HOME =================
@@ -223,9 +227,10 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
                     Text(
                       widget.teacherName,
                       style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
                         color: theme.primaryColor,
+                        letterSpacing: -0.5,
                       ),
                     ),
                   ],
@@ -233,11 +238,11 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: theme.primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  color: theme.primaryColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.person_add_outlined, color: theme.primaryColor),
+                  icon: Icon(Icons.person_add_rounded, color: theme.primaryColor, size: 28),
                   onPressed: () async {
                     bool? result = await Navigator.push(
                       context,
@@ -251,12 +256,12 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
                   },
                   tooltip: "Add Student",
                 ),
-              ),
+              ).animate().scale(delay: 200.ms, duration: 400.ms),
             ],
           ),
           SizedBox(height: 24),
           Text(
-            "Overview",
+            LanguageService.text("overview"),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -272,9 +277,10 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
             physics: NeverScrollableScrollPhysics(),
             children: [
               infoBox(
-                "Total Students",
+                LanguageService.text("total_students"),
                 totalStudents.toString(),
                 Colors.blue,
+                Icons.people_alt_rounded,
                 () async {
                   await Navigator.push(
                     context,
@@ -286,9 +292,10 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
                 },
               ),
               infoBox(
-                "Today Present",
+                LanguageService.text("present"),
                 todayPresent.toString(),
                 Colors.green,
+                Icons.check_circle_rounded,
                 () async {
                   await Navigator.push(
                     context,
@@ -307,9 +314,10 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
                 },
               ),
               infoBox(
-                "Today Absent",
+                LanguageService.text("absent"),
                 todayAbsent.toString(),
                 Colors.red,
+                Icons.cancel_rounded,
                 () async {
                   await Navigator.push(
                     context,
@@ -327,7 +335,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
                   });
                 },
               ),
-              infoBox("Other", "-", Colors.orange, () async {}),
+              infoBox(LanguageService.text("other"), "-", Colors.orange, Icons.more_horiz_rounded, () async {}),
             ],
           ),
         ],
@@ -398,7 +406,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
                   Icon(Icons.swap_horiz_rounded, color: Theme.of(context).primaryColor, size: 28),
                   SizedBox(width: 12),
                   Text(
-                    "Switch Class",
+                    LanguageService.text("switch_class"),
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -482,7 +490,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
                             Padding(
                               padding: EdgeInsets.only(top: 4),
                               child: Text(
-                                "Current",
+                                LanguageService.text("current"),
                                 style: TextStyle(
                                   fontSize: 10,
                                   color: Colors.white,
@@ -515,25 +523,36 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
       appBar: AppBar(
         elevation: 0,
         backgroundColor: theme.primaryColor,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("ZP SCHOOL MANDAVE KH", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text(LanguageService.text("zp_school_short") ?? "ZP School", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5)),
             Text(
-              "Class Teacher: ${widget.className}",
-              style: TextStyle(fontSize: 10, color: Colors.white70),
+              "${LanguageService.text("class_teacher")}: ${widget.className}",
+              style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w600),
             ),
           ],
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_none_outlined, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => NoticesScreen()),
-              );
-            },
+          Container(
+            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(Icons.notifications_active_rounded, color: Colors.white),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => NoticesScreen()),
+                );
+              },
+            ),
           ),
           SizedBox(width: 8),
         ],
@@ -552,41 +571,48 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: Offset(0, -4)),
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: Offset(0, -5)),
           ],
         ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          currentIndex: selectedIndex,
-          selectedFontSize: 11,
-          unselectedFontSize: 10,
-          onTap: (index) {
-            setState(() => selectedIndex = index);
-            if (index == 0) loadTodayAttendance();
-            if (index == 1) setState(() => attendanceKey = UniqueKey());
-          },
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 0 ? Icons.home : Icons.home_outlined),
-              label: "Home",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 1 ? Icons.fact_check_rounded : Icons.fact_check_outlined),
-              label: "Attendance",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 2 ? Icons.assignment_rounded : Icons.assignment_outlined),
-              label: "Homework",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 3 ? Icons.book : Icons.book_outlined),
-              label: "Books",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 4 ? Icons.account_circle_rounded : Icons.account_circle_outlined),
-              label: "Profile",
-            ),
-          ],
+        child: ClipRRect(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          child: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            currentIndex: selectedIndex,
+            selectedItemColor: theme.primaryColor,
+            unselectedItemColor: Colors.grey.shade400,
+            selectedFontSize: 12,
+            unselectedFontSize: 10,
+            selectedLabelStyle: TextStyle(fontWeight: FontWeight.w800),
+            onTap: (index) {
+              setState(() => selectedIndex = index);
+              if (index == 0) loadTodayAttendance();
+              if (index == 1) setState(() => attendanceKey = UniqueKey());
+            },
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined),
+                label: LanguageService.text("home"),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(selectedIndex == 1 ? Icons.fact_check_rounded : Icons.fact_check_outlined),
+                label: LanguageService.text("attendance"),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(selectedIndex == 2 ? Icons.assignment_rounded : Icons.assignment_outlined),
+                label: LanguageService.text("homework"),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(selectedIndex == 3 ? Icons.menu_book_rounded : Icons.book_outlined),
+                label: LanguageService.text("books"),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(selectedIndex == 4 ? Icons.account_circle_rounded : Icons.account_circle_outlined),
+                label: LanguageService.text("profile"),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -619,7 +645,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
           ),
           ListTile(
             leading: Icon(Icons.swap_horiz_rounded, color: theme.primaryColor),
-            title: Text("Switch Class", style: TextStyle(fontWeight: FontWeight.w600)),
+            title: Text(LanguageService.text("switch_class"), style: TextStyle(fontWeight: FontWeight.w600)),
             onTap: () {
               Navigator.pop(context);
               showClassSelectionDialog();
@@ -627,7 +653,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
           ),
           ListTile(
             leading: Icon(Icons.assignment_turned_in, color: theme.primaryColor),
-            title: Text("Exams", style: TextStyle(fontWeight: FontWeight.w600)),
+            title: Text(LanguageService.text("exams"), style: TextStyle(fontWeight: FontWeight.w600)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -640,7 +666,7 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
           ),
           ListTile(
             leading: Icon(Icons.report_problem, color: Colors.orange),
-            title: Text("My Complaints", style: TextStyle(fontWeight: FontWeight.w600)),
+            title: Text(LanguageService.text("my_complaints"), style: TextStyle(fontWeight: FontWeight.w600)),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -653,28 +679,28 @@ class _ClassDashboardScreenState extends State<ClassDashboardScreen> with Automa
           ),
           ListTile(
             leading: Icon(Icons.info_outline_rounded, color: theme.primaryColor),
-            title: Text("School Information", style: TextStyle(fontWeight: FontWeight.w600)),
+            title: Text(LanguageService.text("school_information"), style: TextStyle(fontWeight: FontWeight.w600)),
             onTap: () => Navigator.pop(context),
           ),
           Spacer(),
           Divider(indent: 20, endIndent: 20),
           ListTile(
             leading: Icon(Icons.logout_rounded, color: Colors.red),
-            title: Text("Logout", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            title: Text(LanguageService.text("logout"), style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
             onTap: () async {
               bool? confirm = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: Text("Logout"),
-                  content: Text("Are you sure you want to logout?"),
+                  title: Text(LanguageService.text("logout")),
+                  content: Text(LanguageService.text("are_you_sure_logout")),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
-                      child: Text("Cancel"),
+                      child: Text(LanguageService.text("cancel")),
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context, true),
-                      child: Text("Logout", style: TextStyle(color: Colors.red)),
+                      child: Text(LanguageService.text("logout"), style: TextStyle(color: Colors.red)),
                     ),
                   ],
                 ),

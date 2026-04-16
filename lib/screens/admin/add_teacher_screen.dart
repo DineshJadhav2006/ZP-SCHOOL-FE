@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/auth_service.dart';
+import '../../localization/language_service.dart';
+import 'package:intl/intl.dart';
 
 class AddTeacherScreen extends StatefulWidget {
   @override
@@ -64,7 +67,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
       _showSuccessDialog(result['unique_id']);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to add teacher"), backgroundColor: Colors.red),
+        SnackBar(content: Text(LanguageService.text("teacher_added_failed")), backgroundColor: Colors.red),
       );
     }
   }
@@ -79,14 +82,14 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
           children: [
             Icon(Icons.check_circle, color: Colors.green, size: 28),
             SizedBox(width: 12),
-            Text("Success!", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(LanguageService.text("success"), style: TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Teacher registered successfully!", style: TextStyle(fontSize: 15)),
+            Text(LanguageService.text("teacher_registered_success"), style: TextStyle(fontSize: 15)),
             SizedBox(height: 20),
             Container(
               padding: EdgeInsets.all(16),
@@ -99,7 +102,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "UNIQUE ID",
+                    LanguageService.text("unique_id_label"),
                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue, letterSpacing: 1),
                   ),
                   SizedBox(height: 4),
@@ -139,7 +142,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
   }
 
   String formatDate(DateTime? date) {
-    if (date == null) return "Select Date";
+    if (date == null) return LanguageService.text("select_date");
     return "${date.day}/${date.month}/${date.year}";
   }
 
@@ -149,7 +152,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text("Add New Teacher"),
+        title: Text(LanguageService.text("add_new_teacher")),
         backgroundColor: theme.primaryColor,
         elevation: 0,
       ),
@@ -157,122 +160,136 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
           ? Center(child: CircularProgressIndicator())
           : Form(
         key: _formKey,
-        child: ListView(
-          padding: EdgeInsets.all(20),
-          children: [
-            _sectionHeader(Icons.person, "Personal Details"),
-            _buildFormCard([
-              _buildTextField(firstNameController, "First Name *", Icons.person_outline),
-              _buildTextField(middleNameController, "Middle Name", Icons.person_outline),
-              _buildTextField(lastNameController, "Last Name *", Icons.person_outline),
-              _buildDropdownField(
-                value: gender,
-                label: "Gender *",
-                items: ["male", "female"],
-                icon: Icons.wc,
-                onChanged: (v) => setState(() => gender = v!),
-              ),
-              _buildDatePicker(
-                label: "Date of Birth",
-                value: dateOfBirth,
-                onTap: () async {
-                  var date = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime(1990),
-                    firstDate: DateTime(1950),
-                    lastDate: DateTime.now(),
-                  );
-                  if (date != null) setState(() => dateOfBirth = date);
-                },
-              ),
-            ]),
-
-            SizedBox(height: 24),
-            _sectionHeader(Icons.work, "Professional Details"),
-            _buildFormCard([
-              _buildTextField(designationController, "Designation *", Icons.badge_outlined),
-              _buildTextField(qualificationController, "Qualification *", Icons.school_outlined),
-              _buildDatePicker(
-                label: "Joining Date",
-                value: joiningDate,
-                onTap: () async {
-                  var date = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime.now(),
-                  );
-                  if (date != null) setState(() => joiningDate = date);
-                },
-              ),
-              _buildTextField(
-                TextEditingController(text: experienceYears > 0 ? experienceYears.toString() : ""),
-                "Experience (Years)",
-                Icons.history,
-                keyboardType: TextInputType.number,
-                onChanged: (v) => experienceYears = int.tryParse(v) ?? 0,
-              ),
-            ]),
-
-            SizedBox(height: 24),
-            _sectionHeader(Icons.admin_panel_settings, "Account & Assignment"),
-            _buildFormCard([
-              _buildTextField(mobileController, "Mobile Number *", Icons.phone_android, keyboardType: TextInputType.number),
-              _buildTextField(passwordController, "Login Password *", Icons.lock_outline, obscureText: true),
-              
-              Divider(height: 32),
-              
-              SwitchListTile(
-                title: Text("Is Class Teacher?", style: TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text("Assign a primary class to this teacher"),
-                value: isClassTeacher,
-                activeColor: theme.primaryColor,
-                contentPadding: EdgeInsets.zero,
-                onChanged: (v) => setState(() => isClassTeacher = v),
-              ),
-              
-              if (isClassTeacher) ...[
-                SizedBox(height: 12),
+        child: Theme(
+          data: theme.copyWith(
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: Colors.grey.shade50,
+              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: theme.primaryColor, width: 2)),
+            ),
+          ),
+          child: ListView(
+            physics: BouncingScrollPhysics(),
+            padding: EdgeInsets.all(20),
+            children: [
+              _sectionHeader(Icons.person, LanguageService.text("personal_details")),
+              _buildFormCard([
+                _buildTextField(firstNameController, LanguageService.text("first_name"), Icons.person_outline),
+                _buildTextField(middleNameController, LanguageService.text("middle_name"), Icons.person_outline),
+                _buildTextField(lastNameController, LanguageService.text("last_name"), Icons.person_outline),
                 _buildDropdownField(
-                  value: assignedStandard,
-                  label: "Assigned Class",
-                  items: classes,
-                  icon: Icons.meeting_room,
-                  onChanged: (v) => setState(() => assignedStandard = v),
+                  value: gender,
+                  label: LanguageService.text("gender_required"),
+                  items: [LanguageService.text("male"), LanguageService.text("female")],
+                  icon: Icons.wc,
+                  onChanged: (v) => setState(() => gender = v!),
                 ),
-                SizedBox(height: 16),
-                _buildTextField(
-                  TextEditingController(text: assignedDivision),
-                  "Division", 
-                  Icons.grid_view,
-                  onChanged: (v) => assignedDivision = v,
+                _buildDatePicker(
+                  label: LanguageService.text("date_of_birth"),
+                  value: dateOfBirth,
+                  onTap: () async {
+                    var date = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime(1990),
+                      firstDate: DateTime(1950),
+                      lastDate: DateTime.now(),
+                    );
+                    if (date != null) setState(() => dateOfBirth = date);
+                  },
                 ),
-              ],
-            ]),
+              ]).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
 
-            SizedBox(height: 40),
-            Container(
-              height: 55,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.primaryColor.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: Offset(0, 6),
+              SizedBox(height: 24),
+              _sectionHeader(Icons.work, LanguageService.text("professional_details")),
+              _buildFormCard([
+                _buildTextField(designationController, LanguageService.text("designation_required"), Icons.badge_outlined),
+                _buildTextField(qualificationController, LanguageService.text("qualification_required"), Icons.school_outlined),
+                _buildDatePicker(
+                  label: LanguageService.text("joining_date"),
+                  value: joiningDate,
+                  onTap: () async {
+                    var date = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime.now(),
+                    );
+                    if (date != null) setState(() => joiningDate = date);
+                  },
+                ),
+                _buildTextField(
+                  TextEditingController(text: experienceYears > 0 ? experienceYears.toString() : ""),
+                  LanguageService.text("experience_years"),
+                  Icons.history,
+                  keyboardType: TextInputType.number,
+                  onChanged: (v) => experienceYears = int.tryParse(v) ?? 0,
+                ),
+              ]).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideY(begin: 0.1),
+
+              SizedBox(height: 24),
+              _sectionHeader(Icons.admin_panel_settings, LanguageService.text("account_and_assignment")),
+              _buildFormCard([
+                _buildTextField(mobileController, LanguageService.text("mobile_number_required"), Icons.phone_android, keyboardType: TextInputType.number),
+                _buildTextField(passwordController, LanguageService.text("login_password_required"), Icons.lock_outline, obscureText: true),
+                
+                Divider(height: 32),
+                
+                SwitchListTile(
+                  title: Text(LanguageService.text("is_class_teacher"), style: TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(LanguageService.text("assign_primary_class")),
+                  value: isClassTeacher,
+                  activeColor: theme.primaryColor,
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (v) => setState(() => isClassTeacher = v),
+                ),
+                
+                if (isClassTeacher) ...[
+                  SizedBox(height: 12),
+                  _buildDropdownField(
+                    value: assignedStandard,
+                    label: LanguageService.text("assigned_class"),
+                    items: classes,
+                    icon: Icons.meeting_room,
+                    onChanged: (v) => setState(() => assignedStandard = v),
+                  ),
+                  SizedBox(height: 16),
+                  _buildTextField(
+                    TextEditingController(text: assignedDivision),
+                    LanguageService.text("division"), 
+                    Icons.grid_view,
+                    onChanged: (v) => assignedDivision = v,
                   ),
                 ],
-              ),
-              child: ElevatedButton(
-                onPressed: isLoading ? null : addTeacher,
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ]).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.1),
+
+              SizedBox(height: 40),
+              Container(
+                height: 55,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.primaryColor.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: Offset(0, 6),
+                    ),
+                  ],
                 ),
-                child: Text("Register Teacher", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
-            ),
-            SizedBox(height: 40),
-          ],
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : addTeacher,
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
+                  ),
+                  child: Text(LanguageService.text("register_teacher"), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ).animate().fadeIn(delay: 300.ms, duration: 500.ms).scale(),
+              SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
@@ -330,7 +347,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
         labelText: label,
         prefixIcon: Icon(icon, size: 20),
       ),
-      validator: (v) => (label.contains('*') && (v == null || v.isEmpty)) ? "Required" : null,
+      validator: (v) => (label.contains('*') && (v == null || v.isEmpty)) ? LanguageService.text("required") : null,
     );
   }
 
@@ -349,7 +366,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
         labelText: label,
         prefixIcon: Icon(icon, size: 20),
       ),
-      validator: (v) => (label.contains('*') && v == null) ? "Required" : null,
+      validator: (v) => (label.contains('*') && v == null) ? LanguageService.text("required") : null,
     );
   }
 
@@ -367,11 +384,8 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
           prefixIcon: Icon(Icons.calendar_today, size: 20),
         ),
         child: Text(
-          formatDate(value),
-          style: TextStyle(
-            color: value == null ? Colors.grey.shade500 : Colors.black87,
-            fontSize: 15,
-          ),
+          value != null ? DateFormat('dd/MM/yyyy').format(value) : LanguageService.text("select_date"),
+          style: TextStyle(color: value != null ? Colors.grey.shade800 : Colors.grey.shade500, fontWeight: value != null ? FontWeight.w500 : FontWeight.normal),
         ),
       ),
     );

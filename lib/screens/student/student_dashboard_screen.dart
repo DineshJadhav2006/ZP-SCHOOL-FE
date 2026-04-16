@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/student_service.dart';
 import '../../services/homework_service.dart';
 import '../../services/notice_service.dart';
@@ -12,6 +12,7 @@ import 'notification_screen.dart';
 import 'student_notices_screen.dart';
 import 'books_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../localization/language_service.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   @override
@@ -100,10 +101,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
   // ================= GREETING =================
   String greeting() {
     int hour = DateTime.now().hour;
-    if (hour < 12) return "Good Morning";
-    if (hour < 17) return "Good Afternoon";
-    if (hour < 20) return "Good Evening";
-    return "Good Night";
+    if (hour < 12) return LanguageService.text("good_morning");
+    if (hour < 17) return LanguageService.text("good_afternoon");
+    if (hour < 20) return LanguageService.text("good_evening");
+    return LanguageService.text("good_night");
   }
 
   // ================= BUILD =================
@@ -116,35 +117,54 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: theme.primaryColor,
-        leading: IconButton(
-          icon: Icon(Icons.menu, color: Colors.white),
-          onPressed: () {
-            // Placeholder: No action as requested
-          },
+        backgroundColor: Colors.blue.shade500,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            Text("ZP SCHOOL MANDAVE KH", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
-            Text(
-              "Student Dashboard",
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.normal, color: Colors.white70),
+            Container(
+              padding: EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.school_rounded, color: Colors.white, size: 24),
+            ),
+            SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(LanguageService.text("zp_school_short") ?? "ZP School", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5)),
+                Text(
+                  LanguageService.text("student_space") ?? "Student Space",
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.9)),
+                ),
+              ],
             ),
           ],
         ),
         actions: [
           Stack(
+            alignment: Alignment.center,
             children: [
-              IconButton(
-                icon: Icon(Icons.notifications_none, color: Colors.white),
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => StudentNoticesScreen()),
-                  );
-                  _loadUnreadCount();
-                },
+              Container(
+                margin: EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.notifications_active_rounded, color: Colors.white, size: 24),
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => StudentNoticesScreen()),
+                    );
+                    _loadUnreadCount();
+                  },
+                ).animate(onPlay: (controller) => controller.repeat(reverse: true)).scaleXY(end: 1.05, duration: 800.ms),
               ),
               if (unreadCount > 0)
                 Positioned(
@@ -152,17 +172,22 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
                   top: 8,
                   child: Container(
                     padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                    constraints: BoxConstraints(minWidth: 16, minHeight: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent, 
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2)
+                    ),
+                    constraints: BoxConstraints(minWidth: 20, minHeight: 20),
                     child: Text(
                       unreadCount > 99 ? '99+' : '$unreadCount',
-                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900),
                       textAlign: TextAlign.center,
                     ),
                   ),
-                ),
+                ).animate().shake(duration: 500.ms),
             ],
           ),
+          SizedBox(width: 8),
         ],
       ),
       body: isLoading
@@ -191,34 +216,57 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen>
               ],
             ),
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]),
-        child: BottomNavigationBar(
-          currentIndex: selectedIndex,
-          onTap: (index) {
-            setState(() => selectedIndex = index);
-          },
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 0 ? Icons.home : Icons.home_outlined),
-              label: "Home",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 1 ? Icons.assignment : Icons.assignment_outlined),
-              label: "Homework",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 2 ? Icons.assessment : Icons.assessment_outlined),
-              label: "Results",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 3 ? Icons.book : Icons.book_outlined),
-              label: "Books",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(selectedIndex == 4 ? Icons.person : Icons.person_outline),
-              label: "Profile",
-            ),
+        margin: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.15),
+              blurRadius: 20,
+              offset: Offset(0, 10),
+            )
           ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: BottomNavigationBar(
+            currentIndex: selectedIndex,
+            onTap: (index) {
+              setState(() => selectedIndex = index);
+            },
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            selectedItemColor: Colors.blue.shade600,
+            unselectedItemColor: Colors.grey.shade400,
+            showSelectedLabels: true,
+            showUnselectedLabels: false,
+            elevation: 0,
+            selectedFontSize: 12,
+            unselectedFontSize: 0,
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(selectedIndex == 0 ? Icons.home_rounded : Icons.home_outlined, size: 28),
+                label: LanguageService.text("home"),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(selectedIndex == 1 ? Icons.assignment_rounded : Icons.assignment_outlined, size: 28),
+                label: LanguageService.text("homework"),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(selectedIndex == 2 ? Icons.emoji_events_rounded : Icons.emoji_events_outlined, size: 28),
+                label: LanguageService.text("results"),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(selectedIndex == 3 ? Icons.menu_book_rounded : Icons.book_outlined, size: 28),
+                label: LanguageService.text("books"),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(selectedIndex == 4 ? Icons.face_rounded : Icons.face_outlined, size: 28),
+                label: LanguageService.text("profile"),
+              ),
+            ],
+          ),
         ),
       ),
     );

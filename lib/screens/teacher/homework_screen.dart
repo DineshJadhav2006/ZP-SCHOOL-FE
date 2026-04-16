@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../services/homework_service.dart';
 import 'add_homework_screen.dart';
 import 'edit_homework_screen.dart';
@@ -280,12 +281,24 @@ class _HomeworkScreenState extends State<HomeworkScreen> {
                     onRefresh: loadHomework,
                     child: homeworkList.isEmpty
                         ? _buildEmptyState()
-                        : ListView.builder(
-                            padding: EdgeInsets.symmetric(vertical: 20),
-                            itemCount: homeworkList.length,
-                            itemBuilder: (context, index) {
-                              return homeworkCard(homeworkList[index]);
-                            },
+                        : AnimationLimiter(
+                            child: ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              padding: EdgeInsets.symmetric(vertical: 20),
+                              itemCount: homeworkList.length,
+                              itemBuilder: (context, index) {
+                                return AnimationConfiguration.staggeredList(
+                                  position: index,
+                                  duration: const Duration(milliseconds: 500),
+                                  child: SlideAnimation(
+                                    verticalOffset: 50.0,
+                                    child: FadeInAnimation(
+                                      child: homeworkCard(homeworkList[index]),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                   ),
           ),

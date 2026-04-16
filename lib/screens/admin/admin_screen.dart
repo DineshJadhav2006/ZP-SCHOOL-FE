@@ -9,6 +9,7 @@ import 'admin_teachers_screen.dart';
 import 'admin_profile_screen.dart';
 import 'notices_screen.dart';
 import 'admin_books_screen.dart';
+import '../../localization/language_service.dart';
 
 class AdminScreen extends StatefulWidget {
   @override
@@ -103,9 +104,9 @@ class _AdminScreenState extends State<AdminScreen>
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("ZP SCHOOL MANDAVE KH", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text(LanguageService.text("zp_school"), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
             Text(
-              "Admin Dashboard",
+              LanguageService.text("admin_dashboard"),
               style: TextStyle(fontSize: 10, fontWeight: FontWeight.normal, color: Colors.white70),
             ),
           ],
@@ -140,13 +141,13 @@ class _AdminScreenState extends State<AdminScreen>
                   ),
                   SizedBox(height: 10),
                   Text(adminName, style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text('Administrator', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  Text(LanguageService.text("administrator"), style: TextStyle(color: Colors.white70, fontSize: 12)),
                 ],
               ),
             ),
             ListTile(
               leading: Icon(Icons.book_outlined),
-              title: Text('Books'),
+              title: Text(LanguageService.text("books")),
               onTap: () async {
                 Navigator.pop(context);
                 await Navigator.push(
@@ -158,7 +159,7 @@ class _AdminScreenState extends State<AdminScreen>
             Divider(),
             ListTile(
               leading: Icon(Icons.logout, color: Colors.red),
-              title: Text('Logout', style: TextStyle(color: Colors.red)),
+              title: Text(LanguageService.text("logout"), style: TextStyle(color: Colors.red)),
               onTap: () async {
                 await AuthService.logout();
                 Navigator.pushReplacement(
@@ -195,19 +196,19 @@ class _AdminScreenState extends State<AdminScreen>
           items: [
             BottomNavigationBarItem(
               icon: Icon(selectedIndex == 0 ? Icons.dashboard : Icons.dashboard_outlined),
-              label: "Dashboard",
+              label: LanguageService.text("dashboard"),
             ),
             BottomNavigationBarItem(
               icon: Icon(selectedIndex == 1 ? Icons.people : Icons.people_outline),
-              label: "Students",
+              label: LanguageService.text("students"),
             ),
             BottomNavigationBarItem(
               icon: Icon(selectedIndex == 2 ? Icons.school : Icons.school_outlined),
-              label: "Teachers",
+              label: LanguageService.text("teachers"),
             ),
             BottomNavigationBarItem(
               icon: Icon(selectedIndex == 3 ? Icons.person : Icons.person_outline),
-              label: "Profile",
+              label: LanguageService.text("profile"),
             ),
           ],
         ),

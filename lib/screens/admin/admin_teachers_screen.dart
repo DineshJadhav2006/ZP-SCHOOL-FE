@@ -5,6 +5,7 @@ import 'edit_teacher_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../utils/common_extensions.dart';
+import '../../localization/language_service.dart';
 
 class AdminTeachersScreen extends StatefulWidget {
   final int totalTeachers;
@@ -97,11 +98,11 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Faculty Directory",
+                  LanguageService.text("faculty_directory"),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  "Total Staff: ${teachers.length}",
+                  "${LanguageService.text("total_staff")}: ${teachers.length}",
                   style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
                 ),
               ],
@@ -116,7 +117,7 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
               );
               if (result == true) loadTeachers();
             },
-            tooltip: "Add Teacher",
+            tooltip: LanguageService.text("add_teacher"),
           ),
         ],
       ),
@@ -131,7 +132,7 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
           Icon(Icons.school_outlined, size: 80, color: Colors.grey.shade300),
           SizedBox(height: 16),
           Text(
-            "No teachers found",
+            LanguageService.text("no_teachers_found"),
             style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
           ),
         ],
@@ -164,17 +165,17 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 4),
-            Text(teacher['designation'] ?? 'Staff', style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+            Text(teacher['designation'] ?? LanguageService.text("staff"), style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
             SizedBox(height: 4),
             Row(
               children: [
                 Flexible(
-                  child: _miniTag("ID: ${teacher['unique_id'] ?? '-'}"),
+                  child: _miniTag("${LanguageService.text("staff_id")}: ${teacher['unique_id'] ?? '-'}"),
                 ),
                 if (teacher['is_class_teacher'] == true) ...[
                   SizedBox(width: 8),
                   Flexible(
-                    child: _miniTag("Class: ${teacher['assigned_standard']}", isPrimary: true),
+                    child: _miniTag("${LanguageService.text("class_label")}: ${teacher['assigned_standard']}", isPrimary: true),
                   ),
                 ],
               ],
@@ -225,7 +226,7 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
             children: [
               Icon(Icons.edit_outlined, color: Colors.blue, size: 20),
               SizedBox(width: 12),
-              Text('Edit Profile'),
+              Text(LanguageService.text("edit")),
             ],
           ),
         ),
@@ -235,7 +236,7 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
             children: [
               Icon(Icons.delete_outline, color: Colors.red, size: 20),
               SizedBox(width: 12),
-              Text('Remove Staff', style: TextStyle(color: Colors.red)),
+              Text(LanguageService.text("remove_staff"), style: TextStyle(color: Colors.red)),
             ],
           ),
         ),
@@ -279,7 +280,7 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
                       onPressed: () => Navigator.pop(context),
                     ),
                     Text(
-                      "Teacher Profile",
+                      LanguageService.text("teacher_profile"),
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -323,7 +324,7 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            teacher['designation'] ?? 'Staff',
+                            teacher['designation'] ?? LanguageService.text("staff"),
                             style: TextStyle(fontSize: 16, color: primaryColor, fontWeight: FontWeight.w500),
                           ),
                           SizedBox(height: 20),
@@ -337,13 +338,13 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
                       children: [
                         _actionButton(
                           icon: Icons.call_outlined,
-                          label: "Call",
+                          label: LanguageService.text("call"),
                           color: Colors.green,
                           onTap: () => _makePhoneCall(teacher['mobile_number']),
                         ),
                         _actionButton(
                           icon: Icons.edit_outlined,
-                          label: "Edit",
+                          label: LanguageService.text("edit"),
                           color: Colors.blue,
                           onTap: () async {
                             Navigator.pop(context);
@@ -356,7 +357,7 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
                         ),
                         _actionButton(
                           icon: Icons.delete_outline,
-                          label: "Delete",
+                          label: LanguageService.text("delete"),
                           color: Colors.red,
                           onTap: () {
                             Navigator.pop(context);
@@ -368,29 +369,29 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
                     SizedBox(height: 30),
 
                     // Info Sections
-                    _sectionTitle("Professional Information", Icons.work_outline),
+                    _sectionTitle(LanguageService.text("professional_information"), Icons.work_outline),
                     _infoCard([
-                      _infoRow(Icons.fingerprint, "Staff ID", teacher['unique_id'] ?? '-'),
-                      _infoRow(Icons.workspace_premium_outlined, "Qualification", teacher['qualification'] ?? '-'),
-                      _infoRow(Icons.history_edu_outlined, "Experience", "${teacher['experience_years'] ?? 0} Years"),
-                      _infoRow(Icons.calendar_today_outlined, "Joining Date", formatDate(teacher['joining_date'])),
+                      _infoRow(Icons.fingerprint, LanguageService.text("staff_id"), teacher['unique_id'] ?? '-'),
+                      _infoRow(Icons.workspace_premium_outlined, LanguageService.text("qualification"), teacher['qualification'] ?? '-'),
+                      _infoRow(Icons.history_edu_outlined, LanguageService.text("experience"), "${teacher['experience_years'] ?? 0} ${LanguageService.text("years")}"),
+                      _infoRow(Icons.calendar_today_outlined, LanguageService.text("joining_date"), formatDate(teacher['joining_date'])),
                     ]),
 
                     SizedBox(height: 20),
-                    _sectionTitle("Personal Information", Icons.person_outline),
+                    _sectionTitle(LanguageService.text("personal_information"), Icons.person_outline),
                     _infoCard([
-                      _infoRow(Icons.phone_android_outlined, "Mobile", teacher['mobile_number'] ?? '-', 
+                      _infoRow(Icons.phone_android_outlined, LanguageService.text("mobile"), teacher['mobile_number'] ?? '-', 
                         trailing: Icon(Icons.call, color: Colors.green, size: 18),
                         onTap: () => _makePhoneCall(teacher['mobile_number'])),
                       _infoRow(teacher['gender']?.toString().toLowerCase() == 'female' ? Icons.female : Icons.male, 
-                        "Gender", teacher['gender']?.toString().capitalize() ?? '-'),
+                        LanguageService.text("gender"), teacher['gender']?.toString().capitalize() ?? '-'),
                     ]),
 
                     if (teacher['is_class_teacher'] == true) ...[
                       SizedBox(height: 20),
-                      _sectionTitle("Class Responsibility", Icons.class_outlined),
+                      _sectionTitle(LanguageService.text("class_responsibility"), Icons.class_outlined),
                       _infoCard([
-                        _infoRow(Icons.school_outlined, "Class Teacher", "${teacher['assigned_standard']} - ${teacher['assigned_division']}"),
+                        _infoRow(Icons.school_outlined, LanguageService.text("class_teacher"), "${teacher['assigned_standard']} - ${teacher['assigned_division']}"),
                       ]),
                     ],
                     SizedBox(height: 40),
@@ -494,12 +495,12 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Delete Teacher"),
-        content: Text("Are you sure you want to delete $name?"),
+        title: Text(LanguageService.text("delete_teacher")),
+        content: Text("${LanguageService.text("are_you_sure_delete")} $name?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
+            child: Text(LanguageService.text("cancel")),
           ),
           TextButton(
             onPressed: () async {
@@ -507,16 +508,16 @@ class _AdminTeachersScreenState extends State<AdminTeachersScreen> {
               bool success = await TeacherService.deleteTeacher(teacher['id']);
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Teacher deleted successfully")),
+                  SnackBar(content: Text(LanguageService.text("teacher_deleted_success"))),
                 );
                 loadTeachers();
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Failed to delete teacher"), backgroundColor: Colors.red),
+                  SnackBar(content: Text(LanguageService.text("teacher_deleted_failed")), backgroundColor: Colors.red),
                 );
               }
             },
-            child: Text("Delete", style: TextStyle(color: Colors.red)),
+            child: Text(LanguageService.text("delete"), style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

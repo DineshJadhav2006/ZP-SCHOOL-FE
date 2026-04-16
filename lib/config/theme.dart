@@ -15,15 +15,15 @@ class AppTheme {
     );
 
     return baseTheme.copyWith(
-      textTheme: GoogleFonts.poppinsTextTheme(baseTheme.textTheme),
+      textTheme: GoogleFonts.baloo2TextTheme(baseTheme.textTheme),
       appBarTheme: AppBarTheme(
         backgroundColor: Color(AppConfig.primaryColor),
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.poppins(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+        titleTextStyle: GoogleFonts.baloo2(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
           color: Colors.white,
           letterSpacing: 0.5,
         ),
@@ -31,8 +31,8 @@ class AppTheme {
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         selectedItemColor: Color(AppConfig.primaryColor),
         unselectedItemColor: Colors.grey.shade500,
-        selectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 12),
-        unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 12),
+        selectedLabelStyle: GoogleFonts.baloo2(fontWeight: FontWeight.w700, fontSize: 13),
+        unselectedLabelStyle: GoogleFonts.baloo2(fontWeight: FontWeight.w600, fontSize: 12),
         showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
@@ -43,13 +43,14 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: Color(AppConfig.primaryColor),
           foregroundColor: Colors.white,
-          elevation: 0,
+          elevation: 4,
+          shadowColor: Color(AppConfig.primaryColor).withOpacity(0.4),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.poppins(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
+          textStyle: GoogleFonts.baloo2(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
           ),
           padding: EdgeInsets.symmetric(
             horizontal: 24,
@@ -61,29 +62,29 @@ class AppTheme {
         elevation: 4,
         shadowColor: Colors.black.withOpacity(0.05),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
         margin: EdgeInsets.all(8),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 14),
-        labelStyle: GoogleFonts.poppins(color: Colors.grey.shade700, fontSize: 14),
+        hintStyle: GoogleFonts.baloo2(color: Colors.grey.shade400, fontSize: 15),
+        labelStyle: GoogleFonts.baloo2(color: Colors.grey.shade700, fontSize: 15),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: Colors.grey.shade200),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: Colors.grey.shade200),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(AppConfig.primaryColor), width: 1.5),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Color(AppConfig.primaryColor), width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: Colors.red.shade400),
         ),
         contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),

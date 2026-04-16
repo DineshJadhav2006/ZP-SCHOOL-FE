@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../services/attendance_service.dart';
 import '../../services/auth_service.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart'; // Added
+import 'package:url_launcher/url_launcher.dart';
 
 class AttendanceListScreen extends StatefulWidget {
   final String standard;
@@ -124,75 +125,87 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
           ? Center(child: CircularProgressIndicator())
           : attendanceList.isEmpty
           ? _buildEmptyState(statusColor)
-          : ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              itemCount: attendanceList.length,
-              itemBuilder: (_, index) {
-                final attendance = attendanceList[index];
-                final student = attendance.student;
+          : AnimationLimiter(
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                itemCount: attendanceList.length,
+                itemBuilder: (_, index) {
+                  final attendance = attendanceList[index];
+                  final student = attendance.student;
 
-                return Container(
-                  margin: EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: Offset(0, 2)),
-                    ],
-                  ),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    leading: Container(
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        widget.filterStatus == "Present" ? Icons.check : Icons.close,
-                        color: statusColor,
-                        size: 24,
-                      ),
-                    ),
-                    title: Text(
-                      "${student.firstName} ${student.lastName}",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        "Roll No: ${student.rollNumber ?? '-'}  •  Class: ${widget.standard}",
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                      ),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _actionButton(
-                          Icons.call, 
-                          Colors.green, 
-                          () {
-                            final String phone = student.mobileNumber;
-                            if (phone.trim().isNotEmpty) {
-                              makePhoneCall(phone);
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Mobile number not available")),
-                              );
-                            }
-                          },
+                  return AnimationConfiguration.staggeredList(
+                    position: index,
+                    duration: const Duration(milliseconds: 500),
+                    child: FadeInAnimation(
+                      child: SlideAnimation(
+                        verticalOffset: 50.0,
+                        child: Container(
+                          margin: EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade200),
+                            boxShadow: [
+                              BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: Offset(0, 2)),
+                            ],
+                          ),
+                          child: ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            leading: Container(
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: statusColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                widget.filterStatus == "Present" ? Icons.check : Icons.close,
+                                color: statusColor,
+                                size: 24,
+                              ),
+                            ),
+                            title: Text(
+                              "${student.firstName} ${student.lastName}",
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                "Roll No: ${student.rollNumber ?? '-'}  •  Class: ${widget.standard}",
+                                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                              ),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _actionButton(
+                                  Icons.call, 
+                                  Colors.green, 
+                                  () {
+                                    final String phone = student.mobileNumber;
+                                    if (phone.trim().isNotEmpty) {
+                                      makePhoneCall(phone);
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text("Mobile number not available")),
+                                      );
+                                    }
+                                  },
+                                ),
+                                SizedBox(width: 8),
+                                _actionButton(
+                                  Icons.edit_outlined, 
+                                  theme.primaryColor, 
+                                  () => updateAttendanceStatus(attendance.id, attendance.status),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        SizedBox(width: 8),
-                        _actionButton(
-                          Icons.edit_outlined, 
-                          theme.primaryColor, 
-                          () => updateAttendanceStatus(attendance.id, attendance.status),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
     );
   }
@@ -200,7 +213,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
   Widget _actionButton(IconData icon, Color color, VoidCallback onTap) {
     return Container(
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(10),
       ),
       child: IconButton(

@@ -10,6 +10,7 @@ import '../teacher/student_profile_screen.dart'; // Import added
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../utils/common_extensions.dart';
+import '../../localization/language_service.dart';
 
 class AdminStudentsScreen extends StatefulWidget {
   final int totalStudents;
@@ -136,7 +137,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                   children: [
                                     Expanded(
                                       child: _buildStatCard(
-                                        "Total",
+                                        LanguageService.text("total"),
                                         totalStudents.toString(),
                                         theme.primaryColor,
                                         Icons.people_outline,
@@ -146,7 +147,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                     SizedBox(width: 12),
                                     Expanded(
                                       child: _buildStatCard(
-                                        "Present",
+                                        LanguageService.text("present"),
                                         todayPresent.toString(),
                                         Colors.green,
                                         Icons.check_circle_outline,
@@ -156,7 +157,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                     SizedBox(width: 12),
                                     Expanded(
                                       child: _buildStatCard(
-                                        "Absent",
+                                        LanguageService.text("absent"),
                                         todayAbsent.toString(),
                                         Colors.red,
                                         Icons.highlight_off,
@@ -192,8 +193,9 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     String lastName = student["last_name"] ?? "";
     String fullName = "$firstName ${student["middle_name"] ?? ''} $lastName".trim();
     String rollNumber = student["roll_number"]?.toString() ?? '-';
-    String uniqueId = student["unique_id"] ?? '-';
-    String gender = student["gender"] ?? 'Not specified';
+    String name = "${student['first_name']} ${student['last_name']}".trim();
+    String gender = student["gender"] ?? LanguageService.text("not_specified");
+    String uniqueId = student["unique_id"]?.toString() ?? 'N/A';
     
     String dob = student["date_of_birth"] ?? 'N/A';
     if (dob.contains('T')) {
@@ -421,7 +423,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                       onPressed: () => Navigator.pop(context),
                     ),
                     Text(
-                      "Student Profile",
+                      LanguageService.text("student_profile"),
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -477,13 +479,13 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                       children: [
                         _actionButton(
                           icon: Icons.call_outlined,
-                          label: "Call Parent",
+                          label: LanguageService.text("call_parent"),
                           color: Colors.green,
                           onTap: () => _makePhoneCall(student['mobile_number']),
                         ),
                         _actionButton(
                           icon: Icons.edit_outlined,
-                          label: "Edit",
+                          label: LanguageService.text("edit"),
                           color: Colors.blue,
                           onTap: () async {
                             Navigator.pop(context);
@@ -496,7 +498,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                         ),
                         _actionButton(
                           icon: Icons.delete_outline,
-                          label: "Delete",
+                          label: LanguageService.text("delete"),
                           color: Colors.red,
                           onTap: () {
                             Navigator.pop(context);
@@ -508,36 +510,36 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                     SizedBox(height: 30),
 
                     // Academic Information
-                    _sectionTitle("Academic Information", Icons.school_outlined),
+                    _sectionTitle(LanguageService.text("academic_information"), Icons.school_outlined),
                     _infoCard([
-                      _infoRow(Icons.fingerprint, "Unique ID", student['unique_id'] ?? '-'),
-                      _infoRow(Icons.badge_outlined, "Student ID", student['student_id']?.toString() ?? '-'),
-                      _infoRow(Icons.numbers_outlined, "G.R. Number", student['general_register_no']?.toString() ?? '-'),
-                      _infoRow(Icons.tag, "Roll Number", student['roll_number']?.toString() ?? '-'),
-                      _infoRow(Icons.calendar_today_outlined, "Admission Date", _formatDateInternal(student['admission_date'])),
-                      _infoRow(Icons.category_outlined, "Category", student['category'] ?? 'General'),
+                      _infoRow(Icons.fingerprint, LanguageService.text("unique_id"), student['unique_id'] ?? '-'),
+                      _infoRow(Icons.badge_outlined, LanguageService.text("student_id"), student['student_id']?.toString() ?? '-'),
+                      _infoRow(Icons.numbers_outlined, LanguageService.text("gr_number"), student['general_register_no']?.toString() ?? '-'),
+                      _infoRow(Icons.tag, LanguageService.text("roll_number"), student['roll_number']?.toString() ?? '-'),
+                      _infoRow(Icons.calendar_today_outlined, LanguageService.text("admission_date"), _formatDateInternal(student['admission_date'])),
+                      _infoRow(Icons.category_outlined, LanguageService.text("category"), student['category'] ?? 'General'),
                     ]),
 
                     SizedBox(height: 20),
                     // Personal Information
-                    _sectionTitle("Personal Information", Icons.person_outline),
+                    _sectionTitle(LanguageService.text("personal_information"), Icons.person_outline),
                     _infoCard([
-                      _infoRow(Icons.credit_card_outlined, "Aadhar Number", student['aadhar_number'] ?? '-'),
+                      _infoRow(Icons.credit_card_outlined, LanguageService.text("aadhar_number"), student['aadhar_number'] ?? '-'),
                       _infoRow(student['gender']?.toString().toLowerCase() == 'female' ? Icons.female : Icons.male, 
-                        "Gender", student['gender']?.toString().capitalize() ?? 'Not Specified'),
-                      _infoRow(Icons.cake_outlined, "Date of Birth", _formatDateInternal(student['date_of_birth'])),
+                        LanguageService.text("gender"), student['gender']?.toString().capitalize() ?? LanguageService.text("not_specified")),
+                      _infoRow(Icons.cake_outlined, LanguageService.text("date_of_birth"), _formatDateInternal(student['date_of_birth'])),
                     ]),
 
                     SizedBox(height: 20),
                     // Parent & Contact Details
-                    _sectionTitle("Parent & Contact Details", Icons.contact_phone_outlined),
+                    _sectionTitle(LanguageService.text("parent_contact_details"), Icons.contact_phone_outlined),
                     _infoCard([
-                      _infoRow(Icons.face_outlined, "Father/Parent Name", student['parent_name'] ?? '-'),
-                      _infoRow(Icons.person_outline, "Mother's Name", student['mothers_name'] ?? '-'),
-                      _infoRow(Icons.phone_android_outlined, "Mobile", student['mobile_number'] ?? '-', 
+                      _infoRow(Icons.face_outlined, LanguageService.text("father_parent_name"), student['parent_name'] ?? '-'),
+                      _infoRow(Icons.person_outline, LanguageService.text("mothers_name"), student['mothers_name'] ?? '-'),
+                      _infoRow(Icons.phone_android_outlined, LanguageService.text("mobile"), student['mobile_number'] ?? '-', 
                         trailing: Icon(Icons.call, color: Colors.green, size: 18),
                         onTap: () => _makePhoneCall(student['mobile_number'])),
-                      _infoRow(Icons.location_on_outlined, "Address", student['address'] ?? '-'),
+                      _infoRow(Icons.location_on_outlined, LanguageService.text("address"), student['address'] ?? '-'),
                     ]),
 
                     SizedBox(height: 40),
@@ -678,7 +680,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
               ),
               ListTile(
                 leading: Icon(Icons.person, color: Colors.blue),
-                title: Text("View Profile"),
+                title: Text(LanguageService.text("view_profile")),
                 onTap: () {
                   Navigator.pop(context);
                   _showStudentDetails(student);
@@ -686,7 +688,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
               ),
               ListTile(
                 leading: Icon(Icons.edit, color: Colors.orange),
-                title: Text("Edit Student"),
+                title: Text(LanguageService.text("edit_student")),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -701,7 +703,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
               ),
               ListTile(
                 leading: Icon(Icons.delete, color: Colors.red),
-                title: Text("Delete Student"),
+                title: Text(LanguageService.text("delete_student")),
                 onTap: () {
                   Navigator.pop(context);
                   _confirmDelete(student);
@@ -739,7 +741,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "Student Directory",
+                  LanguageService.text("student_directory"),
                   style: TextStyle(
                     fontSize: 18, 
                     fontWeight: FontWeight.w900,
@@ -751,7 +753,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                 Row(
                   children: [
                     Text(
-                      "Class $selectedClass",
+                      "${LanguageService.text("class_label")} $selectedClass",
                       style: TextStyle(
                         color: Colors.grey.shade600, 
                         fontSize: 13,
@@ -771,7 +773,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              "Change",
+                              LanguageService.text("change"),
                               style: TextStyle(
                                 color: theme.primaryColor,
                                 fontSize: 11,

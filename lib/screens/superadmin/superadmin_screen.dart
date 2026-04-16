@@ -7,6 +7,7 @@ import 'superadmin_dashboard_screen.dart';
 import 'superadmin_schools_screen.dart';
 import 'superadmin_reports_screen.dart';
 import 'superadmin_profile_screen.dart';
+import '../../localization/language_service.dart';
 
 class SuperAdminScreen extends StatefulWidget {
   @override
@@ -102,8 +103,8 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with AutomaticKeepA
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("ZP SCHOOL SYSTEM", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
-            Text("Super Admin Dashboard", style: TextStyle(fontSize: 10, color: Colors.white70)),
+            Text(LanguageService.text("zp_school_system"), style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text(LanguageService.text("superadmin_dashboard"), style: TextStyle(fontSize: 10, color: Colors.white70)),
           ],
         ),
         actions: [
@@ -131,13 +132,13 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with AutomaticKeepA
                   ),
                   SizedBox(height: 10),
                   Text(superAdminName, style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text('Super Administrator', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  Text(LanguageService.text("super_administrator"), style: TextStyle(color: Colors.white70, fontSize: 12)),
                 ],
               ),
             ),
             ListTile(
               leading: Icon(Icons.settings),
-              title: Text('System Settings'),
+              title: Text(LanguageService.text("system_settings")),
               onTap: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -148,21 +149,21 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with AutomaticKeepA
             Divider(),
             ListTile(
               leading: Icon(Icons.logout, color: Colors.red),
-              title: Text('Logout', style: TextStyle(color: Colors.red)),
+              title: Text(LanguageService.text("logout"), style: TextStyle(color: Colors.red)),
               onTap: () async {
                 bool? confirm = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: Text("Logout"),
-                    content: Text("Are you sure you want to logout?"),
+                    title: Text(LanguageService.text("logout")),
+                    content: Text(LanguageService.text("are_you_sure_logout")),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: Text("Cancel"),
+                        child: Text(LanguageService.text("cancel")),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: Text("Logout", style: TextStyle(color: Colors.red)),
+                        child: Text(LanguageService.text("logout"), style: TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
@@ -205,19 +206,19 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with AutomaticKeepA
         items: [
           BottomNavigationBarItem(
             icon: Icon(selectedIndex == 0 ? Icons.dashboard : Icons.dashboard_outlined),
-            label: "Dashboard",
+            label: LanguageService.text("dashboard"),
           ),
           BottomNavigationBarItem(
             icon: Icon(selectedIndex == 1 ? Icons.school : Icons.school_outlined),
-            label: "Schools",
+            label: LanguageService.text("schools"),
           ),
           BottomNavigationBarItem(
             icon: Icon(selectedIndex == 2 ? Icons.assessment : Icons.assessment_outlined),
-            label: "Reports",
+            label: LanguageService.text("reports"),
           ),
           BottomNavigationBarItem(
             icon: Icon(selectedIndex == 3 ? Icons.person : Icons.person_outline),
-            label: "Profile",
+            label: LanguageService.text("profile"),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/homework_service.dart';
 import 'package:intl/intl.dart';
 
@@ -87,85 +88,108 @@ class _EditHomeworkScreenState extends State<EditHomeworkScreen> {
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: Text("Edit Homework"),
-        backgroundColor: Colors.white,
-        foregroundColor: theme.primaryColor,
+        backgroundColor: theme.primaryColor,
+        foregroundColor: Colors.white,
         elevation: 0,
         shape: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
               padding: EdgeInsets.all(20),
               child: Form(
                 key: _formKey,
-                child: Column(
-                  children: [
-                    _buildFormSection(
-                      "Task Details",
-                      [
-                        TextFormField(
-                          controller: subjectName,
-                          decoration: InputDecoration(
-                            labelText: "Subject Name *",
-                            prefixIcon: Icon(Icons.book_outlined),
-                          ),
-                          validator: (v) => v!.isEmpty ? "Required" : null,
-                        ),
-                        SizedBox(height: 20),
-                        TextFormField(
-                          controller: homeworkText,
-                          decoration: InputDecoration(
-                            labelText: "Homework Description *",
-                            prefixIcon: Icon(Icons.description_outlined),
-                          ),
-                          maxLines: 4,
-                          validator: (v) => v!.isEmpty ? "Required" : null,
-                        ),
-                      ],
+                child: Theme(
+                  data: theme.copyWith(
+                    inputDecorationTheme: InputDecorationTheme(
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade200)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: theme.primaryColor, width: 2)),
                     ),
-                    SizedBox(height: 24),
-                    _buildFormSection(
-                      "Schedule & Attachments",
-                      [
-                        InkWell(
-                          onTap: selectHomeworkDate,
-                          borderRadius: BorderRadius.circular(12),
-                          child: InputDecorator(
+                  ),
+                  child: Column(
+                    children: [
+                      _buildFormSection(
+                        "Task Details",
+                        [
+                          TextFormField(
+                            controller: subjectName,
                             decoration: InputDecoration(
-                              labelText: "Homework Date *",
-                              prefixIcon: Icon(Icons.calendar_today_outlined),
+                              labelText: "Subject Name *",
+                              prefixIcon: Icon(Icons.book_outlined),
                             ),
-                            child: Text(
-                              formatDate(homeworkDate),
-                              style: TextStyle(color: Colors.grey.shade800, fontWeight: FontWeight.w500),
+                            validator: (v) => v!.isEmpty ? "Required" : null,
+                          ),
+                          SizedBox(height: 20),
+                          TextFormField(
+                            controller: homeworkText,
+                            decoration: InputDecoration(
+                              labelText: "Homework Description *",
+                              prefixIcon: Icon(Icons.description_outlined),
+                            ),
+                            maxLines: 4,
+                            validator: (v) => v!.isEmpty ? "Required" : null,
+                          ),
+                        ],
+                      ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
+                      SizedBox(height: 24),
+                      _buildFormSection(
+                        "Schedule & Attachments",
+                        [
+                          InkWell(
+                            onTap: selectHomeworkDate,
+                            borderRadius: BorderRadius.circular(12),
+                            child: InputDecorator(
+                              decoration: InputDecoration(
+                                labelText: "Homework Date *",
+                                prefixIcon: Icon(Icons.calendar_today_outlined),
+                              ),
+                              child: Text(
+                                formatDate(homeworkDate),
+                                style: TextStyle(color: Colors.grey.shade800, fontWeight: FontWeight.w500),
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 20),
-                        TextFormField(
-                          controller: attachmentUrl,
-                          decoration: InputDecoration(
-                            labelText: "Attachment URL (Optional)",
-                            prefixIcon: Icon(Icons.link_outlined),
+                          SizedBox(height: 20),
+                          TextFormField(
+                            controller: attachmentUrl,
+                            decoration: InputDecoration(
+                              labelText: "Attachment URL (Optional)",
+                              prefixIcon: Icon(Icons.link_outlined),
+                            ),
                           ),
+                        ],
+                      ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideY(begin: 0.1),
+                      SizedBox(height: 40),
+                      Container(
+                        width: double.infinity,
+                        height: 55,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.primaryColor.withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: Offset(0, 6),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 40),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton(
-                        onPressed: updateHomework,
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: 4,
+                        child: ElevatedButton(
+                          onPressed: updateHomework,
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            elevation: 0,
+                          ),
+                          child: Text("Update Homework", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
-                        child: Text("Update Homework", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                    SizedBox(height: 40),
-                  ],
+                      ).animate().fadeIn(delay: 200.ms, duration: 500.ms).scale(),
+                      SizedBox(height: 40),
+                    ],
+                  ),
                 ),
               ),
             ),

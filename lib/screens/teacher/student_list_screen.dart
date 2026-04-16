@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/student_service.dart';
 import 'student_profile_screen.dart';
 import 'edit_student_screen.dart';
@@ -361,12 +363,24 @@ class _StudentListScreenState extends State<StudentListScreen> {
                   Expanded(
                     child: filteredStudents.isEmpty
                         ? _buildEmptyState()
-                        : ListView.builder(
-                            padding: EdgeInsets.all(12),
-                            itemCount: filteredStudents.length,
-                            itemBuilder: (context, index) {
-                              return _buildStudentCard(filteredStudents[index]);
-                            },
+                        : AnimationLimiter(
+                            child: ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              padding: EdgeInsets.all(12),
+                              itemCount: filteredStudents.length,
+                              itemBuilder: (context, index) {
+                                return AnimationConfiguration.staggeredList(
+                                  position: index,
+                                  duration: const Duration(milliseconds: 500),
+                                  child: SlideAnimation(
+                                    verticalOffset: 50.0,
+                                    child: FadeInAnimation(
+                                      child: _buildStudentCard(filteredStudents[index]),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                   ),
                 ],
@@ -396,15 +410,23 @@ class _StudentListScreenState extends State<StudentListScreen> {
           hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
           prefixIcon: Icon(Icons.search, color: theme.primaryColor, size: 20),
           filled: true,
-          fillColor: Colors.grey.shade100,
+          fillColor: Colors.grey.shade50,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide(color: Colors.grey.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide(color: theme.primaryColor, width: 2),
           ),
           contentPadding: EdgeInsets.symmetric(vertical: 0),
         ),
       ),
-    );
+    ).animate().slideY(begin: -0.2, duration: 400.ms).fadeIn();
   }
 
   Widget _buildSummaryInfo(ThemeData theme) {

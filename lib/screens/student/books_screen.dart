@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/book_service.dart';
 import '../../config/env_config.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../localization/language_service.dart';
 
 class BooksScreen extends StatefulWidget {
   final String className;
@@ -40,8 +41,8 @@ class _BooksScreenState extends State<BooksScreen> {
       setState(() {
         isLoading = false;
         errorMessage = e.toString().contains('SocketException') || e.toString().contains('Failed host lookup')
-            ? 'No internet connection. Please check your network.'
-            : 'Failed to load books. Please try again.';
+            ? LanguageService.text("no_internet_connection")
+            : LanguageService.text("failed_to_load_books");
       });
     }
   }
@@ -49,7 +50,7 @@ class _BooksScreenState extends State<BooksScreen> {
   Future<void> openBook(String url) async {
     if (url.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Book URL not available'), backgroundColor: Colors.red),
+        SnackBar(content: Text(LanguageService.text("book_url_not_available")), backgroundColor: Colors.red),
       );
       return;
     }
@@ -65,7 +66,7 @@ class _BooksScreenState extends State<BooksScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to open book'), backgroundColor: Colors.red),
+          SnackBar(content: Text(LanguageService.text("failed_to_open_book")), backgroundColor: Colors.red),
         );
       }
     }
@@ -74,7 +75,7 @@ class _BooksScreenState extends State<BooksScreen> {
   Future<void> downloadBook(int index, String bookUrl, String bookName) async {
     if (bookUrl.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Book URL not available'), backgroundColor: Colors.red),
+        SnackBar(content: Text(LanguageService.text("book_url_not_available")), backgroundColor: Colors.red),
       );
       return;
     }
@@ -100,7 +101,7 @@ class _BooksScreenState extends State<BooksScreen> {
       setState(() => downloadProgress.remove(index));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(filePath != null ? 'Downloaded: $bookName' : 'Download failed'),
+          content: Text(filePath != null ? '${LanguageService.text("downloaded")} $bookName' : LanguageService.text("download_failed")),
           backgroundColor: filePath != null ? Colors.green : Colors.red,
         ),
       );
@@ -124,7 +125,7 @@ class _BooksScreenState extends State<BooksScreen> {
                       ElevatedButton.icon(
                         onPressed: loadBooks,
                         icon: Icon(Icons.refresh),
-                        label: Text('Retry'),
+                        label: Text(LanguageService.text("retry")),
                       ),
                     ],
                   ),
@@ -136,7 +137,7 @@ class _BooksScreenState extends State<BooksScreen> {
                         children: [
                           Icon(Icons.book_outlined, size: 64, color: Colors.grey),
                           SizedBox(height: 16),
-                          Text('No books available', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                          Text(LanguageService.text("no_books_available"), style: TextStyle(fontSize: 16, color: Colors.grey)),
                         ],
                       ),
                     )
@@ -155,7 +156,7 @@ class _BooksScreenState extends State<BooksScreen> {
                             child: Icon(Icons.book, color: Colors.white),
                           ),
                           title: Text(
-                            book['book_name'] ?? 'Unknown',
+                            book['book_name'] ?? LanguageService.text("unknown"),
                             style: TextStyle(fontWeight: FontWeight.bold),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -165,12 +166,12 @@ class _BooksScreenState extends State<BooksScreen> {
                             children: [
                               SizedBox(height: 4),
                               Text(
-                                'Subject: ${book['subject_name'] ?? 'N/A'}',
+                                '${LanguageService.text("subject")}: ${book['subject_name'] ?? 'N/A'}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                'Class: ${book['class_name'] ?? 'N/A'}',
+                                '${LanguageService.text("class_label")}: ${book['class_name'] ?? 'N/A'}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),

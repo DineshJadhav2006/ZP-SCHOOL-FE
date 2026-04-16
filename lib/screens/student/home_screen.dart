@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/attendance_service.dart';
 import 'complaint_screen.dart';
 import 'my_complaints_screen.dart';
@@ -90,11 +91,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget buildCalendar() {
     DateTime today = DateTime.now();
 
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.1),
+            blurRadius: 15,
+            offset: Offset(0, 8),
+          ),
+        ],
+        border: Border.all(color: Colors.blue.shade100, width: 2),
+      ),
       child: Padding(
-        padding: EdgeInsets.all(8),
+        padding: EdgeInsets.all(12),
         child: TableCalendar(
           // IMPORTANT: Month navigation enable
           firstDay: DateTime(2020, 1, 1),
@@ -134,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           calendarBuilders: CalendarBuilders(
             todayBuilder: (context, day, focusedDay) {
-              return _dayBuilder(day, today);
+              return _dayBuilder(day, today, isToday: true);
             },
             defaultBuilder: (context, day, focusedDay) {
               return _dayBuilder(day, today);
@@ -142,40 +153,47 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-    );
+    ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1, duration: 500.ms);
   }
 
   // ================= DAY BUILDER =================
-  Widget _dayBuilder(DateTime day, DateTime today) {
+  Widget _dayBuilder(DateTime day, DateTime today, {bool isToday = false}) {
     DateTime key = DateTime(day.year, day.month, day.day);
     DateTime todayDate = DateTime(today.year, today.month, today.day);
     String? status = attendanceMap[key];
 
     // Status available → Show color circle regardless of day type
     if (status != null) {
-      Color bgColor = Colors.grey;
-      if (status == "Present") bgColor = Colors.green;
-      if (status == "Absent") bgColor = Colors.red;
-      if (status == "Late") bgColor = Colors.orange;
+      Color bgColor = Colors.grey.shade300;
+      if (status == "Present") bgColor = Colors.green.shade400;
+      if (status == "Absent") bgColor = Colors.red.shade400;
+      if (status == "Late") bgColor = Colors.orange.shade400;
 
       return Container(
         margin: EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: bgColor,
           shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: bgColor.withOpacity(0.4),
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            )
+          ],
         ),
         alignment: Alignment.center,
         child: Text(
           '${day.day}',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
         ),
-      );
+      ).animate(target: isToday ? 1 : 0).scale(begin: Offset(1,1), end: Offset(1.1, 1.1), duration: 500.ms);
     }
 
     // Future disabled
     if (key.isAfter(todayDate)) {
       return Center(
-        child: Text('${day.day}', style: TextStyle(color: Colors.grey)),
+        child: Text('${day.day}', style: TextStyle(color: Colors.grey.shade400)),
       );
     }
 
@@ -196,55 +214,80 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ================= SUMMARY =================
   Widget buildSummaryCard() {
-    return Card(
-      margin: EdgeInsets.only(top: 16),
+    return Container(
+      margin: EdgeInsets.only(top: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.purple.withOpacity(0.08),
+            blurRadius: 15,
+            offset: Offset(0, 8),
+          ),
+        ],
+        border: Border.all(color: Colors.purple.shade50, width: 2),
+      ),
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "${_monthName(focusedDay.month)} ${focusedDay.year} Attendance Summary",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Icon(Icons.stars_rounded, color: Colors.orange, size: 28),
+                SizedBox(width: 8),
+                Text(
+                  "${_monthName(focusedDay.month)} ${focusedDay.year} Progress",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.purple.shade900),
+                ),
+              ],
             ),
-            SizedBox(height: 12),
+            SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _summaryItem("Total", totalDays, Colors.blue),
-                _summaryItem("Present", presentCount, Colors.green),
-                _summaryItem("Absent", absentCount, Colors.red),
-                _summaryItem("Late", lateCount, Colors.orange),
+                _summaryItem("Total", totalDays, Colors.blue.shade400, Icons.calendar_month_rounded),
+                _summaryItem("Present", presentCount, Colors.green.shade400, Icons.check_circle_rounded),
+                _summaryItem("Absent", absentCount, Colors.red.shade400, Icons.cancel_rounded),
+                _summaryItem("Late", lateCount, Colors.orange.shade400, Icons.watch_later_rounded),
               ],
             ),
           ],
         ),
       ),
-    );
+    ).animate().fadeIn(delay: 200.ms, duration: 500.ms).slideY(begin: 0.1, duration: 500.ms);
   }
 
-  Widget _summaryItem(String title, int count, Color color) {
+  Widget _summaryItem(String title, int count, Color color, IconData icon) {
     return Flexible(
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.all(8),
+            padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: color.withOpacity(0.3), width: 1.5),
             ),
-            child: Text(
-              "$count",
-              style: TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.bold, color: color),
+            child: Column(
+              children: [
+                Icon(icon, color: color, size: 24),
+                SizedBox(height: 4),
+                Text(
+                  "$count",
+                  style: TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.w900, color: color),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 4),
+          SizedBox(height: 8),
           Text(
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 12),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey.shade700),
           ),
         ],
       ),
@@ -263,19 +306,73 @@ class _HomeScreenState extends State<HomeScreen> {
   // ================= UI =================
   @override
   Widget build(BuildContext context) {
+    String emoji = "👋";
+    if (widget.greeting.contains("Morning")) emoji = "🌅";
+    if (widget.greeting.contains("Afternoon")) emoji = "☀️";
+    if (widget.greeting.contains("Evening")) emoji = "🌇";
+    if (widget.greeting.contains("Night")) emoji = "🌙";
+
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.greeting, style: TextStyle(fontSize: 20)),
-          Text(
-            widget.studentName ?? "Student",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 5),
-          Text("Class: ${widget.studentClass}"),
-          SizedBox(height: 20),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade400, Colors.cyan.shade300],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(color: Colors.blue.withOpacity(0.3), blurRadius: 15, offset: Offset(0, 8))
+              ]
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(emoji, style: TextStyle(fontSize: 28)),
+                    SizedBox(width: 8),
+                    Text(
+                      widget.greeting, 
+                      style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.w600)
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8),
+                Text(
+                  widget.studentName ?? "Student",
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
+                ),
+                SizedBox(height: 12),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.school_rounded, color: Colors.white, size: 16),
+                      SizedBox(width: 6),
+                      Text(
+                        "Class ${widget.studentClass}",
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ).animate().slideY(begin: -0.2, duration: 600.ms, curve: Curves.easeOutBack).fadeIn(),
+          
+          SizedBox(height: 30),
 
           isLoadingAttendance
               ? Center(child: CircularProgressIndicator())

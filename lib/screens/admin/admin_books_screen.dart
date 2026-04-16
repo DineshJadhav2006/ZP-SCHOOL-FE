@@ -3,6 +3,7 @@ import '../../services/book_service.dart';
 import '../../config/env_config.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'add_book_screen.dart';
+import '../../localization/language_service.dart';
 
 class AdminBooksScreen extends StatefulWidget {
   @override
@@ -48,8 +49,8 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
       setState(() {
         isLoading = false;
         errorMessage = e.toString().contains('SocketException') || e.toString().contains('Failed host lookup')
-            ? 'No internet connection. Please check your network.'
-            : 'Failed to load books. Please try again.';
+            ? LanguageService.text("no_internet_connection")
+            : LanguageService.text("failed_to_load_books");
       });
     }
   }
@@ -69,16 +70,16 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
     bool? confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Delete Book"),
-        content: Text("Are you sure you want to delete this book?"),
+        title: Text(LanguageService.text("delete_book")),
+        content: Text(LanguageService.text("are_you_sure_delete_book")),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text("Cancel"),
+            child: Text(LanguageService.text("cancel")),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text("Delete", style: TextStyle(color: Colors.red)),
+            child: Text(LanguageService.text("delete"), style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -88,12 +89,12 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
       bool success = await BookService.deleteBook(bookId);
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Book Deleted Successfully")),
+          SnackBar(content: Text(LanguageService.text("book_deleted_success"))),
         );
         loadAllBooks();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to Delete Book")),
+          SnackBar(content: Text(LanguageService.text("book_deleted_failed"))),
         );
       }
     }
@@ -132,7 +133,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(filePath != null ? 'Downloaded: $bookName' : 'Download failed'),
+          content: Text(filePath != null ? '${LanguageService.text("downloaded")} $bookName' : LanguageService.text("download_failed")),
           backgroundColor: filePath != null ? Colors.green : Colors.red,
         ),
       );
@@ -145,7 +146,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text("Books"),
+        title: Text(LanguageService.text("books")),
         backgroundColor: theme.primaryColor,
         actions: [
           if (selectedClass != null)
@@ -162,7 +163,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: Text("Filter by Class"),
+                  title: Text(LanguageService.text("filter_by_class")),
                   content: Container(
                     width: double.maxFinite,
                     child: ListView.builder(
@@ -197,7 +198,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
               );
               if (result == true) loadAllBooks();
             },
-            tooltip: "Add New Book",
+            tooltip: LanguageService.text("add_new_book"),
           ),
         ],
       ),
@@ -218,7 +219,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                       ElevatedButton.icon(
                         onPressed: loadAllBooks,
                         icon: Icon(Icons.refresh),
-                        label: Text('Retry'),
+                        label: Text(LanguageService.text("retry")),
                       ),
                     ],
                   ),
@@ -230,7 +231,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                     children: [
                       Icon(Icons.book_outlined, size: 64, color: Colors.grey),
                       SizedBox(height: 16),
-                      Text('No books available', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                      Text(LanguageService.text("no_books_available"), style: TextStyle(fontSize: 16, color: Colors.grey)),
                     ],
                   ),
                 )
@@ -249,7 +250,7 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                             child: Icon(Icons.book, color: Colors.white),
                           ),
                           title: Text(
-                            book['book_name'] ?? 'Unknown',
+                            book['book_name'] ?? LanguageService.text("unknown"),
                             style: TextStyle(fontWeight: FontWeight.bold),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -259,12 +260,12 @@ class _AdminBooksScreenState extends State<AdminBooksScreen> {
                             children: [
                               SizedBox(height: 4),
                               Text(
-                                'Subject: ${book['subject_name'] ?? 'N/A'}',
+                                '${LanguageService.text("subject")}: ${book['subject_name'] ?? 'N/A'}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                'Class: ${book['class_name'] ?? 'N/A'}',
+                                '${LanguageService.text("class_label")}: ${book['class_name'] ?? 'N/A'}',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),

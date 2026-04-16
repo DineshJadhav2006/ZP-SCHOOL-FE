@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../services/book_service.dart';
+import '../../localization/language_service.dart';
 
 class AddBookScreen extends StatefulWidget {
   @override
@@ -37,13 +38,13 @@ class _AddBookScreenState extends State<AddBookScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (selectedClass == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please select a class")),
+        SnackBar(content: Text(LanguageService.text("please_select_class"))),
       );
       return;
     }
     if (selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please select a PDF file")),
+        SnackBar(content: Text(LanguageService.text("please_select_pdf"))),
       );
       return;
     }
@@ -56,7 +57,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
     if (fileUrl == null) {
       setState(() => isUploading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to upload file")),
+        SnackBar(content: Text(LanguageService.text("failed_to_upload_file"))),
       );
       return;
     }
@@ -73,12 +74,12 @@ class _AddBookScreenState extends State<AddBookScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Book Added Successfully")),
+        SnackBar(content: Text(LanguageService.text("book_added_success"))),
       );
       Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to Add Book")),
+        SnackBar(content: Text(LanguageService.text("book_added_failed"))),
       );
     }
   }
@@ -89,7 +90,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text("Add New Book"),
+        title: Text(LanguageService.text("add_new_book")),
         backgroundColor: theme.primaryColor,
       ),
       body: SingleChildScrollView(
@@ -102,17 +103,17 @@ class _AddBookScreenState extends State<AddBookScreen> {
               TextFormField(
                 controller: _bookNameController,
                 decoration: InputDecoration(
-                  labelText: "Book Name",
+                  labelText: LanguageService.text("book_name"),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: Icon(Icons.book),
                 ),
-                validator: (val) => val!.isEmpty ? "Required" : null,
+                validator: (val) => val!.isEmpty ? LanguageService.text("required") : null,
               ),
               SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: selectedClass,
                 decoration: InputDecoration(
-                  labelText: "Class",
+                  labelText: LanguageService.text("class_label"),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: Icon(Icons.class_),
                 ),
@@ -120,17 +121,17 @@ class _AddBookScreenState extends State<AddBookScreen> {
                   return DropdownMenuItem(value: className, child: Text(className));
                 }).toList(),
                 onChanged: (val) => setState(() => selectedClass = val),
-                validator: (val) => val == null ? "Required" : null,
+                validator: (val) => val == null ? LanguageService.text("required") : null,
               ),
               SizedBox(height: 16),
               TextFormField(
                 controller: _subjectController,
                 decoration: InputDecoration(
-                  labelText: "Subject Name",
+                  labelText: LanguageService.text("subject_name"),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: Icon(Icons.subject),
                 ),
-                validator: (val) => val!.isEmpty ? "Required" : null,
+                validator: (val) => val!.isEmpty ? LanguageService.text("required") : null,
               ),
               SizedBox(height: 16),
               GestureDetector(
@@ -147,7 +148,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          selectedFile != null ? selectedFile!.name : "Select PDF File",
+                          selectedFile != null ? selectedFile!.name : LanguageService.text("select_pdf_file"),
                           style: TextStyle(
                             color: selectedFile != null ? Colors.black : Colors.grey,
                           ),
@@ -169,7 +170,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
                   ),
                   child: isUploading
                       ? CircularProgressIndicator(color: Colors.white)
-                      : Text("Add Book", style: TextStyle(fontSize: 16, color: Colors.white)),
+                      : Text(LanguageService.text("add_book"), style: TextStyle(fontSize: 16, color: Colors.white)),
                 ),
               ),
             ],
